@@ -113,3 +113,4 @@ describe('DocumentScanner & Document AI Recognition', () => {
     assert.equal(fs.existsSync(tempFile), false, 'Temporary scan file must be deleted from disk');
   });
 });
+
