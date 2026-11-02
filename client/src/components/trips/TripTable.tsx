@@ -228,3 +228,4 @@ export const TripTable: React.FC<TripTableProps> = ({
     </div>
   );
 };
+

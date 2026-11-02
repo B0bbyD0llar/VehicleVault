@@ -233,3 +233,4 @@ export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tc
     </div>
   );
 };
+

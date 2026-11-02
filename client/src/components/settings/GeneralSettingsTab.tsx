@@ -22,30 +22,49 @@ import {
 import { useTheme, ACCENT_COLOR_OPTIONS } from '../../context/ThemeContext.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { useModules, EnabledModules } from '../../context/ModuleContext.js';
+import { apiFetch } from '../../api/client.js';
 
-export const GeneralSettingsTab: React.FC = () => {
-  const { theme, setTheme, accentColor, setAccentColor } = useTheme();
-  const { lang, setLang, t } = useLanguage();
-  const { modules, toggleModule } = useModules();
+interface GeneralSettingsTabProps {
+  health?: any;
+  diagnosticsRefreshing?: boolean;
+  onRefreshDiagnostics?: () => Promise<void>;
+}
 
-  const [health, setHealth] = useState<any>(null);
-  const [diagnosticsRefreshing, setDiagnosticsRefreshing] = useState(false);
+export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
+  health: propHealth,
+  diagnosticsRefreshing: propRefreshing,
+  onRefreshDiagnostics,
+}) => {
+  const [internalHealth, setInternalHealth] = useState<any>(null);
+  const [internalRefreshing, setInternalRefreshing] = useState(false);
 
-  const loadHealth = async () => {
-    setDiagnosticsRefreshing(true);
+  const health = propHealth !== undefined ? propHealth : internalHealth;
+  const diagnosticsRefreshing = propRefreshing !== undefined ? propRefreshing : internalRefreshing;
+
+  const handleRefresh = async () => {
+    if (onRefreshDiagnostics) {
+      await onRefreshDiagnostics();
+      return;
+    }
     try {
-      const res = await fetch('/healthz');
-      if (res.ok) setHealth(await res.json());
+      setInternalRefreshing(true);
+      const res = await apiFetch<any>('/healthz');
+      setInternalHealth(res);
     } catch {
       // ignore
     } finally {
-      setDiagnosticsRefreshing(false);
+      setInternalRefreshing(false);
     }
   };
 
   useEffect(() => {
-    loadHealth();
+    if (propHealth === undefined) {
+      handleRefresh();
+    }
   }, []);
+  const { theme, setTheme, accentColor, setAccentColor } = useTheme();
+  const { lang, setLang, t } = useLanguage();
+  const { modules, toggleModule } = useModules();
 
   const moduleItems: { key: keyof EnabledModules; label: string; desc: string; icon: React.FC<{ className?: string }> }[] = [
     {
@@ -313,7 +332,7 @@ export const GeneralSettingsTab: React.FC = () => {
 
             <button
               type="button"
-              onClick={loadHealth}
+              onClick={handleRefresh}
               disabled={diagnosticsRefreshing}
               className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold inline-flex items-center space-x-1.5 transition disabled:opacity-50"
             >
@@ -379,3 +398,4 @@ export const GeneralSettingsTab: React.FC = () => {
     </div>
   );
 };
+

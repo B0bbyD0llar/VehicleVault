@@ -312,3 +312,4 @@ export const TripModal: React.FC<TripModalProps> = ({
     </div>
   );
 };
+

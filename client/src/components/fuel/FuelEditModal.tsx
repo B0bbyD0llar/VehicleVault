@@ -665,3 +665,4 @@ export const FuelEditModal: React.FC<FuelEditModalProps> = ({
     </div>
   );
 };
+

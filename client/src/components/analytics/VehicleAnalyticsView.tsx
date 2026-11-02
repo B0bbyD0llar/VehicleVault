@@ -43,3 +43,4 @@ export const VehicleAnalyticsView: React.FC<VehicleAnalyticsViewProps> = ({
     </div>
   );
 };
+

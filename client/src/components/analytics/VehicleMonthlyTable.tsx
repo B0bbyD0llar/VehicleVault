@@ -82,3 +82,4 @@ export const VehicleMonthlyTable: React.FC<VehicleMonthlyTableProps> = ({
     </div>
   );
 };
+

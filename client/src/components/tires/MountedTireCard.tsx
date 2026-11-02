@@ -192,3 +192,4 @@ export const MountedTireCard: React.FC<MountedTireCardProps> = ({
     </div>
   );
 };
+

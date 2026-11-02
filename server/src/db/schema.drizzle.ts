@@ -256,3 +256,4 @@ export const authVerifications = sqliteTable('verification', {
   createdAt: integer('createdAt', { mode: 'timestamp' }),
   updatedAt: integer('updatedAt', { mode: 'timestamp' }),
 });
+

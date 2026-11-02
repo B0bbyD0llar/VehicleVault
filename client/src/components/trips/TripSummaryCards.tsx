@@ -63,3 +63,4 @@ export const TripSummaryCards: React.FC<TripSummaryCardsProps> = ({ summary }) =
     </div>
   );
 };
+

@@ -220,3 +220,4 @@ export const IntervalModal: React.FC<IntervalModalProps> = ({
     </div>
   );
 };
+

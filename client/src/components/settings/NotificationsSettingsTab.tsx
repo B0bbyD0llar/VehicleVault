@@ -351,3 +351,4 @@ export const NotificationsSettingsTab: React.FC = () => {
     </div>
   );
 };
+

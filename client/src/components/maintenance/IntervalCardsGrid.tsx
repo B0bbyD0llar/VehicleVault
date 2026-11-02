@@ -71,3 +71,4 @@ export const IntervalCardsGrid: React.FC<IntervalCardsGridProps> = ({
     </div>
   );
 };
+

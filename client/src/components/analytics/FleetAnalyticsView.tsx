@@ -221,3 +221,4 @@ export const FleetAnalyticsView: React.FC<FleetAnalyticsViewProps> = ({
     </div>
   );
 };
+

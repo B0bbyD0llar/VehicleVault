@@ -423,8 +423,8 @@ export const AiSettingsTab: React.FC = () => {
                         ••••••••{openaiKeySuffix || (openaiKeyMasked ? openaiKeyMasked.slice(-4) : '...')}
                       </span>
                       {openaiKeySource === 'env' && (
-                        <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-normal">
-                          {lang === 'nl' ? '(Variabelen)' : '(Env)'}
+                        <span className="text-[10px] text-slate-500 font-normal">
+                          {lang === 'nl' ? '• Ingesteld via container' : '• Configured via container'}
                         </span>
                       )}
                     </div>
@@ -520,3 +520,4 @@ export const AiSettingsTab: React.FC = () => {
     </div>
   );
 };
+

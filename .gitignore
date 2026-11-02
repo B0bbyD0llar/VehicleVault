@@ -17,12 +17,12 @@ data/
 *.db-shm
 *.db-wal
 *.traineddata
-uploads/
-server/uploads/
-receipts/
-invoices/
-documents/
-vehicles/
+/uploads/
+/server/uploads/
+/receipts/
+/invoices/
+/documents/
+/vehicles/
 
 # Environment variables & secrets
 .env

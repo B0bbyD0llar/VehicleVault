@@ -237,3 +237,4 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({
     </div>
   );
 };
+
