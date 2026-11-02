@@ -1,30 +1,4 @@
-> 🤖 **Note:** *Official Release Notes for VehicleVault v3.0.0 — Architecture & Codebase Modernization.*
-
----
-
-# 🚀 VehicleVault v3.0.0 — Architecture & Codebase Modernization
-
-**VehicleVault v3.0.0** is focused strictly on enterprise architecture foundations, standard library adoptions, and decoupling oversized monolithic files into modular, maintainable single-responsibility components according to strict software engineering standards.
-
----
-
-## ✨ Architectural Foundations & Standard Libraries in v3.0
-
-### 🏗️ Gestructureerde Logging met Pino
-- **High-Performance JSON Logger:** Geïntegreerd in Express middleware (`httpLogger`) en controllers.
-- **Request-ID & Correlation:** Elke API-request krijgt een unieke correlation ID voor foutdiagnose.
-- **Automatische Redaction:** Gevoelige velden (wachtwoorden, sessiecookies, API-tokens, autorisatieheaders) worden automatisch gemaskeerd in alle loguitvoer.
-
-### ⏱️ Betrouwbare Achtergrondtaken met ToadScheduler
-- **In-Process Job Runner:** Vervangt handmatige, foutgevoelige `setInterval()` timers voor gecontroleerde taaklevenscycli.
-- **Geïsoleerde Taakplanning:** Periodieke achtergrondcontroles (zoals document-expiraties en onderhoudswaarschuwingen) met graceful start/stop en foutisolatie.
-
-### 🛡️ Runtime API Boundary Validation met Zod
-- **Strikte Schema Validatie:** Request body en query parameters worden gevalideerd via herbruikbare Zod-middleware (`validateBody`, `validateQuery`) voordat ze controllers bereiken.
-- **Consistente Foutrespons:** Automatische 400 Bad Request responses met gedetailleerde issue-arrays bij ongeldige payloads.
-
-### ⚡ Client-Side Data Caching met TanStack Query (React Query)
-- **Asynchrone Data Provider:** `QueryClientProvider` geïntegreerd in de root van de frontend applicatie als fundament voor het ontmantelen van boilerplate `useEffect` en `useState(loading)` in datarijke pagina's.
+> 🤖 **Note:** *This is an AI-generated release note summarizing the release (`v2.1.0`) of VehicleVault.*
 
 ---
 
@@ -39,6 +13,10 @@
 - **Caravan & Aanhangermodus (`is_towing`):** Gescheiden verbruiksstatistieken voor rijden met aanhanger/caravan.
 - **Bandenbeheer Aanschafprijs:** Vastlegging van aanschafprijs en factuurkoppeling.
 - **Garage-brede Vloot TCO Analytics:** Aggregatie over alle actieve voertuigen in de garage.
+
+---
+
+> 🤖 **Note:** *This is an AI-generated release note summarizing the complete first official production release (`v2.0.0`) of VehicleVault.*
 
 ---
 
