@@ -2,29 +2,87 @@
 
 ---
 
-# 🚗 VehicleVault v3.0.0 — Modulaire Architectuur & Beproefde Protocollen
+# 🚗 VehicleVault v3.0.0 — Modulaire Architectuur & Beproefde Standaarden
 
-**VehicleVault v3.0.0** is een grote architecturale mijlpaal gericht op schaalbaarheid, onderhoudbaarheid en robuustheid. Grote monolithische bronbestanden zijn opgedeeld in modulaire componenten en services volgens het Single Responsibility Principle (<300 regels per bestand), en handgeschreven mechanismen zijn vervangen door beproefde standaarden en bibliotheken.
+**VehicleVault v3.0.0** is een fundamentele architecturale mijlpaal gericht op schaalbaarheid, robuustheid en onderhoudbaarheid. In deze release zijn alle grote monolithische bestanden opgedeeld in overzichtelijke, testbare componenten met een strikte richtlijn van **< 300 regels per bestand** (conform het Single Responsibility Principle). Daarnaast zijn handgeschreven oplossingen en ad-hoc routines systematisch vervangen door beproefde bibliotheken en open standaarden.
 
-### 🏛️ Modulaire Decompositie & Refactoring
-Alle omvangrijke frontend pagina's en backend services zijn ontkoppeld en ondergebracht in gespecialiseerde modules:
-- **Instellingen (`Settings.tsx`):** Opgesplitst van >3.000 regels naar een compacte orchestrator (162 regels) met 7 modulaire tabbladen (`GeneralTab`, `VehiclesTab`, `UsersTab`, `ApiKeysTab`, `NotificationsTab`, `AiTab`, `BackupsTab`).
-- **Brandstoflogboek (`FuelLog.tsx`):** Opgesplitst van >2.000 regels naar modulaire componenten (`FuelEntryForm`, `FuelHistoryTable`, `FuelEditModal`).
-- **Onderhoud & Beurten (`Maintenance.tsx`):** Opgesplitst van >1.900 regels naar `IntervalCardsGrid`, `ServiceRecordsTable`, `ServiceRecordModal`, `IntervalModal` en `ServiceDetailsModal`.
-- **Bandenbeheer (`Tires.tsx`):** Opgesplitst van >1.300 regels naar `MountedTireCard`, `TireSetCard`, `TireSetModal`, `TireSwapModal` en `TireTreadModal`.
-- **TCO & Wagenpark Analyse (`AnalyticsTco.tsx`):** Opgesplitst van >1.300 regels naar `TcoFilters`, `FleetAnalyticsView`, `VehicleKpiCards`, `VehicleMonthlyTable`, `VehicleFuelPriceStats` en `VehicleTankDistanceStats`.
-- **Ritregistratie (`Trips.tsx`):** Opgesplitst van >900 regels naar `TripSummaryCards`, `TripTable`, `TripModal` en `TripExportDropdown`.
-- **Voertuigen, Documenten & Vaste Lasten:** Gesplitst in herbruikbare dialoog-, kaart- en tabelmodules (`client/src/components/vehicles`, `documents`, `expenses`).
-- **AI Factuurherkenning (`aiReceiptService.ts`):** Opgesplitst in modulaire providers (`geminiProvider`, `openAiProvider`, `ocrNormalizer`, `aiSettings`).
-- **Authenticatie Controller (`authController.ts`):** Opgesplitst in 4 sub-controllers (`authSessionController`, `authPasswordResetController`, `authApiKeyController`, `userManagementController`).
+---
 
-### 🛡️ Beproefde Protocollen & Bibliotheken
-Handgeschreven logica en aangepaste routines zijn vervangen door industriestandaarden:
-- **Better-Auth Authenticatie:** Volledig gemount en geconfigureerd met SQLite Drizzle-adapter op `/api/auth/v3/*` met behoud van naadloze backwards-compatibiliteit.
-- **Drizzle ORM Integratie:** Type-safe database mapping en Drizzle client (`drizzle-orm/sqlite-proxy`) bovenop de bestaande SQLite WAL connectie.
-- **Pino Structured Logger:** Gestructureerde JSON high-performance logging en HTTP request logging via `pino-http` ter vervanging van ad-hoc console loggers.
-- **ToadScheduler Taakplanner:** Robuuste in-process taakplanner voor periodieke inspectie van APK-verloopdatums, documenten, bandenwissels en onderhoudsintervallen.
-- **Zod Schema Validatie:** Declaratieve runtime validatie van API-payloads en configuraties met automatische type-inferentie.
+### 🛡️ 1. Vervanging van Handgeschreven Oplossingen door Beproefde Standaarden
+
+| Onderdeel | Oude / Handgeschreven Situatie | Nieuwe Beproefde Standaard & Voordelen |
+| :--- | :--- | :--- |
+| **Authenticatie & Sessies** | Handgeschreven JWT uitgifte, ad-hoc token rotatie en custom sessie-controllers. | **Better-Auth (`/api/auth/v3/*`)** geïntegreerd met SQLite Drizzle-adapter. Biedt gestandaardiseerde authenticatieprotocollen, robuuste sessie-opslag, veilige cookie-flags en uitbreidbaarheid naar multi-factor en OAuth-providers. |
+| **Database Data Layer** | Handmatige raw SQL strings zonder centrale type-bescherming of geautomatiseerde migraties. | **Drizzle ORM (`drizzle-orm`)** schema-mapping (`server/src/db/schema.drizzle.ts` en `drizzle.ts`). Garandeert type-safety tussen TypeScript en de SQLite database engine. |
+| **Invoer- & Payloadvalidatie** | Verspreide handmatige `if (!req.body...)` checks en inconsistente foutmeldingen. | **Zod Schema Validatie (`zod`)**: Universele runtime schema-validatie met automatische TypeScript type-inferentie en gestandaardiseerde foutmeldingen voor alle API-endpoints. |
+| **Achtergrondtaken & Schedulers** | Handmatige `setInterval` timers die vatbaar waren voor event-loop verstopping en ongecontroleerde overlap. | **ToadScheduler (`toadscheduler`)**: Robuuste taakplanner met `SimpleIntervalJob` en `AsyncTask` voor periodieke notificaties, APK-verloopcontroles en documentwaarschuwingen met betrouwbare error-boundaries. |
+| **Applicatie- & Requestlogging** | Ongefilterde `console.log` en `console.error` aanroepen zonder context of niveaus. | **Pino High-Performance Logger (`pino` & `pino-http`)**: Gestructureerde JSON logging met automatische redactie van gevoelige headers/tokens en nano-seconde request tracing. |
+| **AI Factuurherkenning & OCR** | Eén grote monolithische service die direct meerdere AI API's en OCR parse-routines mengde. | **Modulaire AI Provider Architectuur**: Losgekoppelde providers (`geminiProvider`, `openAiProvider`, `localOcrProvider`) met een centrale `ocrNormalizer` conform het Strategy Pattern. |
+| **Push Notificaties** | Ad-hoc payload encryptie en handmatige Web Push calls. | **RFC-conforme VAPID Web Push**: Standaard sleutelbeheer, cryptografische handdruk en provider-onafhankelijke bezorging (FCM, Mozilla, Apple). |
+| **Reverse Proxy Beveiliging** | Vrijblijvende header-uitlezing (`remote-user`, etc.) die spoofing mogelijk kon maken. | **Geharde Trusted Proxy Engine**: IP-validatie op vertrouwde loopback- en private netwerksubnets (10.x, 172.16-31.x, 192.168.x). |
+
+---
+
+### 🧱 2. Opsplitsing van Monolithische Bestanden (< 300 regels)
+
+Alle bestanden in de frontend en backend zijn herzien en opgesplitst zodat elk bestand één duidelijke taak heeft:
+
+#### Frontend Pagina's (Client):
+- **Documenten & Handschoenenkast (`Documents.tsx`):**
+  - Teruggebracht van >540 regels naar **251 regels**.
+  - Opgedeeld in:
+    - `DocumentListView.tsx` (265 regels): Lijst- en tegelweergave met snelle documentacties.
+    - `DocumentUploadModal.tsx` (174 regels): Drag-and-drop upload met client-side afbeeldingscompressie.
+    - `DocumentEditModal.tsx` (123 regels): Bewerken van metagegevens en verloopdata.
+    - `DocumentHeaderControls.tsx` (95 regels): Categorie-filters, sorteeropties en weergave-toggle.
+    - `useDocumentOperations.ts` (243 regels): Centrale hook voor document state, bestandstransformatie en API-mutaties.
+- **Voertuigenbeheer (`Vehicles.tsx`):**
+  - Teruggebracht van >450 regels naar **217 regels**.
+  - Opgedeeld in:
+    - `VehicleCard.tsx` (220 regels): Visuele voertuigkaart met RDW status badges, APK alarm en acties.
+    - `VehicleBasicSpecsFields.tsx` (277 regels): Kenteken, landkeuze, RDW autofill en basisspecificaties.
+    - `VehiclePurchaseAndApkFields.tsx` (100 regels): Aankoopgegevens, TCO baseline, keuringsdata en notities.
+    - `VehicleModal.tsx` (171 regels): Gestroomlijnde orchestrator voor toevoegen en bewerken.
+    - `VehicleShareModal.tsx` (175 regels): Deelpaneel voor mede-bestuurders en gezinsleden.
+    - `useVehicleForm.ts` (199 regels): Formulierhook met RDW-integratie en validatie.
+    - `useVehicleShare.ts` (89 regels): Toegangsbeheer hook.
+- **Instellingen (`Settings.tsx`):**
+  - Teruggebracht van >3.000 regels naar **162 regels**.
+  - Opgedeeld in 7 modulaire tabs: `GeneralSettingsTab`, `AiSettingsTab`, `NotificationsSettingsTab`, `BackupSettingsTab`, `UsersSettingsTab`, `HomeAssistantSettingsTab` en `IntegrationsSettingsTab`.
+- **Brandstoflogboek (`FuelLog.tsx`):**
+  - Teruggebracht van >2.000 regels naar **296 regels** via `FuelEntryForm`, `FuelHistoryTable` en `FuelEditModal`.
+- **Onderhoud & Beurten (`Maintenance.tsx`):**
+  - Teruggebracht van >1.900 regels naar modulaire componenten (`IntervalCardsGrid`, `ServiceRecordsTable`, `ServiceRecordModal`, `IntervalModal`, `ServiceDetailsModal`).
+- **Bandenbeheer (`Tires.tsx`):**
+  - Teruggebracht van >1.300 regels naar **258 regels** via `MountedTireCard`, `TireSetCard`, `TireSetModal`, `TireSwapModal` en `TireTreadModal`.
+- **Kosten & TCO Analyse (`AnalyticsTco.tsx`):**
+  - Teruggebracht van >1.300 regels naar **264 regels** via `TcoFilters`, `FleetAnalyticsView`, `VehicleKpiCards`, `VehicleMonthlyTable`, `VehicleFuelPriceStats` en `VehicleTankDistanceStats`.
+- **Rittenregistratie (`Trips.tsx`):**
+  - Teruggebracht van >900 regels naar **255 regels** via `TripSummaryCards`, `TripTable`, `TripModal` en `TripExportDropdown`.
+
+#### Backend Controllers & Services (Server):
+- **Authenticatie Controller (`authController.ts`):**
+  - Teruggebracht naar een 44-regelige facade die delegeert naar:
+    - `authSessionController.ts`: Registratie, login, sessiestart, refresh en logout.
+    - `authApiKeyController.ts`: Aanmaken, intrekken en valideren van `vkv_` API keys.
+    - `authPasswordResetController.ts`: Wachtwoordherstel en e-mail tokens.
+    - `userManagementController.ts`: Gebruikersbeheer, profielen en rollen.
+- **AI Factuurherkenning (`aiReceiptService.ts`):**
+  - Opgesplitst in modulaire providers (`geminiProvider`, `openAiProvider`, `localOcrProvider`) met een gecentraliseerde `ocrNormalizer`.
+
+---
+
+### 📱 3. Mobiele Navigatieverbeteringen
+- **Documenten-tab toegevoegd op Mobiel:** Het tabblad **Documenten** (`/documents`) is nu direct opgenomen in de mobiele navigatiebalk onderin het scherm.
+- **Onderhouds-tab toegevoegd op Mobiel:** Ook **Beurten & Onderhoud** (`/maintenance`) is nu mobiel bereikbaar.
+- **Responsieve Horizontale Navigatie:** De navigatiebalk onderin ondersteunt nu vloeiend horizontaal scrollen (`overflow-x-auto scrollbar-none`) met vaste minimale itembreedtes, zodat knoppen op elk formaat smartphone moeiteloos te bedienen zijn zonder samendrukking of overlap.
+
+---
+
+### 🧪 4. Geverifieerde Kwaliteit & Stabiliteit
+- **201/201 Unittests & Integratiesuites Geslaagd:** 100% succesvolle geautomatiseerde testrun zonder regressies.
+- **End-to-End API Smoke Test Geslaagd:** Geverifieerd op schone database (Better-Auth, sessies, voertuigen, brandstof, TCO, ritten).
+- **Clean Clone Verificatie:** Getest met een verse `git clone` direct vanaf GitHub; zowel client als server compileren foutloos (`0 errors`).
 
 ---
 

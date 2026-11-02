@@ -103,3 +103,4 @@ export const VehiclePurchaseAndApkFields: React.FC<VehiclePurchaseAndApkFieldsPr
     </>
   );
 };
+

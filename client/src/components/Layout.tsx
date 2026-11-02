@@ -9,6 +9,8 @@ import {
   Car,
   Landmark,
   Fuel,
+  Wrench,
+  FolderLock,
   LineChart,
   Route,
   Settings as SettingsIcon,
@@ -16,10 +18,12 @@ import {
 import { OfflineBanner } from './OfflineBanner.js';
 import { useAuth } from '../context/AuthContext.js';
 import { useModules } from '../context/ModuleContext.js';
+import { useLanguage } from '../context/LanguageContext.js';
 
 export const Layout: React.FC = () => {
   const { user } = useAuth();
   const { isModuleEnabled } = useModules();
+  const { lang } = useLanguage();
   const isDriver = user?.role === 'driver';
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
@@ -78,12 +82,12 @@ export const Layout: React.FC = () => {
       </div>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 flex items-center justify-around z-40 px-1 backdrop-blur shadow-lg overflow-x-auto">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 flex items-center justify-start sm:justify-around z-40 px-2 backdrop-blur shadow-lg overflow-x-auto scrollbar-none space-x-1">
         <NavLink
           to="/"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center text-[10px] px-1.5 py-1 ${
-              isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500'
+            `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+              isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`
           }
         >
@@ -95,8 +99,8 @@ export const Layout: React.FC = () => {
           <NavLink
             to="/vehicles"
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center text-[10px] px-1.5 py-1 ${
-                isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500'
+              `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+                isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`
             }
           >
@@ -109,8 +113,8 @@ export const Layout: React.FC = () => {
           <NavLink
             to="/fuel"
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center text-[10px] px-1.5 py-1 ${
-                isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500'
+              `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+                isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`
             }
           >
@@ -119,12 +123,40 @@ export const Layout: React.FC = () => {
           </NavLink>
         )}
 
+        {!isDriver && isModuleEnabled('maintenance') && (
+          <NavLink
+            to="/maintenance"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+                isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`
+            }
+          >
+            <Wrench className="w-4 h-4 mb-0.5" />
+            <span>{lang === 'nl' ? 'Beurten' : 'Service'}</span>
+          </NavLink>
+        )}
+
+        {!isDriver && isModuleEnabled('documents') && (
+          <NavLink
+            to="/documents"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+                isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`
+            }
+          >
+            <FolderLock className="w-4 h-4 mb-0.5" />
+            <span>{lang === 'nl' ? 'Documenten' : 'Docs'}</span>
+          </NavLink>
+        )}
+
         {isModuleEnabled('trips') && (
           <NavLink
             to="/trips"
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center text-[10px] px-1.5 py-1 ${
-                isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500'
+              `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+                isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`
             }
           >
@@ -139,8 +171,8 @@ export const Layout: React.FC = () => {
               <NavLink
                 to="/fixed-expenses"
                 className={({ isActive }) =>
-                  `flex flex-col items-center justify-center text-[10px] px-1.5 py-1 ${
-                    isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500'
+                  `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+                    isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                   }`
                 }
               >
@@ -153,8 +185,8 @@ export const Layout: React.FC = () => {
               <NavLink
                 to="/analytics"
                 className={({ isActive }) =>
-                  `flex flex-col items-center justify-center text-[10px] px-1.5 py-1 ${
-                    isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500'
+                  `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+                    isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                   }`
                 }
               >
@@ -166,8 +198,8 @@ export const Layout: React.FC = () => {
             <NavLink
               to="/settings"
               className={({ isActive }) =>
-                `flex flex-col items-center justify-center text-[10px] px-1.5 py-1 ${
-                  isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500'
+                `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+                  isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`
               }
             >

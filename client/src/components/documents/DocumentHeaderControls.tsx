@@ -100,3 +100,4 @@ export const DocumentHeaderControls: React.FC<DocumentHeaderControlsProps> = ({
     </div>
   );
 };
+
