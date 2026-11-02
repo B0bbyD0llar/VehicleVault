@@ -187,6 +187,10 @@ export const Documents: React.FC = () => {
             ops.setDocFile(null);
             ops.setCompressionRatio(null);
           }}
+          isScanning={ops.isScanning}
+          scanExtraction={ops.scanExtraction}
+          scanWarning={ops.scanWarning}
+          onReScan={ops.handleManualReScan}
         />
       )}
 

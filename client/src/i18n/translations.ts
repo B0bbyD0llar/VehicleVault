@@ -314,6 +314,11 @@ export const translations = {
     confirmDeleteDocument: 'Weet je zeker dat je dit document wilt verwijderen?',
     dragOrClickDocument: 'Sleep een PDF of afbeelding hierheen of klik om te uploaden (max 30MB)',
     downloadDocument: 'Downloaden',
+    scanDocument: 'Document scannen met AI',
+    scanningDocument: 'Document analyseren met AI...',
+    rescanDocument: 'Opnieuw scannen',
+    scanDocumentSuccess: 'Document herkend via AI',
+    scanDocumentHint: 'AI herkent automatisch de titel, categorie, datum en details',
 
     // Maintenance Parts & Labor Split
     partsCost: 'Kosten Onderdelen (€)',
@@ -737,6 +742,11 @@ export const translations = {
     confirmDeleteDocument: 'Are you sure you want to delete this document?',
     dragOrClickDocument: 'Drag a PDF or image file here or click to browse (max 30MB)',
     downloadDocument: 'Download',
+    scanDocument: 'Scan document with AI',
+    scanningDocument: 'Analyzing document with AI...',
+    rescanDocument: 'Rescan with AI',
+    scanDocumentSuccess: 'Document recognized via AI',
+    scanDocumentHint: 'AI automatically detects title, category, date, and details',
 
     // Maintenance Parts & Labor Split
     partsCost: 'Parts Cost (€)',

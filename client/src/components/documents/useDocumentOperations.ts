@@ -3,12 +3,17 @@ import { Vehicle, VehicleDocument } from '../../types/index.js';
 import { apiFetch } from '../../api/client.js';
 import { compressImage } from '../../utils/imageCompressor.js';
 import { useLanguage } from '../../context/LanguageContext.js';
+import { useDocumentScan } from './useDocumentScan.js';
+import { useDocumentEdit } from './useDocumentEdit.js';
 
 export function useDocumentOperations(
   selectedVehicle: Vehicle | null,
   loadDocuments: (vehicleId: string) => Promise<void>
 ) {
   const { t, lang } = useLanguage();
+
+  // Document AI scanner hook
+  const scanner = useDocumentScan();
 
   // Upload modal state
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -23,18 +28,22 @@ export function useDocumentOperations(
   const [compressionRatio, setCompressionRatio] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Edit modal state
-  const [editingDoc, setEditingDoc] = useState<VehicleDocument | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editCategory, setEditCategory] = useState<'registration' | 'insurance' | 'apk' | 'invoice' | 'manual' | 'other'>('invoice');
-  const [editDate, setEditDate] = useState('');
-  const [editExpiresAt, setEditExpiresAt] = useState('');
-  const [editNotes, setEditNotes] = useState('');
-  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const applyScanData = (data: any) => {
+    if (data.title) setDocName(data.title);
+    if (data.category) setDocCategory(data.category);
+    if (data.documentDate) setDocDate(data.documentDate);
+    if (data.expiresAt) setDocExpiresAt(data.expiresAt);
+    if (data.notes) {
+      setDocNotes(data.notes);
+    } else if (data.totalAmount) {
+      setDocNotes(lang === 'nl' ? `Totaalbedrag: €${data.totalAmount.toFixed(2)}` : `Total amount: €${data.totalAmount.toFixed(2)}`);
+    }
+  };
 
   const processSelectedFile = async (file: File) => {
     setCompressionRatio(null);
+    let activeFile = file;
+
     if (!docName) {
       const cleanName = file.name.replace(/\.[^/.]+$/, '');
       setDocName(cleanName);
@@ -52,12 +61,14 @@ export function useDocumentOperations(
         }
       }
     }
+
     if (file.type.startsWith('image/') || /\.(jpe?g|png|webp|heic)$/i.test(file.name)) {
       setCompressing(true);
       try {
         const origKb = (file.size / 1024).toFixed(0);
         const compressed = await compressImage(file, 1600, 2200, 0.82);
         const compKb = (compressed.size / 1024).toFixed(0);
+        activeFile = compressed;
         setDocFile(compressed);
         setCompressionRatio(`${origKb} KB → ${compKb} KB`);
       } catch (err) {
@@ -68,6 +79,15 @@ export function useDocumentOperations(
       }
     } else {
       setDocFile(file);
+    }
+
+    // Trigger AI document scan automatically
+    scanner.scanFile(activeFile, applyScanData);
+  };
+
+  const handleManualReScan = () => {
+    if (docFile) {
+      scanner.scanFile(docFile, applyScanData);
     }
   };
 
@@ -140,6 +160,7 @@ export function useDocumentOperations(
       setCompressionRatio(null);
       setDocCategory('registration');
       setIsDragging(false);
+      scanner.resetScan();
       await loadDocuments(selectedVehicle.id);
     } catch (err: any) {
       alert(err?.message || 'Upload mislukt. Controleer bestandsformaat (PDF, JPG, PNG) en bestandsgrootte (max 30MB).');
@@ -175,42 +196,7 @@ export function useDocumentOperations(
     return doc.created_at ? doc.created_at.split('T')[0] : '1970-01-01';
   };
 
-  const openEditModal = (doc: VehicleDocument) => {
-    setEditingDoc(doc);
-    setEditName(doc.name);
-    setEditCategory(doc.category);
-    setEditDate(extractDocumentDate(doc));
-    setEditExpiresAt(doc.expires_at || '');
-    setEditNotes(doc.notes || '');
-    setIsEditModalOpen(true);
-  };
-
-  const handleSaveEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingDoc) return;
-    try {
-      setIsSavingEdit(true);
-      await apiFetch(`/api/documents/${editingDoc.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          name: editName.trim(),
-          category: editCategory,
-          document_date: editDate || null,
-          expires_at: editExpiresAt || null,
-          notes: editNotes.trim() || null,
-        }),
-      });
-      setIsEditModalOpen(false);
-      setEditingDoc(null);
-      if (selectedVehicle) {
-        await loadDocuments(selectedVehicle.id);
-      }
-    } catch (err: any) {
-      alert(err.message || 'Fout bij opslaan document');
-    } finally {
-      setIsSavingEdit(false);
-    }
-  };
+  const editOps = useDocumentEdit(selectedVehicle, loadDocuments, extractDocumentDate);
 
   return {
     isUploadModalOpen,
@@ -237,25 +223,14 @@ export function useDocumentOperations(
     handleDragLeave,
     handleDrop,
     handleUpload,
-    editingDoc,
-    setEditingDoc,
-    isEditModalOpen,
-    setIsEditModalOpen,
-    editName,
-    setEditName,
-    editCategory,
-    setEditCategory,
-    editDate,
-    setEditDate,
-    editExpiresAt,
-    setEditExpiresAt,
-    editNotes,
-    setEditNotes,
-    isSavingEdit,
-    openEditModal,
-    handleSaveEdit,
     handleDelete,
     extractDocumentDate,
+    // AI Document scanner
+    isScanning: scanner.scanning,
+    scanExtraction: scanner.scanExtraction,
+    scanWarning: scanner.scanWarning,
+    handleManualReScan,
+    // Edit modal ops
+    ...editOps,
   };
 }
-
