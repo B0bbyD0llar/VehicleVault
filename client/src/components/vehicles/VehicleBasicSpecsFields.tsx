@@ -30,13 +30,6 @@ interface VehicleBasicSpecsFieldsProps {
   setVin: (v: string) => void;
 }
 
-const COUNTRIES: { code: 'NL' | 'BE' | 'DE' | 'EU'; label: string; activeClass: string }[] = [
-  { code: 'NL', label: '🇳🇱 NL', activeClass: 'bg-[#f5c518] text-slate-950 shadow-2xs border border-amber-500' },
-  { code: 'BE', label: '🇧🇪 BE', activeClass: 'bg-rose-700 text-white shadow-2xs border border-rose-800' },
-  { code: 'DE', label: '🇩🇪 DE', activeClass: 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xs border border-slate-400' },
-  { code: 'EU', label: '🇪🇺 EU / Overig', activeClass: 'bg-blue-600 text-white shadow-2xs border border-blue-700' },
-];
-
 export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = ({
   imagePreview,
   setImagePreview,
@@ -64,6 +57,13 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
   setVin,
 }) => {
   const { t, lang } = useLanguage();
+
+  const countries: { code: 'NL' | 'BE' | 'DE' | 'EU'; label: string; activeClass: string }[] = [
+    { code: 'NL', label: '🇳🇱 NL', activeClass: 'bg-[#f5c518] text-slate-950 shadow-2xs border border-amber-500' },
+    { code: 'BE', label: '🇧🇪 BE', activeClass: 'bg-rose-700 text-white shadow-2xs border border-rose-800' },
+    { code: 'DE', label: '🇩🇪 DE', activeClass: 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xs border border-slate-400' },
+    { code: 'EU', label: lang === 'nl' ? '🇪🇺 EU / Overig' : '🇪🇺 EU / Other', activeClass: 'bg-blue-600 text-white shadow-2xs border border-blue-700' },
+  ];
 
   return (
     <>
@@ -121,7 +121,7 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
             {t('licensePlate')}
           </label>
           <div className="flex items-center space-x-1.5 flex-wrap">
-            {COUNTRIES.map((c) => (
+            {countries.map((c) => (
               <button
                 key={c.code}
                 type="button"
@@ -165,9 +165,9 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
 
         {plateCountry !== 'NL' ? (
           <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
-            {plateCountry === 'BE' && '🇧🇪 Belgisch kenteken: Vul specificaties en keuringsdatum handmatig in.'}
-            {plateCountry === 'DE' && '🇩🇪 Duits kenteken: Vul specificaties en TÜV-vervaldatum handmatig in.'}
-            {plateCountry === 'EU' && '🇪🇺 Internationaal kenteken: Voertuiggegevens kunnen handmatig worden ingevuld.'}
+            {plateCountry === 'BE' && (lang === 'nl' ? '🇧🇪 Belgisch kenteken: Vul specificaties en keuringsdatum handmatig in.' : '🇧🇪 Belgian plate: Enter specs and inspection date manually.')}
+            {plateCountry === 'DE' && (lang === 'nl' ? '🇩🇪 Duits kenteken: Vul specificaties en TÜV-vervaldatum handmatig in.' : '🇩🇪 German plate: Enter specs and TÜV date manually.')}
+            {plateCountry === 'EU' && (lang === 'nl' ? '🇪🇺 Internationaal kenteken: Voertuiggegevens kunnen handmatig worden ingevuld.' : '🇪🇺 International plate: Vehicle details can be entered manually.')}
           </p>
         ) : rdwSuccess ? (
           <p className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center space-x-1 font-medium">

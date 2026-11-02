@@ -120,7 +120,7 @@ export const Layout: React.FC = () => {
             }
           >
             <Fuel className="w-4 h-4 mb-0.5" />
-            <span>Tanken</span>
+            <span>{lang === 'nl' ? 'Tanken' : 'Fuel'}</span>
           </NavLink>
         )}
 
@@ -176,7 +176,7 @@ export const Layout: React.FC = () => {
             }
           >
             <Route className="w-4 h-4 mb-0.5" />
-            <span>Ritten</span>
+            <span>{lang === 'nl' ? 'Ritten' : 'Trips'}</span>
           </NavLink>
         )}
 
@@ -192,7 +192,7 @@ export const Layout: React.FC = () => {
                 }
               >
                 <Landmark className="w-4 h-4 mb-0.5" />
-                <span>Lasten</span>
+                <span>{lang === 'nl' ? 'Lasten' : 'Expenses'}</span>
               </NavLink>
             )}
 
@@ -219,7 +219,7 @@ export const Layout: React.FC = () => {
               }
             >
               <SettingsIcon className="w-4 h-4 mb-0.5" />
-              <span>Opties</span>
+              <span>{lang === 'nl' ? 'Opties' : 'Settings'}</span>
             </NavLink>
           </>
         )}

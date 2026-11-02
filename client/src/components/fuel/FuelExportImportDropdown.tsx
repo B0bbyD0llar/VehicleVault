@@ -53,7 +53,7 @@ export const FuelExportImportDropdown: React.FC<FuelExportImportDropdownProps> =
         : 'tankhistorie';
       triggerDownload(blob, `Tankhistorie_${plate}.csv`);
     } catch (err: any) {
-      alert(err?.message || 'Kon CSV niet exporteren');
+      alert(err?.message || (lang === 'nl' ? 'Kon CSV niet exporteren' : 'Failed to export CSV'));
     } finally {
       setExportingType(null);
       setIsExportMenuOpen(false);
@@ -69,7 +69,7 @@ export const FuelExportImportDropdown: React.FC<FuelExportImportDropdownProps> =
         : 'tankhistorie';
       triggerDownload(blob, `Tankhistorie_${plate}.xlsx`);
     } catch (err: any) {
-      alert(err?.message || 'Kon Excel niet exporteren');
+      alert(err?.message || (lang === 'nl' ? 'Kon Excel niet exporteren' : 'Failed to export Excel'));
     } finally {
       setExportingType(null);
       setIsExportMenuOpen(false);
@@ -167,3 +167,4 @@ export const FuelExportImportDropdown: React.FC<FuelExportImportDropdownProps> =
     </div>
   );
 };
+

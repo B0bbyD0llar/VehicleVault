@@ -89,10 +89,14 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                 {compressing && (
                   <span className="text-[11px] text-amber-500 inline-flex items-center space-x-1">
                     <RefreshCw className="w-3 h-3 animate-spin" />
-                    <span>Bezig met comprimeren...</span>
+                    <span>{lang === 'nl' ? 'Bezig met comprimeren...' : 'Compressing image...'}</span>
                   </span>
                 )}
-                {compressionRatio && <span className="text-[10px] text-emerald-500 block font-medium">Compressie: {compressionRatio}</span>}
+                {compressionRatio && (
+                  <span className="text-[10px] text-emerald-500 block font-medium">
+                    {lang === 'nl' ? 'Compressie' : 'Compression'}: {compressionRatio}
+                  </span>
+                )}
               </div>
             ) : (
               <div>
@@ -110,7 +114,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
               onClick={onRemoveFile}
               className="text-[11px] text-rose-500 hover:text-rose-600 block text-right font-medium"
             >
-              Bestand verwijderen
+              {lang === 'nl' ? 'Bestand verwijderen' : 'Remove file'}
             </button>
           )}
 
@@ -121,7 +125,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
               required
               value={docName}
               onChange={(e) => setDocName(e.target.value)}
-              placeholder="bijv. Groene kaart 2026 of Kentekenbewijs"
+              placeholder={lang === 'nl' ? 'bijv. Groene kaart 2026 of Kentekenbewijs' : 'e.g. Green card 2026 or Registration'}
               className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
             />
           </div>
