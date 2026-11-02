@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext.js';
 import { ThemeProvider } from './context/ThemeContext.js';
 import { LanguageProvider } from './context/LanguageContext.js';
@@ -25,6 +26,16 @@ import { ForgotPassword } from './pages/ForgotPassword.js';
 import { ResetPassword } from './pages/ResetPassword.js';
 import { PublicShowcase } from './pages/PublicShowcase.js';
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 2,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
 
@@ -45,11 +56,12 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 export const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <ModuleProvider>
-          <AuthProvider>
-            <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <LanguageProvider>
+          <ModuleProvider>
+            <AuthProvider>
+              <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
@@ -88,6 +100,7 @@ export const App: React.FC = () => {
         </ModuleProvider>
       </LanguageProvider>
     </ThemeProvider>
+  </QueryClientProvider>
   );
 };
 

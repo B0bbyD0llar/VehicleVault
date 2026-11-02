@@ -1,4 +1,66 @@
-> 🤖 **Note:** *This is an AI-generated release note summarizing the complete first official production release (`v2.0.0`) of VehicleVault.*
+> 🤖 **Note:** *Official Release Notes for VehicleVault v3.0.0 Enterprise Architecture & Feature Modernization.*
+
+---
+
+# 🚀 VehicleVault v3.0.0 — Enterprise Architecture & Feature Modernization
+
+**VehicleVault v3.0.0** is a major milestone release delivering enterprise-grade architectural foundations, enhanced multi-vehicle fleet intelligence, precision brake wear tracking, caravan/towing fuel analysis, universal vehicle telemetry, and unified user profile management.
+
+---
+
+## ✨ What's New in v3.0.0
+
+### 🛑 Remmen-status per Wielhoek (`Brakes Tracking`)
+- **4-Corner Millimeter Wear Tracking:** Log and inspect brake pad thickness (mm) and brake disc thickness/condition across all 4 wheels (`LV / FL`, `RV / FR`, `LA / RL`, `RA / RR`).
+- **Visual Threshold Indicators:** Clear color-coded status badges:
+  - 🟢 **Groen (> 4.0 mm):** Uitstekende conditie.
+  - 🟠 **Oranje (3.0 – 4.0 mm):** Aandacht vereist / slijtage inspecteren.
+  - 🔴 **Rood (< 3.0 mm):** Vervanging noodzakelijk.
+- **Smart Seasonal Swap Prompt:** When performing a tire change in **Bandenbeheer** (e.g. Summer ↔ Winter), VehicleVault automatically presents a 1-click option to log brake measurements while wheels are unmounted.
+- **Historical Measurement Log:** View historical wear progression over time and mileage.
+
+### 🚐 Caravan- & Aanhangermodus (`is_towing`)
+- **Towing Flag on Fuel & Charge Entries:** Flag fill-ups or charging sessions as driving with a caravan, trailer, bike rack, or roof box (`is_towing`).
+- **Split Consumption Averages:** Fuel statistics automatically calculate and display separate consumption benchmarks:
+  - **Solo:** Normaal verbruik (bijv. 1 op 18.2 / 5.5 L/100km).
+  - **Met Aanhanger / Caravan:** Verbruik onder last (bijv. 1 op 11.4 / 8.8 L/100km).
+- **Interactive Towing Filter:** Filter fuel history directly by towing status to keep regular benchmarks clean.
+
+### 🛞 Bandenbeheer: Aanschafprijs & Factuurkoppeling
+- **Purchase Tracking:** Record tire set purchase price (`purchase_price`) and purchase date (`purchase_date`).
+- **Invoice Linkage:** Directly link garage or tire shop invoices from **Documenten** (`invoice_document_id` / `invoice_file`).
+- **Pure TCO Integration:** Tire set costs are accurately accounted for in the vehicle's Total Cost of Ownership without double-counting.
+
+### 🏢 Garage-brede Vloot- / Fleet Analytics
+- **All-Vehicles TCO Dashboard:** Switch between individual vehicle analytics and an aggregated **"Hele Garage (Fleet)"** view in `Rapportages & TCO`.
+- **Fleet Metrics:** Total cumulative cost across all vehicles, fleet average cost per kilometer, and breakdown across Fuel, Maintenance, Fixed Expenses, Purchase, and Vignettes.
+- **Multi-Vehicle Cost Comparison:** Side-by-side comparison of expenses per vehicle for families or multi-car households.
+
+### 📡 Universele Telemetrie & Kilometerstand Webhook
+- **REST Telemetry Ingestion Endpoint:** `POST /api/integrations/telemetry/odometer` supporting secure `x-api-key: vkv_...` and Bearer token authentication.
+- **Plug & Play Ecosystem Integration:** Seamlessly push live odometer readings from:
+  1. **Home Assistant:** Automations triggered by Kia Uvo, Hyundai Bluelink, Tesla, BMW ConnectedDrive, etc.
+  2. **OBD2 & WiCAN:** WiFi/Cellular dongles and Torque Pro / Freematics.
+  3. **Apple Shortcuts & Android Tasker:** Automated logging on CarPlay or car Bluetooth disconnect.
+- **Deduplication & Validation:** Rejects lower mileage readings, prevents duplicate log noise, and updates both the vehicle's odometer and fuel/trip reference points.
+
+### 🏗️ Enterprise Architectuur & Betrouwbaarheid
+- **Pino Structured Logger:** High-performance JSON logging with HTTP request metrics, correlation IDs, and automatic redaction of sensitive credentials, passwords, and tokens.
+- **ToadScheduler In-Process Job Runner:** Resilient, lightweight background task scheduler replacing error-prone timers for automated alert dispatches and maintenance checks.
+- **Zod Runtime API Validation:** Strict schema validation middleware guarding critical API endpoints against malformed or malicious payloads.
+- **TanStack React Query Foundation:** Asynchronous client-side state caching and data synchronization layer for scalable UI responsiveness.
+
+### ⛽ Fuelio Multi-Section Import & Streamlining
+- **Complete Fuelio Compatibility:** Full support for Fuelio CSV multi-section exports (fuelings, services, categories, notes) without duplicate key errors.
+- **Clean UI Layout:** Consolidated import actions under Settings and dedicated vehicle sections, avoiding unnecessary header clutter.
+
+### 🏷️ Tolvignetten & Milieustickers Navigatie
+- **Dedicated Menu Item:** Direct navigation entry for Vignettes & Environmental Badges.
+- **Status Badges & Alerts:** Digital vignette tracking for Austria, Switzerland, Slovenia, Czech Republic, France (Crit'Air), and Germany (Umweltplakette) with validity alerts.
+
+### 👤 Profiel & Beveiliging
+- **Clean Account / Profile View:** Clear separation between personal profile security (Passkeys, TOTP 2FA, password, theme, language) and global administrator system settings.
+- **Full Bilingual Parity:** 100% Dutch (NL) and English (EN) localization across all dialogs, notifications, and buttons.
 
 ---
 
@@ -8,7 +70,7 @@
 
 ---
 
-## ✨ Highlights & Key Features
+## ✨ Highlights & Key Features (v2.0.0)
 
 ### 🛠️ Smart AI Maintenance Invoice Scanner & Automatic Translator
 - **Foreign & Local Invoice Extraction:** Upload any garage invoice (PDF or photo) in German, French, English, or Dutch. Powered by **Google Gemini Vision** or **OpenAI Vision**, VehicleVault automatically extracts and translates the service title, notes, and every individual **part and labor line item** into your configured language (`NL` or `EN`).
@@ -48,20 +110,3 @@
 - **Strict Per-User Garage Isolation:** Each user account maintains its own private fleet by default.
 - **Granular Vehicle Sharing (`vehicle_shares`):** Share individual vehicles with family members or co-drivers as **`editor`** or **`viewer`** with full access across Fuel Logs, Maintenance History & Intervals, Digital Glovebox (`Documenten`), Tire Management, Fixed Expenses, and TCO Analytics.
 - **Role-Based Access Control:** Supports **`admin`**, **`user`**, and simplified mobile **`driver`** roles, plus zero-config reverse proxy SSO (`Remote-Email` / Pangolin / Authelia / Authentik).
-
-### 🏠 Home Assistant, Calendar (`.ics`), Notifications & MCP Server
-- **Push & Email Notifications:** Native support for **Pushover**, **Ntfy**, **Gotify**, **Custom Webhooks**, and **SMTP Email** for approaching APK inspections, maintenance intervals, and expiring documents.
-- **Home Assistant Integration:** Outbound REST sensor payload (`GET /api/ha/sensors`) and inbound live odometer webhook (`POST /api/ha/odometer`).
-- **Calendar Feed:** RFC 5545 `.ics` export for APK and maintenance reminders.
-- **Model Context Protocol (MCP):** Built-in `stdio` and HTTP MCP server for Claude Desktop and Antigravity.
-
----
-
-## 🐳 Docker Deployment
-
-```bash
-docker pull ghcr.io/teecodedev/vehiclevault:latest
-```
-
-See the **[README](https://github.com/TeeCodeDev/VehicleVault#readme)** and **[GitHub Wiki](https://github.com/TeeCodeDev/VehicleVault/wiki)** for full setup instructions.
-

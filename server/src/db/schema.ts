@@ -491,6 +491,29 @@ export function initializeDatabase(): void {
     // Non-fatal migration check
   }
 
+  // 13b. Brake measurements (Remmen-status per wielhoek)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS brake_measurements (
+      id TEXT PRIMARY KEY,
+      vehicle_id TEXT NOT NULL,
+      date TEXT NOT NULL,
+      odometer REAL NOT NULL,
+      pad_fl REAL,
+      pad_fr REAL,
+      pad_rl REAL,
+      pad_rr REAL,
+      disc_fl TEXT NOT NULL DEFAULT 'good',
+      disc_fr TEXT NOT NULL DEFAULT 'good',
+      disc_rl TEXT NOT NULL DEFAULT 'good',
+      disc_rr TEXT NOT NULL DEFAULT 'good',
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_brake_measurements_vehicle ON brake_measurements (vehicle_id);
+    CREATE INDEX IF NOT EXISTS idx_brake_measurements_date ON brake_measurements (date);
+  `);
+
   // 14. Vehicle multi-photo gallery
   db.exec(`
     CREATE TABLE IF NOT EXISTS vehicle_photos (

@@ -17,11 +17,15 @@ import {
   X,
   Info,
   Receipt,
+  Wrench,
 } from 'lucide-react';
-import { Vehicle, TireSet } from '../types/index.js';
+import { Vehicle, TireSet, BrakeMeasurement } from '../types/index.js';
 import { apiFetch } from '../api/client.js';
 import { DatePicker } from '../components/DatePicker.js';
 import { formatLicensePlate } from '../utils/licensePlate.js';
+import { BrakeStatusCard } from '../components/BrakeStatusCard.js';
+import { BrakeManagerModal } from '../components/BrakeManagerModal.js';
+import { useLanguage } from '../context/LanguageContext.js';
 
 interface ContextType {
   vehicles: Vehicle[];
@@ -30,8 +34,11 @@ interface ContextType {
 
 export const Tires: React.FC = () => {
   const { selectedVehicle } = useOutletContext<ContextType>();
+  const { lang } = useLanguage();
 
   const [tireSets, setTireSets] = useState<TireSet[]>([]);
+  const [brakes, setBrakes] = useState<BrakeMeasurement[]>([]);
+  const [isBrakesModalOpen, setIsBrakesModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +49,13 @@ export const Tires: React.FC = () => {
   const [swapTargetSet, setSwapTargetSet] = useState<TireSet | null>(null);
   const [isTreadModalOpen, setIsTreadModalOpen] = useState(false);
   const [treadTargetSet, setTreadTargetSet] = useState<TireSet | null>(null);
+
+  // Brake check prompt in tire swap modal
+  const [includeBrakeCheck, setIncludeBrakeCheck] = useState(false);
+  const [swapPadFl, setSwapPadFl] = useState('');
+  const [swapPadFr, setSwapPadFr] = useState('');
+  const [swapPadRl, setSwapPadRl] = useState('');
+  const [swapPadRr, setSwapPadRr] = useState('');
 
   // Form states
   const [saving, setSaving] = useState(false);
@@ -106,8 +120,19 @@ export const Tires: React.FC = () => {
     }
   };
 
+  const fetchBrakes = async () => {
+    if (!selectedVehicle) return;
+    try {
+      const res = await apiFetch<BrakeMeasurement[]>(`/api/vehicles/${selectedVehicle.id}/brakes`);
+      setBrakes(res || []);
+    } catch {
+      setBrakes([]);
+    }
+  };
+
   useEffect(() => {
     fetchTireSets();
+    fetchBrakes();
     fetchAvailableDocuments();
   }, [selectedVehicle?.id]);
 
@@ -271,7 +296,37 @@ export const Tires: React.FC = () => {
           date: swapDate,
         }),
       });
+
+      if (includeBrakeCheck && selectedVehicle && (swapPadFl || swapPadFr || swapPadRl || swapPadRr)) {
+        try {
+          await apiFetch(`/api/vehicles/${selectedVehicle.id}/brakes`, {
+            method: 'POST',
+            body: JSON.stringify({
+              date: swapDate,
+              odometer: odo,
+              pad_fl: swapPadFl ? parseFloat(swapPadFl) : null,
+              pad_fr: swapPadFr ? parseFloat(swapPadFr) : null,
+              pad_rl: swapPadRl ? parseFloat(swapPadRl) : null,
+              pad_rr: swapPadRr ? parseFloat(swapPadRr) : null,
+              disc_fl: 'good',
+              disc_fr: 'good',
+              disc_rl: 'good',
+              disc_rr: 'good',
+              notes: `Gemeten tijdens seizoenswissel naar ${swapTargetSet.name}`,
+            }),
+          });
+          fetchBrakes();
+        } catch {
+          // Non-blocking brake record error
+        }
+      }
+
       setIsSwapModalOpen(false);
+      setIncludeBrakeCheck(false);
+      setSwapPadFl('');
+      setSwapPadFr('');
+      setSwapPadRl('');
+      setSwapPadRr('');
       fetchTireSets();
     } catch (err: any) {
       setModalError(err?.message || 'Fout bij het wisselen van bandenset');
@@ -348,13 +403,22 @@ export const Tires: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={openCreateModal}
-          className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-2 shadow-sm transition self-start md:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Bandenset Toevoegen</span>
-        </button>
+        <div className="flex items-center space-x-2.5 self-start md:self-auto">
+          <button
+            onClick={() => setIsBrakesModalOpen(true)}
+            className="px-3.5 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 shadow-sm transition"
+          >
+            <Wrench className="w-4 h-4 text-amber-500" />
+            <span>{lang === 'nl' ? 'Remmenstatus' : 'Brake Status'}</span>
+          </button>
+          <button
+            onClick={openCreateModal}
+            className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-2 shadow-sm transition"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{lang === 'nl' ? 'Bandenset Toevoegen' : 'Add Tire Set'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Active Mounted Tire Set Hero Card */}
@@ -548,6 +612,13 @@ export const Tires: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Brake Status per Wheel Corner */}
+      <BrakeStatusCard
+        latest={brakes[0] || null}
+        onOpenModal={() => setIsBrakesModalOpen(true)}
+        lang={lang}
+      />
 
       {/* All Tire Sets Grid */}
       <div className="space-y-3">
@@ -1272,6 +1343,75 @@ export const Tires: React.FC = () => {
                 <DatePicker value={swapDate} onChange={setSwapDate} />
               </div>
 
+              {/* Optional Brake Check Workflow Prompt */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+                <label className="flex items-start space-x-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeBrakeCheck}
+                    onChange={(e) => setIncludeBrakeCheck(e.target.checked)}
+                    className="mt-0.5 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {lang === 'nl' ? 'Wielen liggen eraf: meteen remblokdikte (mm) meten?' : 'Wheels are off: inspect and record brake pad thickness?'}
+                    </span>
+                    <p className="text-[10px] text-slate-400">
+                      {lang === 'nl' ? 'Leg direct de status van je remmen vast bij deze bandenwissel.' : 'Log current brake condition alongside this tire swap.'}
+                    </p>
+                  </div>
+                </label>
+
+                {includeBrakeCheck && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500">LV (mm)</span>
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="bijv. 7.5"
+                        value={swapPadFl}
+                        onChange={(e) => setSwapPadFl(e.target.value)}
+                        className="w-full text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500">RV (mm)</span>
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="bijv. 7.5"
+                        value={swapPadFr}
+                        onChange={(e) => setSwapPadFr(e.target.value)}
+                        className="w-full text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500">LA (mm)</span>
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="bijv. 6.0"
+                        value={swapPadRl}
+                        onChange={(e) => setSwapPadRl(e.target.value)}
+                        className="w-full text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500">RA (mm)</span>
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="bijv. 6.0"
+                        value={swapPadRr}
+                        onChange={(e) => setSwapPadRr(e.target.value)}
+                        className="w-full text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
@@ -1388,6 +1528,17 @@ export const Tires: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+      {/* Brake Inspection History & Measurement Modal */}
+      {isBrakesModalOpen && selectedVehicle && (
+        <BrakeManagerModal
+          vehicleId={selectedVehicle.id}
+          vehicleName={selectedVehicle.name}
+          measurements={brakes}
+          onClose={() => setIsBrakesModalOpen(false)}
+          onRefresh={fetchBrakes}
+          lang={lang}
+        />
       )}
     </div>
   );

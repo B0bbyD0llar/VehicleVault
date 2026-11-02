@@ -26,6 +26,9 @@ import expenseRoutes from './routes/expenseRoutes.js';
 import tripRoutes from './routes/tripRoutes.js';
 import tireRoutes from './routes/tireRoutes.js';
 import vignetteRoutes from './routes/vignetteRoutes.js';
+import brakeRoutes from './routes/brakeRoutes.js';
+import telemetryRoutes from './routes/telemetryRoutes.js';
+import { httpLogger } from './utils/logger.js';
 import { ShowcaseController } from './controllers/showcaseController.js';
 
 export function createApp(): express.Application {
@@ -54,6 +57,9 @@ export function createApp(): express.Application {
   app.use(cookieParser());
   app.use(express.json({ limit: '20mb' }));
   app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+
+  // Pino Structured HTTP Logger
+  app.use(httpLogger);
 
   // HTTP Request Logger (Clean, structured console logging)
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -90,7 +96,7 @@ export function createApp(): express.Application {
         database: dbCheck?.healthy === 1 ? 'connected' : 'unhealthy',
         uptime: process.uptime(),
         timestamp: new Date().toISOString(),
-        version: '2.0.0',
+        version: '3.0.0',
       });
     } catch (err: any) {
       res.status(503).json({
@@ -120,6 +126,8 @@ export function createApp(): express.Application {
   app.use('/api/trips', tripRoutes);
   app.use('/api/tires', tireRoutes);
   app.use('/api/vignettes', vignetteRoutes);
+  app.use('/api/vehicles/:vehicleId/brakes', brakeRoutes);
+  app.use('/api/integrations/telemetry', telemetryRoutes);
 
   // Public Unauthenticated Showcase Endpoint
   app.get('/api/public/showcase/:slug', ShowcaseController.getPublic);

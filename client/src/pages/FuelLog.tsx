@@ -44,6 +44,7 @@ export const FuelLog: React.FC = () => {
   const { selectedVehicle } = useOutletContext<ContextType>();
   const { t, lang } = useLanguage();
   const [entries, setEntries] = useState<FuelEntry[]>([]);
+  const [towingFilter, setTowingFilter] = useState<'all' | 'solo' | 'towing'>('all');
   const [isOcrOpen, setIsOcrOpen] = useState(false);
 
   // Form State
@@ -1332,38 +1333,126 @@ export const FuelLog: React.FC = () => {
       </div>
 
       {/* Fuel Entry Logs Table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm transition-colors">
-        <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <History className="w-4 h-4 text-slate-500" />
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white">
-              {t('recentFuelEntries')} ({entries.length})
-            </h3>
-          </div>
-        </div>
+      {(() => {
+        // Split consumption calculations (Solo vs. Towing)
+        const soloPairs: { km: number; liters: number }[] = [];
+        const towingPairs: { km: number; liters: number }[] = [];
 
-        {entries.length === 0 ? (
-          <div className="text-xs text-slate-400 text-center py-10">
-            {t('noFuelEntries')}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
-              <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 uppercase tracking-wider text-[10px]">
-                <tr>
-                  <th className="py-3 px-4">{t('date')}</th>
-                  <th className="py-3 px-4">{t('odometer')}</th>
-                  <th className="py-3 px-4">{t('liters')}</th>
-                  <th className="py-3 px-4">{t('pricePerLiter')}</th>
-                  <th className="py-3 px-4">{t('totalCost')}</th>
-                  <th className="py-3 px-4">{t('status')}</th>
-                  <th className="py-3 px-4">{t('receiptThumbnail')}</th>
-                  <th className="py-3 px-4 text-right">{t('actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {entries.map((f, idx) => {
-                  const nextChronological = entries[idx + 1];
+        for (let i = 0; i < entries.length - 1; i++) {
+          const curr = entries[i];
+          const prev = entries[i + 1];
+          if (curr.is_full_tank && !curr.missed_previous && prev.is_full_tank) {
+            const deltaKm = curr.odometer - prev.odometer;
+            if (deltaKm > 0 && curr.liters > 0) {
+              if (curr.is_towing) {
+                towingPairs.push({ km: deltaKm, liters: curr.liters });
+              } else {
+                soloPairs.push({ km: deltaKm, liters: curr.liters });
+              }
+            }
+          }
+        }
+
+        const soloKmTotal = soloPairs.reduce((a, b) => a + b.km, 0);
+        const soloLitersTotal = soloPairs.reduce((a, b) => a + b.liters, 0);
+        const soloAvgKmL = soloLitersTotal > 0 ? soloKmTotal / soloLitersTotal : null;
+        const soloAvgL100 = soloKmTotal > 0 ? (soloLitersTotal / soloKmTotal) * 100 : null;
+
+        const towingKmTotal = towingPairs.reduce((a, b) => a + b.km, 0);
+        const towingLitersTotal = towingPairs.reduce((a, b) => a + b.liters, 0);
+        const towingAvgKmL = towingLitersTotal > 0 ? towingKmTotal / towingLitersTotal : null;
+        const towingAvgL100 = towingKmTotal > 0 ? (towingLitersTotal / towingKmTotal) * 100 : null;
+
+        const displayedEntries = entries.filter((e) => {
+          if (towingFilter === 'solo') return !e.is_towing;
+          if (towingFilter === 'towing') return Boolean(e.is_towing);
+          return true;
+        });
+
+        return (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm transition-colors">
+            <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center space-x-2">
+                <History className="w-4 h-4 text-slate-500" />
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">
+                  {t('recentFuelEntries')} ({displayedEntries.length})
+                </h3>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {soloAvgKmL !== null && (
+                  <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-[10px] font-bold">
+                    {lang === 'nl' ? 'Solo' : 'Normal'}: 1 op {soloAvgKmL.toFixed(1)} ({soloAvgL100?.toFixed(1)} L/100)
+                  </span>
+                )}
+                {towingAvgKmL !== null && (
+                  <span className="px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 rounded-xl text-[10px] font-bold flex items-center space-x-1">
+                    <span>🏕️</span>
+                    <span>{lang === 'nl' ? 'Aanhanger' : 'Towing'}: 1 op {towingAvgKmL.toFixed(1)} ({towingAvgL100?.toFixed(1)} L/100)</span>
+                  </span>
+                )}
+
+                <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200/80 dark:border-slate-700/80 text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setTowingFilter('all')}
+                    className={`px-2 py-1 rounded-lg transition ${
+                      towingFilter === 'all'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {lang === 'nl' ? 'Alle' : 'All'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTowingFilter('solo')}
+                    className={`px-2 py-1 rounded-lg transition ${
+                      towingFilter === 'solo'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {lang === 'nl' ? 'Solo' : 'Solo'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTowingFilter('towing')}
+                    className={`px-2 py-1 rounded-lg transition flex items-center space-x-1 ${
+                      towingFilter === 'towing'
+                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span>🏕️</span>
+                    <span>{lang === 'nl' ? 'Aanhanger' : 'Towing'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {displayedEntries.length === 0 ? (
+              <div className="text-xs text-slate-400 text-center py-10">
+                {t('noFuelEntries')}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 uppercase tracking-wider text-[10px]">
+                    <tr>
+                      <th className="py-3 px-4">{t('date')}</th>
+                      <th className="py-3 px-4">{t('odometer')}</th>
+                      <th className="py-3 px-4">{t('liters')}</th>
+                      <th className="py-3 px-4">{t('pricePerLiter')}</th>
+                      <th className="py-3 px-4">{t('totalCost')}</th>
+                      <th className="py-3 px-4">{t('status')}</th>
+                      <th className="py-3 px-4">{t('receiptThumbnail')}</th>
+                      <th className="py-3 px-4 text-right">{t('actions')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    {displayedEntries.map((f, idx) => {
+                      const nextChronological = displayedEntries[idx + 1];
                   let economyText: string | null = null;
                   if (f.is_full_tank && !f.missed_previous && nextChronological && nextChronological.is_full_tank) {
                     const deltaKm = f.odometer - nextChronological.odometer;
@@ -1522,6 +1611,8 @@ export const FuelLog: React.FC = () => {
           </div>
         )}
       </div>
+    );
+  })()}
 
       {/* Edit Fuel Entry Modal */}
       {editingEntry && (
