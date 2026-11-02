@@ -28,6 +28,8 @@ import tireRoutes from './routes/tireRoutes.js';
 import vignetteRoutes from './routes/vignetteRoutes.js';
 import { httpLogger } from './utils/logger.js';
 import { ShowcaseController } from './controllers/showcaseController.js';
+import { toNodeHandler } from 'better-auth/node';
+import { auth as betterAuthInstance } from './auth/betterAuth.js';
 
 export function createApp(): express.Application {
   const app = express();
@@ -109,6 +111,8 @@ export function createApp(): express.Application {
 
   // Mount API Domain Routes
   app.use('/api/auth', authRoutes);
+  // Standard Better-Auth Handlers (Protocol V3 & Fallback)
+  app.all('/api/auth/v3/*', toNodeHandler(betterAuthInstance));
   app.use('/api/vehicles', vehicleRoutes);
   app.use('/api/fuel', fuelRoutes);
   app.use('/api/maintenance', maintenanceRoutes);
