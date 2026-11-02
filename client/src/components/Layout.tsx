@@ -11,6 +11,7 @@ import {
   Fuel,
   Wrench,
   FolderLock,
+  Ticket,
   LineChart,
   Route,
   Settings as SettingsIcon,
@@ -148,6 +149,20 @@ export const Layout: React.FC = () => {
           >
             <FolderLock className="w-4 h-4 mb-0.5" />
             <span>{lang === 'nl' ? 'Documenten' : 'Docs'}</span>
+          </NavLink>
+        )}
+
+        {!isDriver && isModuleEnabled('vignettes') && (
+          <NavLink
+            to="/vignettes"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+                isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`
+            }
+          >
+            <Ticket className="w-4 h-4 mb-0.5" />
+            <span>{lang === 'nl' ? 'Vignetten' : 'Vignettes'}</span>
           </NavLink>
         )}
 

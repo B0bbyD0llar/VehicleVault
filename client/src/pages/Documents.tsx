@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { FolderLock, Plus, Tag } from 'lucide-react';
+import { FolderLock, Plus } from 'lucide-react';
 import { Vehicle, VehicleDocument } from '../types/index.js';
 import { apiFetch } from '../api/client.js';
 import { useLanguage } from '../context/LanguageContext.js';
 import { DocumentPreviewModal } from '../components/DocumentPreviewModal.js';
-import { VignetteManager } from '../components/VignetteManager.js';
 import { DocumentListView } from '../components/documents/DocumentListView.js';
 import { DocumentUploadModal } from '../components/documents/DocumentUploadModal.js';
 import { DocumentEditModal } from '../components/documents/DocumentEditModal.js';
@@ -21,7 +20,6 @@ export const Documents: React.FC = () => {
   const { selectedVehicle } = useOutletContext<ContextType>();
   const { t, lang } = useLanguage();
 
-  const [activeSection, setActiveSection] = useState<'documents' | 'vignettes'>('documents');
   const [documents, setDocuments] = useState<VehicleDocument[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState<DocCategory>('all');
@@ -99,103 +97,65 @@ export const Documents: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Section Switcher: Documenten vs Tolvignetten */}
-      <div className="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200 dark:border-slate-800 w-fit">
-        <button
-          type="button"
-          onClick={() => setActiveSection('documents')}
-          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 ${
-            activeSection === 'documents'
-              ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-              : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <FolderLock className="w-3.5 h-3.5 text-sky-500" />
-          <span>{lang === 'nl' ? 'Documenten & Facturen' : 'Documents & Invoices'}</span>
-          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 font-mono">
-            {documents.length}
-          </span>
-        </button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center space-x-2">
+            <FolderLock className="w-5 h-5 text-sky-500" />
+            <span>{t('documentsTitle')}</span>
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {t('documentsSubtitle')} • <span className="font-semibold text-slate-700 dark:text-slate-300">{selectedVehicle.name}</span>
+          </p>
+        </div>
 
         <button
-          type="button"
-          onClick={() => setActiveSection('vignettes')}
-          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 ${
-            activeSection === 'vignettes'
-              ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-              : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
+          onClick={() => ops.setIsUploadModalOpen(true)}
+          className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 transition shadow-sm hover:scale-[1.02] self-start sm:self-auto"
         >
-          <Tag className="w-3.5 h-3.5 text-amber-500" />
-          <span>{lang === 'nl' ? 'Tolvignetten & Milieustickers' : 'Vignettes & Badges'}</span>
+          <Plus className="w-4 h-4" />
+          <span>{t('uploadDocument')}</span>
         </button>
       </div>
 
-      {activeSection === 'vignettes' ? (
-        <VignetteManager vehicle={selectedVehicle} />
+      <DocumentHeaderControls
+        documents={documents}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        viewMode={viewMode}
+        onSetViewMode={handleSetViewMode}
+      />
+
+      {loading ? (
+        <div className="p-12 text-center text-xs text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+          {t('loading')}
+        </div>
+      ) : filteredDocuments.length === 0 ? (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
+          <FolderLock className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+          <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+            {t('noDocumentsFound')}
+          </h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-5">
+            Bewaar al je belangrijke autopapieren, groene kaart, kentekencard scans en garagefacturen digitaal op één veilige plek.
+          </p>
+          <button
+            onClick={() => ops.setIsUploadModalOpen(true)}
+            className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 transition shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{t('uploadDocument')}</span>
+          </button>
+        </div>
       ) : (
-        <>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center space-x-2">
-                <FolderLock className="w-5 h-5 text-sky-500" />
-                <span>{t('documentsTitle')}</span>
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {t('documentsSubtitle')} • <span className="font-semibold text-slate-700 dark:text-slate-300">{selectedVehicle.name}</span>
-              </p>
-            </div>
-
-            <button
-              onClick={() => ops.setIsUploadModalOpen(true)}
-              className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 transition shadow-sm hover:scale-[1.02] self-start sm:self-auto"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{t('uploadDocument')}</span>
-            </button>
-          </div>
-
-          <DocumentHeaderControls
-            documents={documents}
-            activeCategory={activeCategory}
-            setActiveCategory={setActiveCategory}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            viewMode={viewMode}
-            onSetViewMode={handleSetViewMode}
-          />
-
-          {loading ? (
-            <div className="p-12 text-center text-xs text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">
-              {t('loading')}
-            </div>
-          ) : filteredDocuments.length === 0 ? (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
-              <FolderLock className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">
-                {t('noDocumentsFound')}
-              </h3>
-              <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-5">
-                Bewaar al je belangrijke autopapieren, groene kaart, kentekencard scans en garagefacturen digitaal op één veilige plek.
-              </p>
-              <button
-                onClick={() => ops.setIsUploadModalOpen(true)}
-                className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 transition shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                <span>{t('uploadDocument')}</span>
-              </button>
-            </div>
-          ) : (
-            <DocumentListView
-              documents={filteredDocuments}
-              viewMode={viewMode}
-              onPreview={(doc: any) => setPreviewDoc({ ...doc, isOpen: true })}
-              onEdit={ops.openEditModal}
-              onDelete={ops.handleDelete}
-            />
-          )}
-        </>
+        <DocumentListView
+          documents={filteredDocuments}
+          viewMode={viewMode}
+          onPreview={(doc: any) => setPreviewDoc({ ...doc, isOpen: true })}
+          onEdit={ops.openEditModal}
+          onDelete={ops.handleDelete}
+        />
       )}
 
       {/* Upload Modal */}
