@@ -26,8 +26,6 @@ import expenseRoutes from './routes/expenseRoutes.js';
 import tripRoutes from './routes/tripRoutes.js';
 import tireRoutes from './routes/tireRoutes.js';
 import vignetteRoutes from './routes/vignetteRoutes.js';
-import brakeRoutes from './routes/brakeRoutes.js';
-import telemetryRoutes from './routes/telemetryRoutes.js';
 import { httpLogger } from './utils/logger.js';
 import { ShowcaseController } from './controllers/showcaseController.js';
 
@@ -126,8 +124,6 @@ export function createApp(): express.Application {
   app.use('/api/trips', tripRoutes);
   app.use('/api/tires', tireRoutes);
   app.use('/api/vignettes', vignetteRoutes);
-  app.use('/api/vehicles/:vehicleId/brakes', brakeRoutes);
-  app.use('/api/integrations/telemetry', telemetryRoutes);
 
   // Public Unauthenticated Showcase Endpoint
   app.get('/api/public/showcase/:slug', ShowcaseController.getPublic);

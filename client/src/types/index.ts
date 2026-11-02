@@ -432,21 +432,3 @@ export interface TripImportPreview {
   ignoredRows: { rowNumber: number; reason: string; text: string }[];
   records: TripImportRecord[];
 }
-
-export interface BrakeMeasurement {
-  id: string;
-  vehicle_id: string;
-  date: string;
-  odometer: number;
-  pad_fl?: number | null;
-  pad_fr?: number | null;
-  pad_rl?: number | null;
-  pad_rr?: number | null;
-  disc_fl: 'good' | 'moderate' | 'worn' | 'critical';
-  disc_fr: 'good' | 'moderate' | 'worn' | 'critical';
-  disc_rl: 'good' | 'moderate' | 'worn' | 'critical';
-  disc_rr: 'good' | 'moderate' | 'worn' | 'critical';
-  notes?: string | null;
-  created_at: string;
-}
-

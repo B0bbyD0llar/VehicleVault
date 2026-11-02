@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { db } from '../db/database.js';
 import { initializeDatabase } from '../db/schema.js';
-import { BrakeController } from '../controllers/brakeController.js';
 import { HaController } from '../controllers/haController.js';
 import { AnalyticsController } from '../controllers/analyticsController.js';
 import { TcoService } from '../services/tcoService.js';
@@ -59,57 +58,6 @@ describe('VehicleVault v3.0 Milestone Features & Modernization', () => {
     const v = db.get<any>('SELECT * FROM vehicles WHERE id = ?', [testVehicleId]);
     assert.ok(v);
     assert.equal(v.license_plate, 'V3-TEST-01');
-  });
-
-  it('records, lists and deletes brake measurements per wheel corner (Brakes Tracking)', async () => {
-    const req = mockReq({
-      params: { vehicleId: testVehicleId },
-      user: { userId: testUserId, role: 'user' },
-      body: {
-        date: '2026-11-02',
-        odometer: 15400,
-        pad_fl: 8.5,
-        pad_fr: 8.5,
-        pad_rl: 7.0,
-        pad_rr: 6.8,
-        disc_fl: 'good',
-        disc_fr: 'good',
-        disc_rl: 'moderate',
-        disc_rr: 'moderate',
-        notes: 'Winter tyre change inspection',
-      },
-    });
-    const res = mockRes();
-
-    await BrakeController.createMeasurement(req, res);
-    assert.equal(res.statusCode, 201);
-    assert.ok(res.body.id);
-    assert.equal(res.body.pad_fl, 8.5);
-    assert.equal(res.body.disc_rl, 'moderate');
-
-    const createdId = res.body.id;
-
-    // List measurements
-    const listReq = mockReq({
-      params: { vehicleId: testVehicleId },
-      user: { userId: testUserId, role: 'user' },
-    });
-    const listRes = mockRes();
-    await BrakeController.getMeasurements(listReq, listRes);
-    assert.equal(listRes.statusCode, 200);
-    assert.ok(Array.isArray(listRes.body));
-    assert.ok(listRes.body.length >= 1);
-    assert.equal(listRes.body[0].notes, 'Winter tyre change inspection');
-
-    // Delete measurement
-    const delReq = mockReq({
-      params: { vehicleId: testVehicleId, id: createdId },
-      user: { userId: testUserId, role: 'user' },
-    });
-    const delRes = mockRes();
-    await BrakeController.deleteMeasurement(delReq, delRes);
-    assert.equal(delRes.statusCode, 200);
-    assert.equal(delRes.body.success, true);
   });
 
   it('calculates separate normal vs. towing fuel consumption when caravan flag is set', () => {

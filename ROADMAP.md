@@ -1,60 +1,44 @@
-# VehicleVault — Roadmap & Planned Features
+# VehicleVault — Roadmap & Architecture Modernization
 
-Dit document bevat de gerealiseerde mijlpalen en geplande features voor toekomstige releases van **VehicleVault**.
-
----
-
-## ✅ Gerealiseerd in v3.0 (Enterprise Architecture & Milestone Features)
-
-1. ✅ **Remmen-status per Wielhoek (`Brakes Tracking`):**
-   - Dikte van remblokken (mm) en conditie van remschijven per wielhoek (LV, RV, LA, RA).
-   - Visuele statuskleuren (Groen, Oranje, Rood) en volledige meetgeschiedenis.
-   - Slimme automatische prompt tijdens de seizoensgebonden bandenwissel.
-2. ✅ **Caravan / Aanhanger modus (`is_towing`):**
-   - Keuzeoptie bij tanken/laden met dynamische splitsing van het gemiddelde verbruik (Solo vs. Aanhanger).
-   - Filter-toggle in brandstoflijst en TCO-berekening.
-3. ✅ **Bandenbeheer: Aanschafprijs & Factuurkoppeling:**
-   - Registratie van aanschafprijs (`purchase_price`), aanschafdatum en directe koppeling naar aankoopfactuur in Documenten.
-4. ✅ **Garage-brede Vloot / Fleet Analytics:**
-   - Geaggregeerde weergave voor alle voertuigen in de garage in `Rapportages & TCO`.
-   - Vlootkosten per km en vergelijking over categorieën en voertuigen.
-5. ✅ **Universele Telemetrie & Kilometerstand Webhook:**
-   - Modern REST webhook endpoint (`POST /api/integrations/telemetry/odometer`) met `x-api-key` of Bearer auth voor Home Assistant, OBD2 (WiCAN/Torque), Apple Shortcuts en Tasker.
-6. ✅ **Enterprise Architectuur:**
-   - Gestructureerde JSON logging met Request IDs via **Pino**.
-   - Betrouwbare in-process achtergrondtaakplanner via **ToadScheduler**.
-   - Strikte runtime API validatie via **Zod**.
-   - Frontend state caching en data-fetching via **TanStack React Query**.
-7. ✅ **Mijn Profiel & Systeeminstellingen Opsplitsing:**
-   - Volledige scheiding tussen persoonlijke beveiligingsinstellingen (Passkeys, 2FA, voorkeuren) en systeembeheer.
-8. ✅ **Tolvignetten & Milieustickers als Apart Menu:**
-   - Zelfstandig navigatie-item voor vignetten en milieustickers met verloopwaarschuwingen.
-9. ✅ **Fuelio Multi-Section Import:**
-   - Volledige parsing van Fuelio CSV-bestanden met automatische deduplicatie.
+Dit document bevat de gerealiseerde mijlpalen en geplande architectuurmoderniseringen voor **VehicleVault**.
 
 ---
 
-## 🔮 Gepland voor v3.1+
+## 🏛️ Doelstellingen v3.0: Architectuur & Standaardbibliotheken Modernisering
 
-### 1. Offline PWA Synchronisatie & Lokale Opslag
-- **Doel:** Tankbonnen scannen en tankbeurten invoeren op plekken zonder mobiel bereik (bijv. in parkeergarages of buitenlandse bergpassen).
-- **Oplossing:** Service Worker caching met IndexedDB queue die automatisch synchroniseert zodra er weer een netwerkverbinding is.
+In versie 3.0 transformeren we VehicleVault naar een modulaire, enterprise-grade architectuur conform de Master Engineer richtlijnen (Separation of Concerns, Single Responsibility Principle, soft review trigger bij ~300 regels):
 
-### 2. Live OBD2 Telemetrie & Foutcodes (DTC Scanner)
-- **Doel:** Directe verwerking van OBD2 foutcodes (Check Engine Light) en live voertuigdiagnose via gekoppelde telemetrie-dongles.
-- **Oplossing:** Inlezen van DTC codes met automatische vertaling en advies voor te inspecteren onderdelen.
+### 1. Opdelen van Grote Monolithische Bestanden in Eigen Bestanden
+- **`client/src/pages/Settings.tsx` (2.800+ regels):**
+  - Opsplitsen in onafhankelijke deelcomponenten per beheer-tab (`GeneralSettings`, `BackupSettings`, `HaSettings`, `NotificationSettings`, `OidcSettings`).
+- **`client/src/pages/Maintenance.tsx` (1.800+ regels):**
+  - Uitsplitsen in aparte dialoogvensters, formulieren en statuscomponenten.
+- **`client/src/pages/FuelLog.tsx` (1.800+ regels):**
+  - Uitsplitsen in invoerformulieren, grafieken en tabelweergaven.
+- **`server/src/services/aiReceiptService.ts` (1.150+ regels):**
+  - Uitsplitsen in OCR preprocessing, LLM provider integraties (Gemini / OpenAI) en respons-normalizers.
+- **`server/src/controllers/authController.ts` (580+ regels):**
+  - Vervangen / opdelen naar Better-Auth handlers en data-access repositories.
 
-### 3. AI Voorspellend Onderhoud & Kostenprognose
-- **Doel:** Proactieve waarschuwingen op basis van rijpatronen en voertuigleeftijd/kilometerstand.
-- **Oplossing:** Machine learning / statistische regressie om onderhoudsbeurten en bandenvervangingen tijdig in te plannen en budgetteren.
+### 2. Toepassing van Beproefde Standaardbibliotheken
+1. ✅ **Pino Structured Logger:** Hoge performantie JSON logging met Request-IDs en gevoelige veld-redactie.
+2. ✅ **ToadScheduler:** In-process taakplanner voor achtergrondcontroles zonder error-prone timers.
+3. ✅ **Zod Boundary Validation:** Strikte runtime type- en payloadvalidatie aan de Express API-poort.
+4. ✅ **TanStack Query (React Query):** Geïntegreerde asynchrone cache- en data-fetching provider.
+5. ⏳ **Better-Auth:** Vervangen van handgemaakte JWT, sessies, cookies, WebAuthn en TOTP door het geauditeerde Better-Auth framework.
+6. ⏳ **Drizzle ORM:** Type-safe database queries en automatische schema-migraties ter vervanging van rauwe SQL strings.
+7. ⏳ **React Hook Form + Zod Resolvers:** Gestroomlijnde formulier-state zonder tientallen losse `useState` variabelen per pagina.
 
 ---
 
-## 🏛️ Reeds Gerealiseerd in v2.0 & v2.1
-- ✅ **Passkeys (WebAuthn):** Direct inloggen via TouchID / FaceID / Windows Hello / YubiKey.
-- ✅ **OIDC / SSO (OpenID Connect):** Koppel externe identity providers zoals Authentik, Keycloak, Authelia, Cloudflare Access of Google Workspace inclusief connection testing.
-- ✅ **2FA (TOTP):** Twee-factor authenticatie met authenticator apps en eenmalige noodherstelcodes.
-- ✅ **Documentbeheer:** In-line aanpassen van factuurdatum, titel, categorie en notities met datumsortering.
+## ✅ Reeds Gerealiseerd in v2.0 & v2.1
+- ✅ **Mijn Profiel (`/profile`) vs. Systeembeheer (`/settings`):** Persoonlijk gebruikersprofiel gescheiden van globale serverinstellingen.
+- ✅ **Tolvignetten & Milieustickers Menu (`/vignettes`):** Zelfstandig navigatiemenu en overzicht met verloopdata en documentkoppelingen.
+- ✅ **Fuelio Multi-Sectie CSV Import:** Volledige import van Fuelio exports inclusief deduplicatie.
+- ✅ **Caravan & Aanhanger Modus (`is_towing`):** Gescheiden verbruiksstatistieken voor rijden met last.
+- ✅ **Bandenbeheer Aanschafprijs:** Registratie van aanschafprijs en factuurkoppeling.
+- ✅ **Garage-brede Vloot TCO Analytics:** Aggregatie over alle voertuigen in de garage.
+- ✅ **Passkeys (WebAuthn) & 2FA (TOTP):** Direct inloggen via biometrie/hardware keys en authenticator apps.
+- ✅ **OIDC / SSO (OpenID Connect):** Koppel externe identity providers zoals Authentik, Keycloak, Authelia of Google Workspace.
 - ✅ **Native Web Push (VAPID):** Directe browser/PWA push-notificaties zonder externe clouddiensten.
-- ✅ **E-mail & SMTP/Graph Integraties:** 1-klik presets voor Gmail, Microsoft 365, Graph API en device code login.
 - ✅ **Smart AI Facturen:** Automatische vertaling van buitenlandse garagefacturen met uitsplitsing naar onderdelen en arbeid.
