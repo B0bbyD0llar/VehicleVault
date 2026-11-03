@@ -27,6 +27,8 @@ export function useVehicleForm(refreshVehicles: () => void) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [maintenanceNotificationsEnabled, setMaintenanceNotificationsEnabled] = useState(true);
   const [apkNotificationsEnabled, setApkNotificationsEnabled] = useState(true);
+  const [tireSwapNotificationsEnabled, setTireSwapNotificationsEnabled] = useState(true);
+  const [tireTreadNotificationsEnabled, setTireTreadNotificationsEnabled] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [rdwLoading, setRdwLoading] = useState(false);
@@ -51,6 +53,8 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setNotificationsEnabled(true);
     setMaintenanceNotificationsEnabled(true);
     setApkNotificationsEnabled(true);
+    setTireSwapNotificationsEnabled(true);
+    setTireTreadNotificationsEnabled(true);
     setImageFile(null);
     setImagePreview(null);
     setEditingVehicle(null);
@@ -82,6 +86,8 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setNotificationsEnabled(v.notifications_enabled !== false);
     setMaintenanceNotificationsEnabled(v.maintenance_notifications_enabled !== false);
     setApkNotificationsEnabled(v.apk_notifications_enabled !== false);
+    setTireSwapNotificationsEnabled(v.tire_swap_notifications_enabled !== false);
+    setTireTreadNotificationsEnabled(v.tire_tread_notifications_enabled !== false);
     setImageFile(null);
     setImagePreview(v.image_path ? `/uploads/vehicles/${v.image_path}` : null);
     setError(null);
@@ -143,6 +149,8 @@ export function useVehicleForm(refreshVehicles: () => void) {
       notifications_enabled: notificationsEnabled,
       maintenance_notifications_enabled: maintenanceNotificationsEnabled,
       apk_notifications_enabled: apkNotificationsEnabled,
+      tire_swap_notifications_enabled: tireSwapNotificationsEnabled,
+      tire_tread_notifications_enabled: tireTreadNotificationsEnabled,
     };
 
     try {
@@ -218,6 +226,10 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setMaintenanceNotificationsEnabled,
     apkNotificationsEnabled,
     setApkNotificationsEnabled,
+    tireSwapNotificationsEnabled,
+    setTireSwapNotificationsEnabled,
+    tireTreadNotificationsEnabled,
+    setTireTreadNotificationsEnabled,
     imageFile,
     setImageFile,
     imagePreview,

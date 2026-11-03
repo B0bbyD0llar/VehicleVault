@@ -46,6 +46,10 @@ interface VehicleModalProps {
   setMaintenanceNotificationsEnabled: (v: boolean) => void;
   apkNotificationsEnabled: boolean;
   setApkNotificationsEnabled: (v: boolean) => void;
+  tireSwapNotificationsEnabled?: boolean;
+  setTireSwapNotificationsEnabled?: (v: boolean) => void;
+  tireTreadNotificationsEnabled?: boolean;
+  setTireTreadNotificationsEnabled?: (v: boolean) => void;
   imagePreview: string | null;
   setImagePreview: (v: string | null) => void;
   setImageFile: (f: File | null) => void;
@@ -94,6 +98,10 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
   setMaintenanceNotificationsEnabled,
   apkNotificationsEnabled,
   setApkNotificationsEnabled,
+  tireSwapNotificationsEnabled,
+  setTireSwapNotificationsEnabled,
+  tireTreadNotificationsEnabled,
+  setTireTreadNotificationsEnabled,
   imagePreview,
   setImagePreview,
   setImageFile,
@@ -178,6 +186,10 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
             setMaintenanceNotificationsEnabled={setMaintenanceNotificationsEnabled}
             apkNotificationsEnabled={apkNotificationsEnabled}
             setApkNotificationsEnabled={setApkNotificationsEnabled}
+            tireSwapNotificationsEnabled={tireSwapNotificationsEnabled}
+            setTireSwapNotificationsEnabled={setTireSwapNotificationsEnabled}
+            tireTreadNotificationsEnabled={tireTreadNotificationsEnabled}
+            setTireTreadNotificationsEnabled={setTireTreadNotificationsEnabled}
           />
 
           <div className="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100 dark:border-slate-800">

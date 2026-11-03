@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, BellOff, Wrench, ShieldAlert, Car, Bike, Truck, Loader2 } from 'lucide-react';
+import {
+  Bell,
+  BellOff,
+  Wrench,
+  ShieldAlert,
+  Car,
+  Bike,
+  Truck,
+  Loader2,
+  RefreshCw,
+  CircleGauge,
+} from 'lucide-react';
 import { Vehicle } from '../../types/index.js';
 import { apiFetch } from '../../api/client.js';
 import { useLanguage } from '../../context/LanguageContext.js';
@@ -29,7 +40,12 @@ export const VehicleNotificationsList: React.FC = () => {
 
   const handleUpdateVehicleSetting = async (
     vehicleId: string,
-    field: 'notifications_enabled' | 'maintenance_notifications_enabled' | 'apk_notifications_enabled',
+    field:
+      | 'notifications_enabled'
+      | 'maintenance_notifications_enabled'
+      | 'apk_notifications_enabled'
+      | 'tire_swap_notifications_enabled'
+      | 'tire_tread_notifications_enabled',
     value: boolean
   ) => {
     setUpdatingId(vehicleId);
@@ -77,8 +93,8 @@ export const VehicleNotificationsList: React.FC = () => {
         </h4>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
           {lang === 'nl'
-            ? 'Beheer hier per voertuig of je algemene meldingen, onderhouds- of APK-herinneringen wilt ontvangen. Ideaal als je voor een motor of aanhanger geen onderhoud bijhoudt.'
-            : 'Configure alerts per vehicle. Mute maintenance or inspection notices for secondary vehicles or motorcycles.'}
+            ? 'Beheer hier per voertuig of je algemene meldingen, onderhouds-, APK- of banden-herinneringen wilt ontvangen.'
+            : 'Configure alerts per vehicle. Mute maintenance, inspection, or tire notices for secondary vehicles.'}
         </p>
       </div>
 
@@ -87,6 +103,8 @@ export const VehicleNotificationsList: React.FC = () => {
           const isMasterOn = v.notifications_enabled !== false;
           const isMaintOn = v.maintenance_notifications_enabled !== false;
           const isApkOn = v.apk_notifications_enabled !== false;
+          const isTireSwapOn = v.tire_swap_notifications_enabled !== false;
+          const isTireTreadOn = v.tire_tread_notifications_enabled !== false;
           const isNoApkVehicle = v.type === 'motorcycle' || v.type === 'trailer';
           const isSaving = updatingId === v.id;
 
@@ -122,7 +140,7 @@ export const VehicleNotificationsList: React.FC = () => {
                 </div>
 
                 {/* Controls */}
-                <div className="flex flex-wrap items-center gap-3 text-xs">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
                   {/* Master Toggle */}
                   <label className="flex items-center space-x-1.5 cursor-pointer bg-slate-50 dark:bg-slate-950/80 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
                     <input
@@ -164,7 +182,7 @@ export const VehicleNotificationsList: React.FC = () => {
                     />
                     <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1">
                       <Wrench className="w-3 h-3 text-amber-500" />
-                      <span>{lang === 'nl' ? 'Onderhoud' : 'Maintenance'}</span>
+                      <span>{lang === 'nl' ? 'Onderhoud' : 'Maint.'}</span>
                     </span>
                   </label>
 
@@ -194,6 +212,56 @@ export const VehicleNotificationsList: React.FC = () => {
                       </span>
                     </label>
                   )}
+
+                  {/* Tire Seasonal Swap Toggle */}
+                  <label
+                    className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg border transition ${
+                      !isMasterOn
+                        ? 'opacity-40 pointer-events-none bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800'
+                        : isTireSwapOn
+                        ? 'bg-sky-50/50 dark:bg-sky-950/20 border-sky-200/60 dark:border-sky-900/40 cursor-pointer'
+                        : 'bg-slate-50 dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 cursor-pointer'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      disabled={!isMasterOn}
+                      checked={isMasterOn && isTireSwapOn}
+                      onChange={(e) =>
+                        handleUpdateVehicleSetting(v.id, 'tire_swap_notifications_enabled', e.target.checked)
+                      }
+                      className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                    />
+                    <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1">
+                      <RefreshCw className="w-3 h-3 text-sky-500" />
+                      <span>{lang === 'nl' ? 'Bandenwissel' : 'Swap'}</span>
+                    </span>
+                  </label>
+
+                  {/* Tire Tread Depth Warning Toggle */}
+                  <label
+                    className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg border transition ${
+                      !isMasterOn
+                        ? 'opacity-40 pointer-events-none bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800'
+                        : isTireTreadOn
+                        ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200/60 dark:border-rose-900/40 cursor-pointer'
+                        : 'bg-slate-50 dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 cursor-pointer'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      disabled={!isMasterOn}
+                      checked={isMasterOn && isTireTreadOn}
+                      onChange={(e) =>
+                        handleUpdateVehicleSetting(v.id, 'tire_tread_notifications_enabled', e.target.checked)
+                      }
+                      className="rounded border-slate-300 text-rose-600 focus:ring-rose-500"
+                    />
+                    <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1">
+                      <CircleGauge className="w-3 h-3 text-rose-500" />
+                      <span>{lang === 'nl' ? 'Profiel' : 'Tread'}</span>
+                    </span>
+                  </label>
                 </div>
               </div>
             </div>

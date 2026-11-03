@@ -28,6 +28,8 @@ export const NotificationsSettingsTab: React.FC = () => {
   const [webhookUrl, setWebhookUrl] = useState('');
   const [notifApk, setNotifApk] = useState(true);
   const [notifMaintenance, setNotifMaintenance] = useState(true);
+  const [notifTireSwap, setNotifTireSwap] = useState(true);
+  const [notifTireTread, setNotifTireTread] = useState(true);
   const [notifTesting, setNotifTesting] = useState(false);
   const [notifTestResult, setNotifTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [notifSaving, setNotifSaving] = useState(false);
@@ -47,6 +49,8 @@ export const NotificationsSettingsTab: React.FC = () => {
       setWebhookUrl(res.webhookUrl || '');
       setNotifApk(res.enabledApk ?? true);
       setNotifMaintenance(res.enabledMaintenance ?? true);
+      setNotifTireSwap(res.enabledTireSwap ?? true);
+      setNotifTireTread(res.enabledTireTread ?? true);
     } catch {}
   };
 
@@ -72,6 +76,8 @@ export const NotificationsSettingsTab: React.FC = () => {
           webhookUrl,
           enabledApk: notifApk,
           enabledMaintenance: notifMaintenance,
+          enabledTireSwap: notifTireSwap,
+          enabledTireTread: notifTireTread,
         }),
       });
       setNotifSaveSuccess(true);
@@ -283,6 +289,30 @@ export const NotificationsSettingsTab: React.FC = () => {
             />
             <span className="font-semibold text-slate-800 dark:text-slate-200">
               Onderhoud Overschreden Herinneringen
+            </span>
+          </label>
+
+          <label className="flex items-center space-x-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={notifTireSwap}
+              onChange={(e) => setNotifTireSwap(e.target.checked)}
+              className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+            />
+            <span className="font-semibold text-slate-800 dark:text-slate-200">
+              Bandenwissel Herinneringen (Seizoenswissel)
+            </span>
+          </label>
+
+          <label className="flex items-center space-x-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={notifTireTread}
+              onChange={(e) => setNotifTireTread(e.target.checked)}
+              className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+            />
+            <span className="font-semibold text-slate-800 dark:text-slate-200">
+              Bandenprofiel Waarschuwingen (≤ 3.0 mm en ≤ 1.6 mm)
             </span>
           </label>
 

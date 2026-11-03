@@ -4,6 +4,7 @@ import { VehicleKpiCards } from './VehicleKpiCards.js';
 import { VehicleMonthlyTable } from './VehicleMonthlyTable.js';
 import { VehicleFuelPriceStats } from './VehicleFuelPriceStats.js';
 import { VehicleTankDistanceStats } from './VehicleTankDistanceStats.js';
+import { VehicleSeasonalStatsCard } from './VehicleSeasonalStatsCard.js';
 
 interface VehicleAnalyticsViewProps {
   tco: TcoSummary | null;
@@ -36,6 +37,8 @@ export const VehicleAnalyticsView: React.FC<VehicleAnalyticsViewProps> = ({
         tco={tco}
         exportCsv={exportCsv}
       />
+
+      <VehicleSeasonalStatsCard seasonalStats={tco?.seasonalStats} />
 
       <VehicleFuelPriceStats tco={tco} />
 

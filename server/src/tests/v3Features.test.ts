@@ -284,4 +284,76 @@ describe('VehicleVault v3.0 Milestone Features & Modernization', () => {
     const updated = db.get<any>('SELECT maintenance_notifications_enabled FROM vehicles WHERE id = ?', [motoId]);
     assert.equal(updated.maintenance_notifications_enabled, 1);
   });
+
+  it('calculates seasonal fuel statistics (summer vs winter comparison)', () => {
+    const seasonCarId = 'season-car-' + crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    db.run(
+      `INSERT INTO vehicles (id, user_id, name, initial_odometer, created_at, updated_at)
+       VALUES (?, ?, 'Season Test Car', 10000, ?, ?)`,
+      [seasonCarId, testUserId, now, now]
+    );
+
+    // Baseline fill-up
+    db.run(
+      `INSERT INTO fuel_entries (id, vehicle_id, date, odometer, liters, price_per_liter, total_cost, is_full_tank, missed_previous, created_at)
+       VALUES (?, ?, '2025-04-01', 10000, 50, 1.90, 95.0, 1, 0, ?)`,
+      ['fuel-s-base', seasonCarId, now]
+    );
+
+    // Summer fill-up (June: month 6 -> warm)
+    // 500 km on 30 liters = 6.0 l/100km
+    db.run(
+      `INSERT INTO fuel_entries (id, vehicle_id, date, odometer, liters, price_per_liter, total_cost, is_full_tank, missed_previous, created_at)
+       VALUES (?, ?, '2025-06-15', 10500, 30, 1.95, 58.5, 1, 0, ?)`,
+      ['fuel-s-1', seasonCarId, now]
+    );
+
+    // Winter fill-up (December: month 12 -> cold)
+    // 500 km on 36 liters = 7.2 l/100km
+    db.run(
+      `INSERT INTO fuel_entries (id, vehicle_id, date, odometer, liters, price_per_liter, total_cost, is_full_tank, missed_previous, created_at)
+       VALUES (?, ?, '2025-12-20', 11000, 36, 1.85, 66.6, 1, 0, ?)`,
+      ['fuel-w-1', seasonCarId, now]
+    );
+
+    const tco = TcoService.calculateTco({ vehicleId: seasonCarId });
+    assert.ok(tco.seasonalStats);
+    assert.equal(tco.seasonalStats.hasData, true);
+    assert.equal(tco.seasonalStats.summer.fillCount, 1);
+    assert.equal(tco.seasonalStats.summer.avgLPer100Km, 6.0);
+    assert.equal(tco.seasonalStats.winter.fillCount, 1);
+    assert.equal(tco.seasonalStats.winter.avgLPer100Km, 7.2);
+    assert.equal(tco.seasonalStats.delta.isWinterHigher, true);
+    assert.equal(tco.seasonalStats.delta.diffLPer100Km, 1.2);
+    assert.equal(tco.seasonalStats.delta.percentDiff, 20.0);
+  });
+
+  it('supports tire season swap and tread depth alerts', () => {
+    const tireCarId = 'tire-car-' + crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    db.run(
+      `INSERT INTO vehicles (
+        id, user_id, name, initial_odometer,
+        notifications_enabled, tire_swap_notifications_enabled, tire_tread_notifications_enabled,
+        created_at, updated_at
+      ) VALUES (?, ?, 'Tire Test Car', 10000, 1, 1, 1, ?, ?)`,
+      [tireCarId, testUserId, now, now]
+    );
+
+    const tireSetId = 'tire-set-' + crypto.randomUUID();
+    db.run(
+      `INSERT INTO tire_sets (
+        id, vehicle_id, name, season, status, tread_depth_fl, tread_depth_fr, tread_depth_rl, tread_depth_rr, created_at
+      ) VALUES (?, ?, 'Zomer Michelin', 'summer', 'mounted', 2.8, 2.9, 3.1, 3.2, ?)`,
+      [tireSetId, tireCarId, now]
+    );
+
+    const tire = db.get<any>('SELECT * FROM tire_sets WHERE id = ?', [tireSetId]);
+    assert.ok(tire);
+    assert.equal(tire.season, 'summer');
+    assert.equal(tire.tread_depth_fl, 2.8);
+  });
 });

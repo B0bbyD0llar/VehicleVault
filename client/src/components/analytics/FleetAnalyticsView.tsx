@@ -11,6 +11,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { useLanguage } from '../../context/LanguageContext.js';
+import { FleetBenchmarkCard } from './FleetBenchmarkCard.js';
 
 interface FleetAnalyticsViewProps {
   fleetData: any;
@@ -108,6 +109,9 @@ export const FleetAnalyticsView: React.FC<FleetAnalyticsViewProps> = ({
           </span>
         </div>
       </div>
+
+      {/* Voertuig-Benchmark & Kostenranking */}
+      <FleetBenchmarkCard vehicles={fleetData?.vehicles || []} />
 
       {/* Wagenpark Vergelijkingstabel */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-3 transition-colors">

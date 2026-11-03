@@ -93,6 +93,8 @@ export function initializeDatabase(): void {
       notifications_enabled INTEGER NOT NULL DEFAULT 1,
       maintenance_notifications_enabled INTEGER NOT NULL DEFAULT 1,
       apk_notifications_enabled INTEGER NOT NULL DEFAULT 1,
+      tire_swap_notifications_enabled INTEGER NOT NULL DEFAULT 1,
+      tire_tread_notifications_enabled INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -121,6 +123,12 @@ export function initializeDatabase(): void {
   }
   if (!columnExists('vehicles', 'apk_notifications_enabled')) {
     db.exec("ALTER TABLE vehicles ADD COLUMN apk_notifications_enabled INTEGER NOT NULL DEFAULT 1;");
+  }
+  if (!columnExists('vehicles', 'tire_swap_notifications_enabled')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN tire_swap_notifications_enabled INTEGER NOT NULL DEFAULT 1;");
+  }
+  if (!columnExists('vehicles', 'tire_tread_notifications_enabled')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN tire_tread_notifications_enabled INTEGER NOT NULL DEFAULT 1;");
   }
 
   // 4b. Multi-User Vehicle Sharing

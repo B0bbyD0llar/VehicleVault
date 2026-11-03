@@ -26,6 +26,8 @@ const vehicleSchema = z.object({
   notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
   maintenance_notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
   apk_notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
+  tire_swap_notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
+  tire_tread_notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
 });
 
 export class VehicleController {
@@ -76,6 +78,8 @@ export class VehicleController {
           notifications_enabled: v.notifications_enabled !== 0,
           maintenance_notifications_enabled: v.maintenance_notifications_enabled !== 0,
           apk_notifications_enabled: v.apk_notifications_enabled !== 0,
+          tire_swap_notifications_enabled: v.tire_swap_notifications_enabled !== 0,
+          tire_tread_notifications_enabled: v.tire_tread_notifications_enabled !== 0,
           apk_status: apk,
         };
       });
@@ -132,6 +136,8 @@ export class VehicleController {
           notifications_enabled: vehicle.notifications_enabled !== 0,
           maintenance_notifications_enabled: vehicle.maintenance_notifications_enabled !== 0,
           apk_notifications_enabled: vehicle.apk_notifications_enabled !== 0,
+          tire_swap_notifications_enabled: vehicle.tire_swap_notifications_enabled !== 0,
+          tire_tread_notifications_enabled: vehicle.tire_tread_notifications_enabled !== 0,
           apk_status: RdwService.evaluateApkStatus(vehicle.apk_expiration_date),
         },
       });
@@ -173,6 +179,8 @@ export class VehicleController {
       const notificationsEnabled = data.notifications_enabled !== undefined ? (data.notifications_enabled ? 1 : 0) : 1;
       const maintenanceNotificationsEnabled = data.maintenance_notifications_enabled !== undefined ? (data.maintenance_notifications_enabled ? 1 : 0) : 1;
       const apkNotificationsEnabled = data.apk_notifications_enabled !== undefined ? (data.apk_notifications_enabled ? 1 : 0) : 1;
+      const tireSwapNotificationsEnabled = data.tire_swap_notifications_enabled !== undefined ? (data.tire_swap_notifications_enabled ? 1 : 0) : 1;
+      const tireTreadNotificationsEnabled = data.tire_tread_notifications_enabled !== undefined ? (data.tire_tread_notifications_enabled ? 1 : 0) : 1;
 
       db.run(
         `INSERT INTO vehicles (
@@ -180,8 +188,9 @@ export class VehicleController {
           fuel_type, purchase_date, purchase_price, initial_odometer,
           notes, status, rdw_data, apk_expiration_date, plate_country, image_path,
           notifications_enabled, maintenance_notifications_enabled, apk_notifications_enabled,
+          tire_swap_notifications_enabled, tire_tread_notifications_enabled,
           created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           req.user?.userId,
@@ -205,6 +214,8 @@ export class VehicleController {
           notificationsEnabled,
           maintenanceNotificationsEnabled,
           apkNotificationsEnabled,
+          tireSwapNotificationsEnabled,
+          tireTreadNotificationsEnabled,
           now,
           now,
         ]
@@ -285,6 +296,12 @@ export class VehicleController {
       const apk_notifications_enabled = data.apk_notifications_enabled !== undefined
         ? (data.apk_notifications_enabled ? 1 : 0)
         : (existing.apk_notifications_enabled ?? 1);
+      const tire_swap_notifications_enabled = data.tire_swap_notifications_enabled !== undefined
+        ? (data.tire_swap_notifications_enabled ? 1 : 0)
+        : (existing.tire_swap_notifications_enabled ?? 1);
+      const tire_tread_notifications_enabled = data.tire_tread_notifications_enabled !== undefined
+        ? (data.tire_tread_notifications_enabled ? 1 : 0)
+        : (existing.tire_tread_notifications_enabled ?? 1);
 
       db.run(
         `UPDATE vehicles SET
@@ -292,6 +309,7 @@ export class VehicleController {
           fuel_type = ?, purchase_date = ?, purchase_price = ?, initial_odometer = ?,
           notes = ?, status = ?, apk_expiration_date = ?, plate_country = ?, image_path = ?,
           notifications_enabled = ?, maintenance_notifications_enabled = ?, apk_notifications_enabled = ?,
+          tire_swap_notifications_enabled = ?, tire_tread_notifications_enabled = ?,
           updated_at = ?
          WHERE id = ?`,
         [
@@ -314,6 +332,8 @@ export class VehicleController {
           notifications_enabled,
           maintenance_notifications_enabled,
           apk_notifications_enabled,
+          tire_swap_notifications_enabled,
+          tire_tread_notifications_enabled,
           now,
           id,
         ]

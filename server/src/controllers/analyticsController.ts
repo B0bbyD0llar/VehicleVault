@@ -84,6 +84,7 @@ export class AnalyticsController {
             costPerKm: s.costPerKm,
             totalDistanceKm: s.totalDistanceKm,
             avgLPer100Km: s.avgLPer100Km,
+            avgKmPerLiter: s.avgKmPerLiter,
           });
 
           fleetTotalCost += s.totalCost;

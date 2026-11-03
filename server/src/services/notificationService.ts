@@ -15,6 +15,8 @@ export interface NotificationSettings {
   webhookUrl: string;
   enabledApk: boolean;
   enabledMaintenance: boolean;
+  enabledTireSwap?: boolean;
+  enabledTireTread?: boolean;
   smtpHost?: string;
   smtpPort?: number;
   smtpSecure?: boolean;
@@ -49,6 +51,8 @@ export class NotificationService {
       webhookUrl: getVal('notification_webhook_url', ''),
       enabledApk: getVal('notification_enabled_apk', 'true') === 'true',
       enabledMaintenance: getVal('notification_enabled_maintenance', 'true') === 'true',
+      enabledTireSwap: getVal('notification_enabled_tire_swap', 'true') === 'true',
+      enabledTireTread: getVal('notification_enabled_tire_tread', 'true') === 'true',
       smtpHost: smtp.host,
       smtpPort: smtp.port,
       smtpSecure: smtp.secure,
@@ -81,6 +85,8 @@ export class NotificationService {
     if (settings.webhookUrl !== undefined) setVal('notification_webhook_url', settings.webhookUrl.trim());
     if (settings.enabledApk !== undefined) setVal('notification_enabled_apk', settings.enabledApk ? 'true' : 'false');
     if (settings.enabledMaintenance !== undefined) setVal('notification_enabled_maintenance', settings.enabledMaintenance ? 'true' : 'false');
+    if (settings.enabledTireSwap !== undefined) setVal('notification_enabled_tire_swap', settings.enabledTireSwap ? 'true' : 'false');
+    if (settings.enabledTireTread !== undefined) setVal('notification_enabled_tire_tread', settings.enabledTireTread ? 'true' : 'false');
 
     // Save SMTP configurations if provided
     if (
@@ -443,6 +449,108 @@ export class NotificationService {
       }
     } catch {
       // Ignore if table not yet created
+    }
+
+    // 5. Tire Season Swap & Tread Depth Alerts
+    try {
+      const currentMonth = new Date().getMonth() + 1; // 1 - 12
+      const isWinterSeason = currentMonth >= 10 || currentMonth <= 2; // Oct - Feb
+      const isSummerSeason = currentMonth >= 4 && currentMonth <= 8; // Apr - Aug
+      const seasonTag = isWinterSeason ? 'winter' : isSummerSeason ? 'summer' : null;
+      const currentYear = new Date().getFullYear();
+
+      for (const v of vehicles) {
+        const vehicleNotifEnabled = v.notifications_enabled === undefined || v.notifications_enabled === null || Number(v.notifications_enabled) !== 0;
+        if (!vehicleNotifEnabled) continue;
+
+        // A. Tire Season Swap Reminder
+        const swapEnabled = config.enabledTireSwap !== false && (v.tire_swap_notifications_enabled === undefined || v.tire_swap_notifications_enabled === null || Number(v.tire_swap_notifications_enabled) !== 0);
+        if (swapEnabled && seasonTag) {
+          const mountedSet = db.get<any>(
+            "SELECT * FROM tire_sets WHERE vehicle_id = ? AND status = 'mounted' LIMIT 1",
+            [v.id]
+          );
+
+          if (mountedSet) {
+            let shouldWarnSwap = false;
+            let swapTitle = '';
+            let swapMsg = '';
+
+            if (seasonTag === 'winter' && mountedSet.season === 'summer') {
+              shouldWarnSwap = true;
+              swapTitle = `❄️ Bandenwissel Herinnering: ${v.name}`;
+              swapMsg = `${v.name} staat momenteel nog op zomerbanden (${mountedSet.name || 'Zomerbandenset'}). De winterperiode is begonnen; wissel tijdig naar winter- of all-seasonbanden.`;
+            } else if (seasonTag === 'summer' && mountedSet.season === 'winter') {
+              shouldWarnSwap = true;
+              swapTitle = `☀️ Bandenwissel Herinnering: ${v.name}`;
+              swapMsg = `${v.name} staat momenteel nog op winterbanden (${mountedSet.name || 'Winterbandenset'}). Wissel naar zomerbanden om slijtage en meerverbruik te voorkomen.`;
+            }
+
+            if (shouldWarnSwap) {
+              const cacheKey = `notif_tire_swap_${v.id}_${seasonTag}_${currentYear}`;
+              const alreadySent = db.get<{ value: string }>('SELECT value FROM system_settings WHERE key = ?', [cacheKey]);
+              if (!alreadySent) {
+                await this.send(swapTitle, swapMsg, 'default', ['snowflake', 'car']);
+                db.run('INSERT OR REPLACE INTO system_settings (key, value, updated_at) VALUES (?, ?, ?)', [
+                  cacheKey,
+                  'sent',
+                  new Date().toISOString(),
+                ]);
+                count++;
+                details.push(`Bandenwissel alert verzonden voor ${v.name}`);
+              }
+            }
+          }
+        }
+
+        // B. Tire Tread Depth Warning (<= 3.0 mm and <= 1.6 mm)
+        const treadEnabled = config.enabledTireTread !== false && (v.tire_tread_notifications_enabled === undefined || v.tire_tread_notifications_enabled === null || Number(v.tire_tread_notifications_enabled) !== 0);
+        if (treadEnabled) {
+          const activeTires = db.query<any>(
+            "SELECT * FROM tire_sets WHERE vehicle_id = ? AND status = 'mounted'",
+            [v.id]
+          );
+
+          for (const ts of activeTires) {
+            const depths = [
+              ts.tread_depth_fl,
+              ts.tread_depth_fr,
+              ts.tread_depth_rl,
+              ts.tread_depth_rr,
+            ].filter((d) => d !== null && d !== undefined && !isNaN(Number(d)) && Number(d) > 0).map(Number);
+
+            if (depths.length > 0) {
+              const minDepth = Math.min(...depths);
+              if (minDepth <= 3.0) {
+                const cacheKey = `notif_tire_tread_${ts.id}_${todayStr}`;
+                const alreadySent = db.get<{ value: string }>('SELECT value FROM system_settings WHERE key = ?', [cacheKey]);
+
+                if (!alreadySent) {
+                  const isCritical = minDepth <= 1.6;
+                  const urgency = isCritical ? 'urgent' : 'high';
+                  const title = isCritical
+                    ? `🚨 Bandenprofiel Kritiek: ${v.name} (${minDepth.toFixed(1)} mm)`
+                    : `⚠️ Bandenprofiel Waarschuwing: ${v.name} (${minDepth.toFixed(1)} mm)`;
+                  const msg = isCritical
+                    ? `De bandenset "${ts.name}" op ${v.name} heeft een profieldiepte van ${minDepth.toFixed(1)} mm (onder de wettelijke grens van 1,6 mm!). Vervang deze banden direct.`
+                    : `De bandenset "${ts.name}" op ${v.name} heeft nog ${minDepth.toFixed(1)} mm profiel (adviesgrens 3,0 mm). Plan vervanging in om grip en waterafvoer te behouden.`;
+
+                  await this.send(title, msg, urgency, ['warning', 'car']);
+                  db.run('INSERT OR REPLACE INTO system_settings (key, value, updated_at) VALUES (?, ?, ?)', [
+                    cacheKey,
+                    'sent',
+                    new Date().toISOString(),
+                  ]);
+                  count++;
+                  details.push(`Bandenprofiel alert verzonden voor ${v.name} (${minDepth.toFixed(1)} mm)`);
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (tireErr: any) {
+      console.error('Tire notification check error:', tireErr);
     }
 
     return { alertsSent: count, details };

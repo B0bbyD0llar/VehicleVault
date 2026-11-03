@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, BellOff, Wrench, ShieldAlert } from 'lucide-react';
+import { Bell, BellOff, Wrench, ShieldAlert, CircleGauge, RefreshCw } from 'lucide-react';
 import { VehicleType } from '../../types/index.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 
@@ -11,6 +11,10 @@ interface VehicleNotificationSettingsFieldsProps {
   setMaintenanceNotificationsEnabled: (v: boolean) => void;
   apkNotificationsEnabled: boolean;
   setApkNotificationsEnabled: (v: boolean) => void;
+  tireSwapNotificationsEnabled?: boolean;
+  setTireSwapNotificationsEnabled?: (v: boolean) => void;
+  tireTreadNotificationsEnabled?: boolean;
+  setTireTreadNotificationsEnabled?: (v: boolean) => void;
 }
 
 export const VehicleNotificationSettingsFields: React.FC<VehicleNotificationSettingsFieldsProps> = ({
@@ -21,6 +25,10 @@ export const VehicleNotificationSettingsFields: React.FC<VehicleNotificationSett
   setMaintenanceNotificationsEnabled,
   apkNotificationsEnabled,
   setApkNotificationsEnabled,
+  tireSwapNotificationsEnabled = true,
+  setTireSwapNotificationsEnabled,
+  tireTreadNotificationsEnabled = true,
+  setTireTreadNotificationsEnabled,
 }) => {
   const { lang } = useLanguage();
 
@@ -106,8 +114,58 @@ export const VehicleNotificationSettingsFields: React.FC<VehicleNotificationSett
               className="rounded border-slate-300 text-sky-600 focus:ring-sky-500 disabled:opacity-40"
             />
           </label>
+          {/* Bandenwissel (Seizoenswissel) Toggle */}
+          {setTireSwapNotificationsEnabled && (
+            <label className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+              <div className="flex items-center space-x-2">
+                <RefreshCw className="w-3.5 h-3.5 text-sky-500" />
+                <div>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 block">
+                    {lang === 'nl' ? 'Bandenwissel Herinneringen' : 'Tire Seasonal Swap Alerts'}
+                  </span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                    {lang === 'nl'
+                      ? 'Melding in de herfst (winterbanden) en het voorjaar (zomerbanden)'
+                      : 'Seasonal reminder to swap between summer and winter tire sets'}
+                  </span>
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={tireSwapNotificationsEnabled}
+                onChange={(e) => setTireSwapNotificationsEnabled(e.target.checked)}
+                className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              />
+            </label>
+          )}
+
+          {/* Bandenprofiel (Slijtage) Toggle */}
+          {setTireTreadNotificationsEnabled && (
+            <label className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+              <div className="flex items-center space-x-2">
+                <CircleGauge className="w-3.5 h-3.5 text-rose-500" />
+                <div>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 block">
+                    {lang === 'nl' ? 'Bandenprofiel Waarschuwingen' : 'Tire Tread Depth Alerts'}
+                  </span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                    {lang === 'nl'
+                      ? 'Waarschuw bij adviesgrens (≤ 3,0 mm) en wettelijke limiet (≤ 1,6 mm)'
+                      : 'Alert when tire tread reaches warning (≤ 3.0 mm) or legal minimum (≤ 1.6 mm)'}
+                  </span>
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={tireTreadNotificationsEnabled}
+                onChange={(e) => setTireTreadNotificationsEnabled(e.target.checked)}
+                className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              />
+            </label>
+          )}
         </div>
       )}
     </div>
   );
 };
+

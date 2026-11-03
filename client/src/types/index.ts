@@ -31,6 +31,8 @@ export interface Vehicle {
   notifications_enabled?: boolean;
   maintenance_notifications_enabled?: boolean;
   apk_notifications_enabled?: boolean;
+  tire_swap_notifications_enabled?: boolean;
+  tire_tread_notifications_enabled?: boolean;
   is_owner?: boolean;
   access_role?: 'owner' | 'editor' | 'viewer';
   owner_email?: string;
@@ -290,6 +292,7 @@ export interface TcoSummary {
   }[];
   fuelStats?: FuelDetailedStats;
   priceStats?: FuelPriceStats;
+  seasonalStats?: any;
 }
 
 export interface User {
