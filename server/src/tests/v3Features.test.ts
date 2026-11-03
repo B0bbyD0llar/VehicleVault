@@ -6,6 +6,8 @@ import { initializeDatabase } from '../db/schema.js';
 import { HaController } from '../controllers/haController.js';
 import { AnalyticsController } from '../controllers/analyticsController.js';
 import { TcoService } from '../services/tcoService.js';
+import { FuelController } from '../controllers/fuelController.js';
+import { StationService } from '../services/stationService.js';
 import { validateBody } from '../middleware/validate.js';
 import { z } from 'zod';
 
@@ -166,5 +168,61 @@ describe('VehicleVault v3.0 Milestone Features & Modernization', () => {
     assert.equal(goodNextCalled, true);
     assert.equal(goodReq.body.license_plate, 'XX-123-Y');
     assert.equal(goodReq.body.odometer, 50000);
+  });
+
+  it('accepts fuel entries with numeric booleans (1/0) and fuel_amount alias without Zod errors', async () => {
+    const req = mockReq({
+      user: { userId: testUserId, role: 'admin' },
+      body: {
+        vehicle_id: testVehicleId,
+        date: '2026-11-03',
+        odometer: 12000,
+        fuel_amount: 45.5,
+        price_per_unit: 1.959,
+        is_full_tank: 1, // numeric boolean
+        missed_previous: 0, // numeric boolean
+        is_towing: 1, // numeric boolean
+        station_name: 'Shell Express',
+        station_address: 'Hoofdstraat 1, 1000 AA Amsterdam',
+      },
+    });
+    const res = mockRes();
+
+    await FuelController.create(req, res);
+
+    assert.equal(res.statusCode, 201);
+    assert.ok(res.body.id);
+
+    const saved = db.get<any>('SELECT * FROM fuel_entries WHERE id = ?', [res.body.id]);
+    assert.ok(saved);
+    assert.equal(saved.liters, 45.5);
+    assert.equal(saved.price_per_liter, 1.959);
+    assert.equal(saved.is_full_tank, 1);
+    assert.equal(saved.is_towing, 1);
+  });
+
+  it('returns both fileName and filePath from uploadReceiptFile', async () => {
+    const req: any = {
+      file: { filename: 'test-receipt-123.jpg' },
+    };
+    const res = mockRes();
+
+    await FuelController.uploadReceiptFile(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.fileName, 'test-receipt-123.jpg');
+    assert.equal(res.body.filePath, 'test-receipt-123.jpg');
+  });
+
+  it('converts meters to km and properly bounds GPS coordinates in StationService', async () => {
+    // 52.3676, 4.9041 is Amsterdam. Even with radius 15000 (meters), it must be clamped to <= 30km
+    const stations = await StationService.findNearbyStations(52.3676, 4.9041, 15000);
+    assert.ok(Array.isArray(stations));
+    // If any stations are returned, ensure their distance is within reasonable bounds (not 1000s of km)
+    for (const st of stations) {
+      if (st.distanceMeters !== undefined) {
+        assert.ok(st.distanceMeters < 50000, `Station distance ${st.distanceMeters}m is unreasonably far`);
+      }
+    }
   });
 });

@@ -30,6 +30,17 @@ export const FuelLog: React.FC = () => {
 
   // Edit Modal State
   const [editingEntry, setEditingEntry] = useState<FuelEntry | null>(null);
+  const [formPrefill, setFormPrefill] = useState<{
+    date?: string;
+    odometer?: string;
+    liters?: string;
+    pricePerLiter?: string;
+    totalCost?: string;
+    stationName?: string;
+    stationAddress?: string;
+    receiptPath?: string;
+    energyType?: 'fuel' | 'electric';
+  } | null>(null);
 
   const loadEntries = async (vehicleId: string) => {
     try {
@@ -123,7 +134,9 @@ export const FuelLog: React.FC = () => {
       <FuelEntryForm
         selectedVehicle={selectedVehicle}
         entries={entries}
+        formPrefill={formPrefill}
         onEntryAdded={async () => {
+          setFormPrefill(null);
           await loadEntries(selectedVehicle.id);
         }}
       />
@@ -155,18 +168,40 @@ export const FuelLog: React.FC = () => {
       <ReceiptScannerModal
         isOpen={isOcrOpen}
         onClose={() => setIsOcrOpen(false)}
-        onExtracted={async () => {
+        onExtracted={async (extractedData) => {
           setIsOcrOpen(false);
-          await loadEntries(selectedVehicle.id);
+          if (extractedData) {
+            setFormPrefill({
+              date: extractedData.date || undefined,
+              liters: extractedData.liters != null ? String(extractedData.liters) : undefined,
+              pricePerLiter: extractedData.pricePerLiter != null ? String(extractedData.pricePerLiter) : undefined,
+              totalCost: extractedData.totalCost != null ? String(extractedData.totalCost) : undefined,
+              stationName: extractedData.station || undefined,
+              stationAddress: extractedData.stationAddress || undefined,
+              receiptPath: extractedData.receiptPath || undefined,
+              energyType: 'fuel',
+            });
+          }
         }}
       />
 
       <ReceiptScannerModal
         isOpen={isEditOcrOpen}
         onClose={() => setIsEditOcrOpen(false)}
-        onExtracted={async () => {
+        onExtracted={async (extractedData) => {
           setIsEditOcrOpen(false);
-          await loadEntries(selectedVehicle.id);
+          if (extractedData && editingEntry) {
+            setEditingEntry({
+              ...editingEntry,
+              date: extractedData.date || editingEntry.date,
+              liters: extractedData.liters != null ? extractedData.liters : editingEntry.liters,
+              price_per_liter: extractedData.pricePerLiter != null ? extractedData.pricePerLiter : editingEntry.price_per_liter,
+              total_cost: extractedData.totalCost != null ? extractedData.totalCost : editingEntry.total_cost,
+              station_name: extractedData.station || editingEntry.station_name,
+              station_address: extractedData.stationAddress || editingEntry.station_address,
+              receipt_path: extractedData.receiptPath || editingEntry.receipt_path,
+            });
+          }
         }}
       />
     </div>

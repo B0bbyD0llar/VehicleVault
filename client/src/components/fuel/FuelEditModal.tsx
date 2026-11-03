@@ -224,11 +224,11 @@ export const FuelEditModal: React.FC<FuelEditModalProps> = ({
         const compressed = await compressImage(editReceiptFile);
         const formData = new FormData();
         formData.append('receipt', compressed);
-        const uploadRes = await apiFetch<{ filePath: string }>('/api/fuel/receipt', {
+        const uploadRes = await apiFetch<{ filePath?: string; fileName?: string }>('/api/fuel/upload-receipt', {
           method: 'POST',
           body: formData,
         });
-        finalReceiptPath = uploadRes.filePath;
+        finalReceiptPath = uploadRes.filePath || uploadRes.fileName || null;
       } catch {
         alert(lang === 'nl' ? 'Uploaden van de bon is mislukt' : 'Receipt upload failed');
         setSavingEdit(false);
@@ -236,15 +236,26 @@ export const FuelEditModal: React.FC<FuelEditModalProps> = ({
       }
     }
 
+    const parsedLiters = parseFloat(editLiters) || 0;
+    const parsedPrice = parseFloat(editPricePerLiter) || 0;
+    const parsedKwh = parseFloat(editKwh) || 0;
+    const parsedPriceKwh = parseFloat(editPricePerKwh) || 0;
+    const parsedCost = parseFloat(editTotalCost) || (editEnergyType === 'fuel' ? parsedLiters * parsedPrice : parsedKwh * parsedPriceKwh);
+
     const payload = {
       date: editDate,
       odometer: parseInt(editOdometer, 10),
-      fuel_amount: editEnergyType === 'fuel' ? parseFloat(editLiters) : parseFloat(editKwh),
-      price_per_unit: editEnergyType === 'fuel' ? parseFloat(editPricePerLiter) : parseFloat(editPricePerKwh),
-      total_cost: parseFloat(editTotalCost),
-      is_full_tank: editIsFullTank ? 1 : 0,
-      missed_previous: editMissedPrevious ? 1 : 0,
-      is_towing: editIsTowing ? 1 : 0,
+      energy_type: editEnergyType,
+      liters: editEnergyType === 'fuel' ? parsedLiters : 0,
+      price_per_liter: editEnergyType === 'fuel' ? parsedPrice : 0,
+      kwh: editEnergyType === 'electric' ? parsedKwh : null,
+      price_per_kwh: editEnergyType === 'electric' ? parsedPriceKwh : null,
+      fuel_amount: editEnergyType === 'fuel' ? parsedLiters : parsedKwh,
+      price_per_unit: editEnergyType === 'fuel' ? parsedPrice : parsedPriceKwh,
+      total_cost: parsedCost,
+      is_full_tank: editIsFullTank,
+      missed_previous: editMissedPrevious,
+      is_towing: editIsTowing,
       notes: editNotes || null,
       station_name: editStationName || null,
       station_address: editStationAddress || null,

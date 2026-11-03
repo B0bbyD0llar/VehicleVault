@@ -41,6 +41,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
   selectedVehicle,
   entries,
   onEntryAdded,
+  formPrefill,
 }) => {
   const { t, lang } = useLanguage();
   const isPhev = selectedVehicle.fuel_type?.toLowerCase().includes('phev') ||
@@ -63,6 +64,27 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
   const [receiptPath, setReceiptPath] = useState<string | null>(null);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
+
+  React.useEffect(() => {
+    if (!formPrefill) return;
+    if (formPrefill.date) setDate(formPrefill.date);
+    if (formPrefill.odometer) setOdometer(formPrefill.odometer);
+    if (formPrefill.liters) setLiters(formPrefill.liters);
+    if (formPrefill.pricePerLiter) setPricePerLiter(formPrefill.pricePerLiter);
+    if (formPrefill.totalCost) setTotalCost(formPrefill.totalCost);
+    if (formPrefill.stationName) {
+      setStationName(formPrefill.stationName);
+      setShowLocationSection(true);
+    }
+    if (formPrefill.stationAddress) {
+      setStationAddress(formPrefill.stationAddress);
+      setShowLocationSection(true);
+    }
+    if (formPrefill.receiptPath) {
+      setReceiptPath(formPrefill.receiptPath);
+    }
+    if (formPrefill.energyType) setEnergyType(formPrefill.energyType);
+  }, [formPrefill]);
 
   // Station Location & GPS State
   const [stationName, setStationName] = useState('');
@@ -176,10 +198,14 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
 
         try {
           const res = await apiFetch<{ stations: GasStation[] }>(
-            `/api/fuel/stations/nearby?lat=${lat}&lon=${lon}&radius=15000`
+            `/api/fuel/stations/nearby?lat=${lat}&lon=${lon}&radius=15`
           );
           setNearbyStations(res.stations || []);
           setShowStationPicker(true);
+          if (res.stations && res.stations.length > 0 && (res.stations[0].distanceMeters ?? 9999) < 1000) {
+            setStationName(res.stations[0].name);
+            if (res.stations[0].address) setStationAddress(res.stations[0].address);
+          }
         } catch {
           setGpsError(lang === 'nl' ? 'Kon nabijgelegen tankstations niet ophalen.' : 'Could not fetch nearby stations.');
         } finally {
@@ -234,11 +260,11 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
         const compressed = await compressImage(receiptFile);
         const formData = new FormData();
         formData.append('receipt', compressed);
-        const uploadRes = await apiFetch<{ filePath: string }>('/api/fuel/receipt', {
+        const uploadRes = await apiFetch<{ filePath?: string; fileName?: string }>('/api/fuel/upload-receipt', {
           method: 'POST',
           body: formData,
         });
-        finalReceiptPath = uploadRes.filePath;
+        finalReceiptPath = uploadRes.filePath || uploadRes.fileName || null;
       } catch {
         alert(lang === 'nl' ? 'Uploaden van de bon is mislukt' : 'Receipt upload failed');
         setUploadingReceipt(false);
@@ -249,16 +275,27 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
       }
     }
 
+    const parsedLiters = parseFloat(liters) || 0;
+    const parsedPrice = parseFloat(pricePerLiter) || 0;
+    const parsedKwh = parseFloat(kwh) || 0;
+    const parsedPriceKwh = parseFloat(pricePerKwh) || 0;
+    const parsedCost = parseFloat(totalCost) || (energyType === 'fuel' ? parsedLiters * parsedPrice : parsedKwh * parsedPriceKwh);
+
     const payload = {
       vehicle_id: selectedVehicle.id,
       date,
       odometer: parseInt(odometer, 10),
-      fuel_amount: energyType === 'fuel' ? parseFloat(liters) : parseFloat(kwh),
-      price_per_unit: energyType === 'fuel' ? parseFloat(pricePerLiter) : parseFloat(pricePerKwh),
-      total_cost: parseFloat(totalCost),
-      is_full_tank: isFullTank ? 1 : 0,
-      missed_previous: missedPrevious ? 1 : 0,
-      is_towing: isTowing ? 1 : 0,
+      energy_type: energyType,
+      liters: energyType === 'fuel' ? parsedLiters : 0,
+      price_per_liter: energyType === 'fuel' ? parsedPrice : 0,
+      kwh: energyType === 'electric' ? parsedKwh : null,
+      price_per_kwh: energyType === 'electric' ? parsedPriceKwh : null,
+      fuel_amount: energyType === 'fuel' ? parsedLiters : parsedKwh,
+      price_per_unit: energyType === 'fuel' ? parsedPrice : parsedPriceKwh,
+      total_cost: parsedCost,
+      is_full_tank: isFullTank,
+      missed_previous: missedPrevious,
+      is_towing: isTowing,
       notes: notes || null,
       station_name: stationName || null,
       station_address: stationAddress || null,
