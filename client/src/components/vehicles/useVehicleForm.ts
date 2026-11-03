@@ -24,6 +24,9 @@ export function useVehicleForm(refreshVehicles: () => void) {
   const [initialOdometer, setInitialOdometer] = useState<string>('0');
   const [apkDate, setApkDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [maintenanceNotificationsEnabled, setMaintenanceNotificationsEnabled] = useState(true);
+  const [apkNotificationsEnabled, setApkNotificationsEnabled] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [rdwLoading, setRdwLoading] = useState(false);
@@ -45,6 +48,9 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setInitialOdometer('0');
     setApkDate('');
     setNotes('');
+    setNotificationsEnabled(true);
+    setMaintenanceNotificationsEnabled(true);
+    setApkNotificationsEnabled(true);
     setImageFile(null);
     setImagePreview(null);
     setEditingVehicle(null);
@@ -73,6 +79,9 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setInitialOdometer(String(v.initial_odometer || 0));
     setApkDate(v.apk_expiration_date || '');
     setNotes(v.notes || '');
+    setNotificationsEnabled(v.notifications_enabled !== false);
+    setMaintenanceNotificationsEnabled(v.maintenance_notifications_enabled !== false);
+    setApkNotificationsEnabled(v.apk_notifications_enabled !== false);
     setImageFile(null);
     setImagePreview(v.image_path ? `/uploads/vehicles/${v.image_path}` : null);
     setError(null);
@@ -131,6 +140,9 @@ export function useVehicleForm(refreshVehicles: () => void) {
       initial_odometer: parseFloat(initialOdometer) || 0,
       apk_expiration_date: apkDate || null,
       notes: notes || null,
+      notifications_enabled: notificationsEnabled,
+      maintenance_notifications_enabled: maintenanceNotificationsEnabled,
+      apk_notifications_enabled: apkNotificationsEnabled,
     };
 
     try {
@@ -200,6 +212,12 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setApkDate,
     notes,
     setNotes,
+    notificationsEnabled,
+    setNotificationsEnabled,
+    maintenanceNotificationsEnabled,
+    setMaintenanceNotificationsEnabled,
+    apkNotificationsEnabled,
+    setApkNotificationsEnabled,
     imageFile,
     setImageFile,
     imagePreview,

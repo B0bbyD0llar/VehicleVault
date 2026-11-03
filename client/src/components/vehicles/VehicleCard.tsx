@@ -7,6 +7,7 @@ import {
   Trash2,
   Users,
   Landmark,
+  BellOff,
 } from 'lucide-react';
 import { Vehicle, VehicleType } from '../../types/index.js';
 import { StatusBadge } from '../StatusBadge.js';
@@ -90,6 +91,18 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
               <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-accent-700 dark:text-accent-300 bg-accent-50 dark:bg-accent-950/60 px-2 py-0.5 rounded-full border border-accent-200 dark:border-accent-800/40">
                 <Users className="w-3 h-3 text-accent-500" />
                 <span>Gedeeld{v.owner_email ? ` (${v.owner_email})` : ''}</span>
+              </span>
+            )}
+            {v.notifications_enabled === false && (
+              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700" title={lang === 'nl' ? 'Notificaties uitgeschakeld voor dit voertuig' : 'Notifications disabled for this vehicle'}>
+                <BellOff className="w-3 h-3 text-slate-400" />
+                <span>{lang === 'nl' ? 'Stil' : 'Muted'}</span>
+              </span>
+            )}
+            {v.notifications_enabled !== false && v.maintenance_notifications_enabled === false && (
+              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/40" title={lang === 'nl' ? 'Onderhoudsherinneringen uitgeschakeld' : 'Maintenance alerts disabled'}>
+                <BellOff className="w-3 h-3 text-amber-500" />
+                <span>{lang === 'nl' ? 'Geen onderhoudsmeldingen' : 'No maint. alerts'}</span>
               </span>
             )}
           </div>

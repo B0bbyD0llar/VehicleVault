@@ -269,8 +269,15 @@ export class NotificationService {
     `);
 
     for (const v of vehicles) {
+      // Check if notifications are disabled specifically for this vehicle
+      const vehicleNotifEnabled = v.notifications_enabled === undefined || v.notifications_enabled === null || Number(v.notifications_enabled) !== 0;
+      if (!vehicleNotifEnabled) {
+        continue;
+      }
+
       // 1. APK Expiration Check
-      if (config.enabledApk && v.apk_expiration_date) {
+      const vehicleApkEnabled = v.apk_notifications_enabled === undefined || v.apk_notifications_enabled === null || Number(v.apk_notifications_enabled) !== 0;
+      if (config.enabledApk && vehicleApkEnabled && v.apk_expiration_date) {
         const apk = RdwService.evaluateApkStatus(v.apk_expiration_date);
         if (apk.daysRemaining !== null && apk.daysRemaining <= 30) {
           const cacheKey = `notif_apk_${v.id}_${todayStr}`;
@@ -296,7 +303,8 @@ export class NotificationService {
       }
 
       // 2. Overdue Maintenance Check
-      if (config.enabledMaintenance) {
+      const vehicleMaintEnabled = v.maintenance_notifications_enabled === undefined || v.maintenance_notifications_enabled === null || Number(v.maintenance_notifications_enabled) !== 0;
+      if (config.enabledMaintenance && vehicleMaintEnabled) {
         const intervals = db.query<any>(`
           SELECT mi.*, sc.name as category_name
           FROM maintenance_intervals mi
@@ -361,6 +369,7 @@ export class NotificationService {
       FROM vehicle_documents d
       JOIN vehicles v ON v.id = d.vehicle_id
       WHERE d.expires_at IS NOT NULL AND d.expires_at != '' AND v.status = 'active'
+        AND (v.notifications_enabled IS NULL OR v.notifications_enabled != 0)
     `);
 
     for (const doc of expiringDocs) {
@@ -400,6 +409,7 @@ export class NotificationService {
         FROM vehicle_vignettes vg
         JOIN vehicles v ON v.id = vg.vehicle_id
         WHERE vg.valid_until IS NOT NULL AND vg.valid_until != '' AND v.status = 'active'
+          AND (v.notifications_enabled IS NULL OR v.notifications_enabled != 0)
       `);
 
       for (const vig of expiringVignettes) {

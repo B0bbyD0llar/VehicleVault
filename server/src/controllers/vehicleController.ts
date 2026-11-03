@@ -23,6 +23,9 @@ const vehicleSchema = z.object({
   apk_expiration_date: z.string().optional().nullable(),
   plate_country: z.enum(['NL', 'BE', 'DE', 'EU', 'OTHER']).default('NL'),
   image_path: z.string().optional().nullable(),
+  notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
+  maintenance_notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
+  apk_notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
 });
 
 export class VehicleController {
@@ -70,6 +73,9 @@ export class VehicleController {
           is_owner: Boolean(v.is_owner),
           is_showcase_active: v.is_showcase_active === 1,
           showcase_slug: v.showcase_slug || undefined,
+          notifications_enabled: v.notifications_enabled !== 0,
+          maintenance_notifications_enabled: v.maintenance_notifications_enabled !== 0,
+          apk_notifications_enabled: v.apk_notifications_enabled !== 0,
           apk_status: apk,
         };
       });
@@ -123,6 +129,9 @@ export class VehicleController {
           is_owner: Boolean(vehicle.is_owner),
           is_showcase_active: vehicle.is_showcase_active === 1,
           showcase_slug: vehicle.showcase_slug || undefined,
+          notifications_enabled: vehicle.notifications_enabled !== 0,
+          maintenance_notifications_enabled: vehicle.maintenance_notifications_enabled !== 0,
+          apk_notifications_enabled: vehicle.apk_notifications_enabled !== 0,
           apk_status: RdwService.evaluateApkStatus(vehicle.apk_expiration_date),
         },
       });
@@ -161,12 +170,18 @@ export class VehicleController {
         }
       }
 
+      const notificationsEnabled = data.notifications_enabled !== undefined ? (data.notifications_enabled ? 1 : 0) : 1;
+      const maintenanceNotificationsEnabled = data.maintenance_notifications_enabled !== undefined ? (data.maintenance_notifications_enabled ? 1 : 0) : 1;
+      const apkNotificationsEnabled = data.apk_notifications_enabled !== undefined ? (data.apk_notifications_enabled ? 1 : 0) : 1;
+
       db.run(
         `INSERT INTO vehicles (
           id, user_id, name, type, license_plate, vin, year, make, model,
           fuel_type, purchase_date, purchase_price, initial_odometer,
-          notes, status, rdw_data, apk_expiration_date, plate_country, image_path, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          notes, status, rdw_data, apk_expiration_date, plate_country, image_path,
+          notifications_enabled, maintenance_notifications_enabled, apk_notifications_enabled,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           req.user?.userId,
@@ -187,6 +202,9 @@ export class VehicleController {
           apkDate || null,
           plateCountry,
           data.image_path || null,
+          notificationsEnabled,
+          maintenanceNotificationsEnabled,
+          apkNotificationsEnabled,
           now,
           now,
         ]
@@ -258,12 +276,23 @@ export class VehicleController {
       const status = data.status !== undefined ? data.status : existing.status;
       const apk_expiration_date = data.apk_expiration_date !== undefined ? data.apk_expiration_date : existing.apk_expiration_date;
       const image_path = data.image_path !== undefined ? data.image_path : existing.image_path;
+      const notifications_enabled = data.notifications_enabled !== undefined
+        ? (data.notifications_enabled ? 1 : 0)
+        : (existing.notifications_enabled ?? 1);
+      const maintenance_notifications_enabled = data.maintenance_notifications_enabled !== undefined
+        ? (data.maintenance_notifications_enabled ? 1 : 0)
+        : (existing.maintenance_notifications_enabled ?? 1);
+      const apk_notifications_enabled = data.apk_notifications_enabled !== undefined
+        ? (data.apk_notifications_enabled ? 1 : 0)
+        : (existing.apk_notifications_enabled ?? 1);
 
       db.run(
         `UPDATE vehicles SET
           name = ?, type = ?, license_plate = ?, vin = ?, year = ?, make = ?, model = ?,
           fuel_type = ?, purchase_date = ?, purchase_price = ?, initial_odometer = ?,
-          notes = ?, status = ?, apk_expiration_date = ?, plate_country = ?, image_path = ?, updated_at = ?
+          notes = ?, status = ?, apk_expiration_date = ?, plate_country = ?, image_path = ?,
+          notifications_enabled = ?, maintenance_notifications_enabled = ?, apk_notifications_enabled = ?,
+          updated_at = ?
          WHERE id = ?`,
         [
           name,
@@ -282,6 +311,9 @@ export class VehicleController {
           apk_expiration_date,
           plate_country,
           image_path,
+          notifications_enabled,
+          maintenance_notifications_enabled,
+          apk_notifications_enabled,
           now,
           id,
         ]

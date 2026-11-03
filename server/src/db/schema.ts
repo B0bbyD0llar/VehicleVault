@@ -90,6 +90,9 @@ export function initializeDatabase(): void {
       apk_expiration_date TEXT,
       plate_country TEXT NOT NULL DEFAULT 'NL',
       image_path TEXT,
+      notifications_enabled INTEGER NOT NULL DEFAULT 1,
+      maintenance_notifications_enabled INTEGER NOT NULL DEFAULT 1,
+      apk_notifications_enabled INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -109,6 +112,15 @@ export function initializeDatabase(): void {
   }
   if (!columnExists('vehicles', 'plate_country')) {
     db.exec("ALTER TABLE vehicles ADD COLUMN plate_country TEXT NOT NULL DEFAULT 'NL';");
+  }
+  if (!columnExists('vehicles', 'notifications_enabled')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN notifications_enabled INTEGER NOT NULL DEFAULT 1;");
+  }
+  if (!columnExists('vehicles', 'maintenance_notifications_enabled')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN maintenance_notifications_enabled INTEGER NOT NULL DEFAULT 1;");
+  }
+  if (!columnExists('vehicles', 'apk_notifications_enabled')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN apk_notifications_enabled INTEGER NOT NULL DEFAULT 1;");
   }
 
   // 4b. Multi-User Vehicle Sharing

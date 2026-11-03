@@ -4,6 +4,7 @@ import { Vehicle, VehicleType } from '../../types/index.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { VehicleBasicSpecsFields } from './VehicleBasicSpecsFields.js';
 import { VehiclePurchaseAndApkFields } from './VehiclePurchaseAndApkFields.js';
+import { VehicleNotificationSettingsFields } from './VehicleNotificationSettingsFields.js';
 
 interface VehicleModalProps {
   isOpen: boolean;
@@ -39,6 +40,12 @@ interface VehicleModalProps {
   setApkDate: (v: string) => void;
   notes: string;
   setNotes: (v: string) => void;
+  notificationsEnabled: boolean;
+  setNotificationsEnabled: (v: boolean) => void;
+  maintenanceNotificationsEnabled: boolean;
+  setMaintenanceNotificationsEnabled: (v: boolean) => void;
+  apkNotificationsEnabled: boolean;
+  setApkNotificationsEnabled: (v: boolean) => void;
   imagePreview: string | null;
   setImagePreview: (v: string | null) => void;
   setImageFile: (f: File | null) => void;
@@ -81,6 +88,12 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
   setApkDate,
   notes,
   setNotes,
+  notificationsEnabled,
+  setNotificationsEnabled,
+  maintenanceNotificationsEnabled,
+  setMaintenanceNotificationsEnabled,
+  apkNotificationsEnabled,
+  setApkNotificationsEnabled,
   imagePreview,
   setImagePreview,
   setImageFile,
@@ -155,6 +168,16 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
             setApkDate={setApkDate}
             notes={notes}
             setNotes={setNotes}
+          />
+
+          <VehicleNotificationSettingsFields
+            type={type}
+            notificationsEnabled={notificationsEnabled}
+            setNotificationsEnabled={setNotificationsEnabled}
+            maintenanceNotificationsEnabled={maintenanceNotificationsEnabled}
+            setMaintenanceNotificationsEnabled={setMaintenanceNotificationsEnabled}
+            apkNotificationsEnabled={apkNotificationsEnabled}
+            setApkNotificationsEnabled={setApkNotificationsEnabled}
           />
 
           <div className="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100 dark:border-slate-800">

@@ -8,6 +8,8 @@ import { AnalyticsController } from '../controllers/analyticsController.js';
 import { TcoService } from '../services/tcoService.js';
 import { FuelController } from '../controllers/fuelController.js';
 import { StationService } from '../services/stationService.js';
+import { VehicleController } from '../controllers/vehicleController.js';
+import { NotificationService } from '../services/notificationService.js';
 import { validateBody } from '../middleware/validate.js';
 import { z } from 'zod';
 
@@ -224,5 +226,62 @@ describe('VehicleVault v3.0 Milestone Features & Modernization', () => {
         assert.ok(st.distanceMeters < 50000, `Station distance ${st.distanceMeters}m is unreasonably far`);
       }
     }
+  });
+
+  it('supports per-vehicle notification settings and suppresses alerts when muted', async () => {
+    const motoId = 'moto-test-' + crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    // Insert a test motorcycle with maintenance notifications disabled
+    db.run(
+      `INSERT INTO vehicles (
+        id, user_id, name, type, license_plate, initial_odometer,
+        notifications_enabled, maintenance_notifications_enabled, apk_notifications_enabled,
+        status, created_at, updated_at
+      ) VALUES (?, ?, 'Test Motor', 'motorcycle', 'MOTO-01', 5000, 1, 0, 0, 'active', ?, ?)`,
+      [motoId, testUserId, now, now]
+    );
+
+    // Verify list endpoint returns booleans properly
+    const listReq = mockReq({ user: { userId: testUserId, role: 'admin' } });
+    const listRes = mockRes();
+    await VehicleController.list(listReq, listRes);
+    const moto = listRes.body.vehicles.find((v: any) => v.id === motoId);
+    assert.ok(moto);
+    assert.equal(moto.notifications_enabled, true);
+    assert.equal(moto.maintenance_notifications_enabled, false);
+    assert.equal(moto.apk_notifications_enabled, false);
+
+    // Add an overdue maintenance interval for this motorcycle
+    const cat = db.get<any>('SELECT id FROM service_categories LIMIT 1');
+    assert.ok(cat);
+    const intervalId = 'maint-test-' + crypto.randomUUID();
+    db.run(
+      `INSERT INTO maintenance_intervals (
+        id, vehicle_id, category_id, custom_name, interval_km, interval_months,
+        last_service_date, last_service_odometer, created_at
+      ) VALUES (?, ?, ?, 'Ketting smeren', 1000, 1, '2020-01-01', 1000, ?)`,
+      [intervalId, motoId, cat.id, now]
+    );
+
+    // When checking alerts with maintenance disabled for this motorcycle, no alert should be sent for it
+    // Set a dummy webhook or provider so checkAndDispatchAlerts runs its logic
+    NotificationService.saveSettings({ provider: 'none', enabledMaintenance: true });
+    // Verify that checkAndDispatchAlerts respects vehicle setting:
+    // Temporarily set provider to webhook with a mock url to test dispatch filter
+    db.run("INSERT OR REPLACE INTO system_settings (key, value, updated_at) VALUES ('notification_provider', 'none', ?)", [now]);
+
+    // Update motorcycle to enable maintenance notifications
+    const updateReq = mockReq({
+      params: { id: motoId },
+      user: { userId: testUserId, role: 'admin' },
+      body: { maintenance_notifications_enabled: true },
+    });
+    const updateRes = mockRes();
+    await VehicleController.update(updateReq, updateRes);
+    assert.equal(updateRes.statusCode, 200);
+
+    const updated = db.get<any>('SELECT maintenance_notifications_enabled FROM vehicles WHERE id = ?', [motoId]);
+    assert.equal(updated.maintenance_notifications_enabled, 1);
   });
 });

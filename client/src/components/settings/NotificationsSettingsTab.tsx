@@ -12,6 +12,7 @@ import { apiFetch } from '../../api/client.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { MailSettings } from '../MailSettings.js';
 import { WebPushSettings } from '../WebPushSettings.js';
+import { VehicleNotificationsList } from './VehicleNotificationsList.js';
 
 export const NotificationsSettingsTab: React.FC = () => {
   const { lang } = useLanguage();
@@ -284,6 +285,8 @@ export const NotificationsSettingsTab: React.FC = () => {
               Onderhoud Overschreden Herinneringen
             </span>
           </label>
+
+          <VehicleNotificationsList />
         </div>
       )}
 

@@ -28,6 +28,9 @@ export interface Vehicle {
   apk_status?: ApkStatus;
   plate_country?: 'NL' | 'BE' | 'DE' | 'EU' | 'OTHER' | string;
   image_path?: string | null;
+  notifications_enabled?: boolean;
+  maintenance_notifications_enabled?: boolean;
+  apk_notifications_enabled?: boolean;
   is_owner?: boolean;
   access_role?: 'owner' | 'editor' | 'viewer';
   owner_email?: string;

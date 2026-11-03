@@ -185,6 +185,12 @@ export const Vehicles: React.FC = () => {
         setApkDate={form.setApkDate}
         notes={form.notes}
         setNotes={form.setNotes}
+        notificationsEnabled={form.notificationsEnabled}
+        setNotificationsEnabled={form.setNotificationsEnabled}
+        maintenanceNotificationsEnabled={form.maintenanceNotificationsEnabled}
+        setMaintenanceNotificationsEnabled={form.setMaintenanceNotificationsEnabled}
+        apkNotificationsEnabled={form.apkNotificationsEnabled}
+        setApkNotificationsEnabled={form.setApkNotificationsEnabled}
         imagePreview={form.imagePreview}
         setImagePreview={form.setImagePreview}
         setImageFile={form.setImageFile}
