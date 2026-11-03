@@ -175,3 +175,4 @@ export const VehicleSeasonalStatsCard: React.FC<SeasonalStatsProps> = ({ seasona
     </div>
   );
 };
+

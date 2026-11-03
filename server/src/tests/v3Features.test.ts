@@ -299,7 +299,7 @@ describe('VehicleVault v3.0 Milestone Features & Modernization', () => {
     db.run(
       `INSERT INTO fuel_entries (id, vehicle_id, date, odometer, liters, price_per_liter, total_cost, is_full_tank, missed_previous, created_at)
        VALUES (?, ?, '2025-04-01', 10000, 50, 1.90, 95.0, 1, 0, ?)`,
-      ['fuel-s-base', seasonCarId, now]
+      [crypto.randomUUID(), seasonCarId, now]
     );
 
     // Summer fill-up (June: month 6 -> warm)
@@ -307,7 +307,7 @@ describe('VehicleVault v3.0 Milestone Features & Modernization', () => {
     db.run(
       `INSERT INTO fuel_entries (id, vehicle_id, date, odometer, liters, price_per_liter, total_cost, is_full_tank, missed_previous, created_at)
        VALUES (?, ?, '2025-06-15', 10500, 30, 1.95, 58.5, 1, 0, ?)`,
-      ['fuel-s-1', seasonCarId, now]
+      [crypto.randomUUID(), seasonCarId, now]
     );
 
     // Winter fill-up (December: month 12 -> cold)
@@ -315,7 +315,7 @@ describe('VehicleVault v3.0 Milestone Features & Modernization', () => {
     db.run(
       `INSERT INTO fuel_entries (id, vehicle_id, date, odometer, liters, price_per_liter, total_cost, is_full_tank, missed_previous, created_at)
        VALUES (?, ?, '2025-12-20', 11000, 36, 1.85, 66.6, 1, 0, ?)`,
-      ['fuel-w-1', seasonCarId, now]
+      [crypto.randomUUID(), seasonCarId, now]
     );
 
     const tco = TcoService.calculateTco({ vehicleId: seasonCarId });
