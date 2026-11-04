@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Lock, Mail, Loader2, AlertCircle, Globe, Languages } from 'lucide-react';
+import { Lock, Mail, Loader2, AlertCircle, Languages } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.js';
 import { useLanguage } from '../context/LanguageContext.js';
 import { passkeyErrorMessage } from '../utils/passkeys.js';
 import { LoginHeroSection } from '../components/auth/LoginHeroSection.js';
 import { TwoFactorLoginForm } from '../components/auth/TwoFactorLoginForm.js';
 import { PasskeyAuthSection } from '../components/auth/PasskeyAuthSection.js';
+import { GuestLoginButton } from '../components/auth/GuestLoginButton.js';
+import { LoginOidcSection } from '../components/auth/LoginOidcSection.js';
+import { InitialSetupBanner } from '../components/auth/InitialSetupBanner.js';
 
 export const Login: React.FC = () => {
   const { t, lang, setLang } = useLanguage();
@@ -149,24 +152,7 @@ export const Login: React.FC = () => {
             </p>
           </div>
 
-          {!hasUsers && (
-            <div className="bg-emerald-950/60 border border-emerald-500/40 p-4 rounded-2xl mb-5 text-xs text-emerald-300 space-y-2 shadow-lg">
-              <div className="font-bold flex items-center space-x-2">
-                <span>👋 {lang === 'nl' ? 'Eerste Installatie' : 'Initial Setup'}</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-emerald-300/90">
-                {lang === 'nl'
-                  ? 'Er is nog geen account aangemaakt. Maak direct je eerste account aan (krijgt automatisch beheerdersrechten).'
-                  : 'No account exists yet. Create your administrator account to get started.'}
-              </p>
-              <Link
-                to="/register"
-                className="w-full inline-flex items-center justify-center px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-md"
-              >
-                {lang === 'nl' ? 'Beheerder Account Aanmaken →' : 'Create Admin Account →'}
-              </Link>
-            </div>
-          )}
+          {!hasUsers && <InitialSetupBanner lang={lang} />}
 
           {error && (
             <div className="flex items-center space-x-2.5 bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs p-3.5 rounded-2xl mb-5 font-medium shadow-lg animate-in fade-in">
@@ -190,6 +176,19 @@ export const Login: React.FC = () => {
             />
           ) : (
             <>
+              {hasUsers && (
+                <div className="mb-4 space-y-3">
+                  <GuestLoginButton onError={(msg) => setError(msg)} />
+                  <div className="relative flex py-1 items-center">
+                    <div className="flex-grow border-t border-slate-800"></div>
+                    <span className="shrink-0 mx-3 text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                      {lang === 'nl' ? 'of inloggen met account' : 'or sign in with account'}
+                    </span>
+                    <div className="flex-grow border-t border-slate-800"></div>
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
                 {/* Prominent Biometric Passkey Login Button */}
                 {hasUsers && (
@@ -262,18 +261,7 @@ export const Login: React.FC = () => {
                 </button>
               </form>
 
-              {/* OIDC / SSO Button */}
-              {oidcConfig?.enabled && (
-                <div className="mt-4 pt-3 border-t border-slate-800">
-                  <a
-                    href="/api/auth/oidc/login"
-                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs transition flex items-center justify-center space-x-2 border border-slate-700 shadow-sm"
-                  >
-                    <Globe className="w-4 h-4 text-sky-400" />
-                    <span>{oidcConfig.buttonLabel || 'Single Sign-On (OIDC)'}</span>
-                  </a>
-                </div>
-              )}
+              <LoginOidcSection oidcConfig={oidcConfig} />
             </>
           )}
 

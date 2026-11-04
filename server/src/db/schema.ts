@@ -18,6 +18,7 @@ export function initializeDatabase(): void {
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'user',
+      is_guest INTEGER NOT NULL DEFAULT 0,
       last_login_at TEXT,
       last_active_at TEXT,
       created_at TEXT NOT NULL,
@@ -40,6 +41,9 @@ export function initializeDatabase(): void {
   }
   if (!columnExists('users', 'oidc_provider')) {
     db.exec('ALTER TABLE users ADD COLUMN oidc_provider TEXT;');
+  }
+  if (!columnExists('users', 'is_guest')) {
+    db.exec('ALTER TABLE users ADD COLUMN is_guest INTEGER NOT NULL DEFAULT 0;');
   }
 
   // 2. Refresh tokens
@@ -430,6 +434,15 @@ export function initializeDatabase(): void {
       updated_at TEXT NOT NULL
     );
   `);
+
+  if (!db.get('SELECT key FROM system_settings WHERE key = ?', ['allow_guest_access'])) {
+    const now = new Date().toISOString();
+    db.run('INSERT INTO system_settings (key, value, updated_at) VALUES (?, ?, ?)', [
+      'allow_guest_access',
+      'true',
+      now,
+    ]);
+  }
 
   // 11. Recurring expenses (Vaste Lasten: Wegenbelasting, Verzekering, Abonnementen)
   db.exec(`

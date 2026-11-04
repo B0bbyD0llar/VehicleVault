@@ -17,6 +17,7 @@ import {
   Settings as SettingsIcon,
 } from 'lucide-react';
 import { OfflineBanner } from './OfflineBanner.js';
+import { GuestTrialBanner } from './auth/GuestTrialBanner.js';
 import { useAuth } from '../context/AuthContext.js';
 import { useModules } from '../context/ModuleContext.js';
 import { useLanguage } from '../context/LanguageContext.js';
@@ -74,6 +75,7 @@ export const Layout: React.FC = () => {
         onSelectVehicle={handleSelectVehicle}
       />
       <OfflineBanner />
+      <GuestTrialBanner />
 
       <div className="flex-1 flex overflow-hidden min-h-0">
         <Sidebar />

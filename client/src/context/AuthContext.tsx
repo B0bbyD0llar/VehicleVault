@@ -8,9 +8,12 @@ interface AuthContextType {
   loading: boolean;
   authDisabled: boolean;
   hasUsers: boolean;
+  allowGuestAccess: boolean;
   passkeyAvailable: boolean;
   passkeyUnavailableReason: string | null;
   login: (email: string, pass: string, rememberMe?: boolean) => Promise<{ requires2FA?: boolean; tempToken?: string } | void>;
+  loginAsGuest: () => Promise<void>;
+  convertGuestAccount: (email: string, pass: string) => Promise<{ success: boolean; message: string }>;
   verify2Fa: (tempToken: string, code: string) => Promise<any>;
   register: (email: string, pass: string) => Promise<void>;
   loginWithPasskey: () => Promise<void>;
@@ -26,6 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [authDisabled, setAuthDisabled] = useState(false);
   const [hasUsers, setHasUsers] = useState(true);
+  const [allowGuestAccess, setAllowGuestAccess] = useState(true);
   const [serverPasskeyAvailable, setServerPasskeyAvailable] = useState(false);
   const [passkeyUnavailableReason, setPasskeyUnavailableReason] = useState<string | null>(null);
 
@@ -37,6 +41,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (typeof statusRes?.hasUsers === 'boolean') {
         setHasUsers(statusRes.hasUsers);
+      }
+      if (typeof statusRes?.allowGuestAccess === 'boolean') {
+        setAllowGuestAccess(statusRes.allowGuestAccess);
       }
       setServerPasskeyAvailable(statusRes?.passkeyAvailable === true);
       setPasskeyUnavailableReason(statusRes?.passkeyUnavailableReason || null);
@@ -145,6 +152,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(res.user);
   };
 
+  const loginAsGuest = async () => {
+    const res = await apiFetch<{ accessToken: string; user: User; isGuest: boolean }>('/api/auth/guest', {
+      method: 'POST',
+    });
+    setAuthToken(res.accessToken);
+    setUser({ ...res.user, isGuest: true });
+  };
+
+  const convertGuestAccount = async (email: string, pass: string): Promise<{ success: boolean; message: string }> => {
+    const res = await apiFetch<{ success: boolean; user: User; message: string }>('/api/auth/guest/convert', {
+      method: 'POST',
+      body: JSON.stringify({ email, password: pass }),
+    });
+    if (res.user) {
+      setUser({ ...res.user, isGuest: false });
+    }
+    return { success: res.success, message: res.message };
+  };
+
   const logout = async () => {
     try {
       await apiFetch('/api/auth/logout', { method: 'POST' });
@@ -164,11 +190,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         authDisabled,
         hasUsers,
+        allowGuestAccess,
         passkeyAvailable: serverPasskeyAvailable && passkeysSupported(),
         passkeyUnavailableReason:
           passkeyUnavailableReason ||
           (serverPasskeyAvailable && !passkeysSupported() ? 'Deze browser ondersteunt geen passkeys.' : null),
         login,
+        loginAsGuest,
+        convertGuestAccount,
         verify2Fa,
         register,
         loginWithPasskey,

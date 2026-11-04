@@ -35,6 +35,7 @@ export const UsersSettingsTab: React.FC = () => {
   // Security mode state
   const [disableAuth, setDisableAuth] = useState(false);
   const [isEnvEnforced, setIsEnvEnforced] = useState(false);
+  const [allowGuestAccess, setAllowGuestAccess] = useState(true);
   const [securityLoading, setSecurityLoading] = useState(false);
   const [securityMessage, setSecurityMessage] = useState<string | null>(null);
 
@@ -61,9 +62,12 @@ export const UsersSettingsTab: React.FC = () => {
 
   const loadSecuritySettings = async () => {
     try {
-      const res = await apiFetch<{ disableAuth: boolean; isEnvEnforced: boolean }>('/api/settings/security');
+      const res = await apiFetch<{ disableAuth: boolean; isEnvEnforced: boolean; allowGuestAccess?: boolean }>('/api/settings/security');
       setDisableAuth(res.disableAuth);
       setIsEnvEnforced(res.isEnvEnforced);
+      if (typeof res.allowGuestAccess === 'boolean') {
+        setAllowGuestAccess(res.allowGuestAccess);
+      }
     } catch {}
   };
 
@@ -105,6 +109,24 @@ export const UsersSettingsTab: React.FC = () => {
       await refreshAuthStatus();
     } catch (err: any) {
       setSecurityMessage(err?.message || 'Fout bij wijzigen van inloginstellingen');
+    } finally {
+      setSecurityLoading(false);
+    }
+  };
+
+  const handleToggleAllowGuestAccess = async (newVal: boolean) => {
+    setSecurityLoading(true);
+    setSecurityMessage(null);
+    try {
+      const res = await apiFetch<{ success: boolean; allowGuestAccess: boolean; message: string }>('/api/settings/security', {
+        method: 'PUT',
+        body: JSON.stringify({ allowGuestAccess: newVal }),
+      });
+      setAllowGuestAccess(res.allowGuestAccess);
+      setSecurityMessage(res.message);
+      await refreshAuthStatus();
+    } catch (err: any) {
+      setSecurityMessage(err?.message || 'Fout bij wijzigen van gasttoegang');
     } finally {
       setSecurityLoading(false);
     }
@@ -271,6 +293,32 @@ export const UsersSettingsTab: React.FC = () => {
             />
           </button>
         </div>
+
+        <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800">
+          <div className="space-y-0.5 pr-4">
+            <span className="text-xs font-bold text-slate-900 dark:text-white block">
+              Gasttoegang Toestaan (Direct proberen zonder registratie)
+            </span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
+              Geeft bezoekers (bijv. via een Pangolin invite-link) de optie om met 1 klik direct een eigen, geïsoleerde proefgarage te bekijken en testen.
+            </span>
+          </div>
+
+          <button
+            type="button"
+            disabled={securityLoading}
+            onClick={() => handleToggleAllowGuestAccess(!allowGuestAccess)}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              allowGuestAccess ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                allowGuestAccess ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Users List & Roles Management */}
@@ -329,6 +377,14 @@ export const UsersSettingsTab: React.FC = () => {
                     <td className="py-3 px-3">
                       <div className="flex items-center space-x-2">
                         <span className="font-bold text-slate-900 dark:text-white block">{u.email}</span>
+                        {u.is_guest && (
+                          <span
+                            className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0"
+                            title="Tijdelijk gastaccount"
+                          >
+                            Gast / Proef
+                          </span>
+                        )}
                         {u.is_dormant && (
                           <span
                             className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shrink-0"

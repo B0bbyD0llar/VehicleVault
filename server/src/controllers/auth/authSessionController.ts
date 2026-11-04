@@ -169,10 +169,12 @@ export class AuthSessionController {
       const disabled = isAuthDisabled();
       const user = disabled ? getDefaultUser() : null;
       const passkey = classifyPasskeyOrigin(requestOrigin(req));
+      const allowGuestAccess = !disabled && (db.get<{ value: string }>('SELECT value FROM system_settings WHERE key = ?', ['allow_guest_access'])?.value !== 'false');
       res.json({
         authDisabled: disabled,
         isProxyAuth: false,
         hasUsers,
+        allowGuestAccess,
         user,
         passkeyAvailable: passkey.available,
         passkeyUnavailableReason: passkey.reason,
@@ -185,7 +187,7 @@ export class AuthSessionController {
   public static async me(req: Request, res: Response): Promise<void> {
     try {
       const disabled = isAuthDisabled();
-      let user = db.get('SELECT id, email, role, created_at FROM users WHERE id = ?', [req.user?.userId]);
+      let user = db.get<any>('SELECT id, email, role, is_guest, created_at FROM users WHERE id = ?', [req.user?.userId]);
       if (!user && disabled) {
         user = getDefaultUser();
       }
@@ -193,7 +195,17 @@ export class AuthSessionController {
         res.status(404).json({ error: 'User not found' });
         return;
       }
-      res.json({ user, isApiKey: req.user?.isApiKey, authDisabled: disabled });
+      res.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          isGuest: Boolean(user.is_guest),
+          created_at: user.created_at,
+        },
+        isApiKey: req.user?.isApiKey,
+        authDisabled: disabled,
+      });
     } catch (err: any) {
       logger.error({ err: err?.message }, 'User fetch error');
       res.status(500).json({ error: 'Gebruikersgegevens ophalen mislukt' });

@@ -161,9 +161,11 @@ export class SettingsController {
     try {
       const isEnvEnforced = env.DISABLE_AUTH;
       const disableAuth = isAuthDisabled();
+      const allowGuestAccess = getSystemSetting('allow_guest_access') !== 'false';
       res.json({
         disableAuth,
         isEnvEnforced,
+        allowGuestAccess,
       });
     } catch (err: any) {
       res.status(500).json({ error: err?.message || 'Fout bij ophalen van beveiligingsinstellingen' });
@@ -172,22 +174,31 @@ export class SettingsController {
 
   public static async updateSecuritySettings(req: Request, res: Response): Promise<void> {
     try {
-      const { disableAuth } = req.body;
+      const { disableAuth, allowGuestAccess } = req.body;
       const isEnvEnforced = env.DISABLE_AUTH;
-      if (isEnvEnforced) {
-        res.status(400).json({
-          error: 'Inloggen is geconfigureerd via omgevingsvariabele (DISABLE_AUTH) en kan niet worden gewijzigd via de webinterface.',
-        });
-        return;
+
+      if (disableAuth !== undefined) {
+        if (isEnvEnforced) {
+          res.status(400).json({
+            error: 'Inloggen is geconfigureerd via omgevingsvariabele (DISABLE_AUTH) en kan niet worden gewijzigd via de webinterface.',
+          });
+          return;
+        }
+        setSystemSetting('disable_auth', disableAuth ? 'true' : 'false');
       }
 
-      setSystemSetting('disable_auth', disableAuth ? 'true' : 'false');
+      if (allowGuestAccess !== undefined) {
+        setSystemSetting('allow_guest_access', allowGuestAccess ? 'true' : 'false');
+      }
+
+      const currentGuest = getSystemSetting('allow_guest_access') !== 'false';
+      const currentAuth = isAuthDisabled();
+
       res.json({
         success: true,
-        disableAuth: Boolean(disableAuth),
-        message: disableAuth
-          ? 'Inloggen is succesvol uitgeschakeld. Je hebt nu direct toegang zonder wachtwoord (ideaal voor Pangolin / Reverse Proxy).'
-          : 'Inloggen is weer ingeschakeld.',
+        disableAuth: currentAuth,
+        allowGuestAccess: currentGuest,
+        message: 'Beveiligingsinstellingen succesvol bijgewerkt.',
       });
     } catch (err: any) {
       res.status(500).json({ error: err?.message || 'Fout bij opslaan van beveiligingsinstellingen' });

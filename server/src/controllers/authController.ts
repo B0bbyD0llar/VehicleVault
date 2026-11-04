@@ -2,11 +2,13 @@ import { AuthSessionController } from './auth/authSessionController.js';
 import { AuthPasswordResetController } from './auth/authPasswordResetController.js';
 import { AuthApiKeyController } from './auth/authApiKeyController.js';
 import { UserManagementController } from './auth/userManagementController.js';
+import { GuestAuthController } from './auth/guestAuthController.js';
 
 /**
  * AuthController Facade
  * Delegates specific authentication and user lifecycle capabilities to modular, SRP controllers:
  * - AuthSessionController (session lifecycle, register, login, refresh, logout, me, status, password change)
+ * - GuestAuthController (1-click trial guest sessions and guest conversion)
  * - AuthPasswordResetController (token verification, mail dispatch, reset confirmation)
  * - AuthApiKeyController (CRUD management for API access keys)
  * - UserManagementController (administrative user operations, roles, and status)
@@ -20,6 +22,10 @@ export class AuthController {
   public static status = AuthSessionController.status;
   public static me = AuthSessionController.me;
   public static changePassword = AuthSessionController.changePassword;
+
+  // Guest / Trial Access
+  public static guestLogin = GuestAuthController.guestLogin;
+  public static convertGuest = GuestAuthController.convertGuest;
 
   // Password Recovery
   public static forgotPassword = AuthPasswordResetController.forgotPassword;
@@ -42,6 +48,7 @@ export class AuthController {
 
 export {
   AuthSessionController,
+  GuestAuthController,
   AuthPasswordResetController,
   AuthApiKeyController,
   UserManagementController,
