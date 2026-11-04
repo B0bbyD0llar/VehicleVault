@@ -16,16 +16,11 @@ export const Login: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // 2FA state
   const [twoFactorData, setTwoFactorData] = useState<{ requires2FA: boolean; tempToken: string } | null>(null);
   const [twoFactorCode, setTwoFactorCode] = useState('');
-
-  // OIDC state
   const [oidcConfig, setOidcConfig] = useState<{ enabled: boolean; buttonLabel: string } | null>(null);
 
-  const { login, verify2Fa, loginWithPasskey, loginWithRecoveryCode, passkeyAvailable, user, authDisabled, hasUsers } =
-    useAuth();
+  const { login, verify2Fa, loginWithPasskey, loginWithRecoveryCode, passkeyAvailable, user, authDisabled, hasUsers } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -122,9 +117,12 @@ export const Login: React.FC = () => {
       <LoginHeroSection />
 
       {/* Right Authentication Container */}
-      <div className="relative flex-1 lg:col-span-5 xl:col-span-5 flex flex-col justify-between p-6 sm:p-10 lg:p-12 bg-slate-900/40 backdrop-blur-2xl">
+      <div className="relative flex-1 lg:col-span-5 xl:col-span-5 flex flex-col justify-between p-6 sm:p-10 lg:p-12 bg-slate-900/30 backdrop-blur-2xl overflow-hidden">
+        {/* Subtle Ambient Glow for depth */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
         {/* Top bar with language switcher */}
-        <div className="flex items-center justify-between w-full mb-6">
+        <div className="relative z-10 flex items-center justify-between w-full mb-6">
           <div className="flex items-center space-x-2.5 lg:hidden">
             <img src="/icon-512.png" alt="VehicleVault" className="w-9 h-9 object-contain drop-shadow" />
             <span className="font-black text-white text-lg tracking-tight">VehicleVault</span>
@@ -140,8 +138,8 @@ export const Login: React.FC = () => {
           </button>
         </div>
 
-        {/* Center Glassmorphic Card */}
-        <div className="my-auto w-full max-w-md mx-auto">
+        {/* Center Floating Glassmorphic Card */}
+        <div className="relative z-10 my-auto w-full max-w-md mx-auto bg-slate-900/80 border border-slate-800/90 rounded-3xl p-7 sm:p-8 shadow-[0_15px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl">
           <div className="mb-6 space-y-1">
             <h1 className="text-2xl font-black tracking-tight text-white">
               {lang === 'nl' ? 'Welkom terug' : 'Welcome back'}
