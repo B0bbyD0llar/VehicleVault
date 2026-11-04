@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radio, Gauge, ShieldCheck, Sparkles, Cpu } from 'lucide-react';
+import { Fuel, FileText, Radio, Sparkles, Cpu } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { AnimatedCockpitVisual } from './AnimatedCockpitVisual.js';
 
@@ -47,30 +47,34 @@ export const LoginHeroSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Center Cinematic Content with Animated Cockpit Visual */}
+      {/* Center Content with Animated Cockpit Visual */}
       <div className="relative z-10 my-auto py-4 max-w-xl space-y-6">
-        {/* Animated HUD Telemetry Centerpiece (Like Trek's animated routes!) */}
+        {/* Animated HUD Telemetry Centerpiece */}
         <AnimatedCockpitVisual />
 
         <div className="space-y-2 text-center sm:text-left">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
             <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{lang === 'nl' ? 'Live Telematica & Kilometerstand Sync' : 'Live Telematics & Odometer Sync'}</span>
+            <span>
+              {lang === 'nl'
+                ? 'Tanken, Documenten & Live Telematica'
+                : 'Fuel Logs, Documents & Telematics'}
+            </span>
           </div>
 
           <h2 className="text-2xl xl:text-3xl font-black tracking-tight text-white leading-tight">
             {lang === 'nl' ? (
               <>
-                Volledige controle over je wagenpark,{' '}
+                Volledige controle over tanken,{' '}
                 <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
-                  kilometers &amp; kosten.
+                  documenten &amp; telematica.
                 </span>
               </>
             ) : (
               <>
-                Complete control over your fleet,{' '}
+                Complete control over fueling,{' '}
                 <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
-                  mileage &amp; TCO.
+                  documents &amp; telematics.
                 </span>
               </>
             )}
@@ -78,49 +82,49 @@ export const LoginHeroSection: React.FC = () => {
 
           <p className="text-xs text-slate-400 leading-relaxed max-w-lg">
             {lang === 'nl'
-              ? 'Beheer je auto’s en motoren op één privacy-vriendelijke plek. Realtime tellersynchronisatie met Kia Connect & Home Assistant, OCR-factuurscanning en seizoensstatistieken.'
-              : 'Manage all your vehicles in one privacy-friendly vault. Realtime odometer sync with Kia Connect & Home Assistant, OCR invoice scanning and seasonal fuel stats.'}
+              ? 'Beheer al je tankbeurten, gescande facturen, APK en realtime kilometerstanden op één veilige, privacy-vriendelijke plek.'
+              : 'Manage all your fill-ups, scanned invoices, inspections and realtime odometer telemetry in one privacy-friendly vault.'}
           </p>
         </div>
 
-        {/* 3 Compact Glass Feature Cards */}
+        {/* 3 Compact Glass Feature Cards: Fuel, Documents, Telematics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-          {/* Card 1: Telematics */}
+          {/* Card 1: Tankbeurten & Bonnen */}
+          <div className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 backdrop-blur-md transition-all group">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+              <Fuel className="w-4 h-4 text-amber-400" />
+            </div>
+            <h4 className="text-xs font-bold text-white mb-0.5">
+              {lang === 'nl' ? 'Slimme Tanklog' : 'Smart Fuel Log'}
+            </h4>
+            <p className="text-[11px] text-slate-400 leading-tight">
+              {lang === 'nl' ? 'Bonnen scannen, GPS & km/l' : 'Receipt scan, GPS & km/l'}
+            </p>
+          </div>
+
+          {/* Card 2: Documenten & Facturen */}
+          <div className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 backdrop-blur-md transition-all group">
+            <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+              <FileText className="w-4 h-4 text-sky-400" />
+            </div>
+            <h4 className="text-xs font-bold text-white mb-0.5">
+              {lang === 'nl' ? 'Documenten & Facturen' : 'Docs & Invoices'}
+            </h4>
+            <p className="text-[11px] text-slate-400 leading-tight">
+              {lang === 'nl' ? 'AI factuurherkenning & APK' : 'AI invoice OCR & APK'}
+            </p>
+          </div>
+
+          {/* Card 3: Live Telematica */}
           <div className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 backdrop-blur-md transition-all group">
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
               <Radio className="w-4 h-4 text-emerald-400" />
             </div>
             <h4 className="text-xs font-bold text-white mb-0.5">
-              {lang === 'nl' ? 'Live Telematica' : 'Live Telematics'}
+              {lang === 'nl' ? 'Telematica & TCO' : 'Telematics & TCO'}
             </h4>
             <p className="text-[11px] text-slate-400 leading-tight">
-              {lang === 'nl' ? 'Kia Connect, Mercedes & HA' : 'Kia Connect, Mercedes & HA'}
-            </p>
-          </div>
-
-          {/* Card 2: TCO Analytics */}
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 backdrop-blur-md transition-all group">
-            <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
-              <Gauge className="w-4 h-4 text-sky-400" />
-            </div>
-            <h4 className="text-xs font-bold text-white mb-0.5">
-              {lang === 'nl' ? 'TCO & Seizoen' : 'TCO Analytics'}
-            </h4>
-            <p className="text-[11px] text-slate-400 leading-tight">
-              {lang === 'nl' ? 'Zomer vs. winterverbruik' : 'Summer vs. winter stats'}
-            </p>
-          </div>
-
-          {/* Card 3: Security & Passkeys */}
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 backdrop-blur-md transition-all group">
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
-              <ShieldCheck className="w-4 h-4 text-purple-400" />
-            </div>
-            <h4 className="text-xs font-bold text-white mb-0.5">
-              {lang === 'nl' ? 'Biometrisch' : 'Passkey Ready'}
-            </h4>
-            <p className="text-[11px] text-slate-400 leading-tight">
-              {lang === 'nl' ? 'TouchID, FaceID & Windows Hello' : 'TouchID, FaceID & Hello'}
+              {lang === 'nl' ? 'Kia, HA, Mercedes & tellers' : 'Kia, HA, Mercedes & odo'}
             </p>
           </div>
         </div>
