@@ -170,7 +170,7 @@ export const AnimatedCockpitVisual: React.FC = () => {
               {lang === 'nl' ? 'Tankbeurt & Verbruik' : 'Fuel & Consumption'}
             </div>
             <div className="text-xs font-mono font-bold text-amber-300">
-              1:18,5 km/l • € 1,89/L
+              {lang === 'nl' ? '1:18,5 km/l • € 1,89/L' : '1:18.5 km/l • €1.89/L'}
             </div>
           </div>
         </div>
@@ -185,7 +185,7 @@ export const AnimatedCockpitVisual: React.FC = () => {
               {lang === 'nl' ? 'Factuur & Doc OCR' : 'Invoice & Doc OCR'}
             </div>
             <div className="text-xs font-mono font-bold text-sky-300">
-              Kia Factuur • Gescand ✓
+              {lang === 'nl' ? 'Kia Factuur • Gescand ✓' : 'Kia Invoice • Scanned ✓'}
             </div>
           </div>
         </div>
@@ -197,10 +197,10 @@ export const AnimatedCockpitVisual: React.FC = () => {
           </div>
           <div className="text-left">
             <div className="text-[10px] font-mono text-slate-400 font-semibold uppercase tracking-wider">
-              {lang === 'nl' ? 'Telematica & Odometer' : 'Telematics & Odometer'}
+              {lang === 'nl' ? 'Telematica & Kilometerstand' : 'Telematics & Odometer'}
             </div>
             <div className="text-xs font-mono font-bold text-emerald-300 flex items-center space-x-1">
-              <span>45.280 km</span>
+              <span>{lang === 'nl' ? '45.280 km' : '45,280 km'}</span>
               <span className="text-[10px] text-emerald-400 font-normal">● Auto Sync</span>
             </div>
           </div>
@@ -213,10 +213,10 @@ export const AnimatedCockpitVisual: React.FC = () => {
           </div>
           <div className="text-left">
             <div className="text-[10px] font-mono text-slate-400 font-semibold uppercase tracking-wider">
-              {lang === 'nl' ? 'APK & Onderhoud' : 'APK & Maintenance'}
+              {lang === 'nl' ? 'APK & Onderhoud' : 'Inspection & Maintenance'}
             </div>
             <div className="text-xs font-mono font-bold text-purple-300">
-              APK OK • Historie Actueel
+              {lang === 'nl' ? 'APK OK • Historie Actueel' : 'Inspection OK • Up to Date'}
             </div>
           </div>
         </div>
