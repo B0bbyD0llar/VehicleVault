@@ -95,6 +95,12 @@ export function initializeDatabase(): void {
       apk_notifications_enabled INTEGER NOT NULL DEFAULT 1,
       tire_swap_notifications_enabled INTEGER NOT NULL DEFAULT 1,
       tire_tread_notifications_enabled INTEGER NOT NULL DEFAULT 1,
+      telematics_enabled INTEGER NOT NULL DEFAULT 0,
+      telematics_provider TEXT NOT NULL DEFAULT 'home_assistant',
+      telematics_ha_entity_id TEXT,
+      telematics_last_sync_at TEXT,
+      telematics_last_status TEXT,
+      telematics_last_odometer REAL,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -129,6 +135,24 @@ export function initializeDatabase(): void {
   }
   if (!columnExists('vehicles', 'tire_tread_notifications_enabled')) {
     db.exec("ALTER TABLE vehicles ADD COLUMN tire_tread_notifications_enabled INTEGER NOT NULL DEFAULT 1;");
+  }
+  if (!columnExists('vehicles', 'telematics_enabled')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN telematics_enabled INTEGER NOT NULL DEFAULT 0;");
+  }
+  if (!columnExists('vehicles', 'telematics_provider')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN telematics_provider TEXT NOT NULL DEFAULT 'home_assistant';");
+  }
+  if (!columnExists('vehicles', 'telematics_ha_entity_id')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN telematics_ha_entity_id TEXT;");
+  }
+  if (!columnExists('vehicles', 'telematics_last_sync_at')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN telematics_last_sync_at TEXT;");
+  }
+  if (!columnExists('vehicles', 'telematics_last_status')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN telematics_last_status TEXT;");
+  }
+  if (!columnExists('vehicles', 'telematics_last_odometer')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN telematics_last_odometer REAL;");
   }
 
   // 4b. Multi-User Vehicle Sharing

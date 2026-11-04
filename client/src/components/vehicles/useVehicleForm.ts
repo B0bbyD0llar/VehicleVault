@@ -29,6 +29,12 @@ export function useVehicleForm(refreshVehicles: () => void) {
   const [apkNotificationsEnabled, setApkNotificationsEnabled] = useState(true);
   const [tireSwapNotificationsEnabled, setTireSwapNotificationsEnabled] = useState(true);
   const [tireTreadNotificationsEnabled, setTireTreadNotificationsEnabled] = useState(true);
+  const [telematicsEnabled, setTelematicsEnabled] = useState(false);
+  const [telematicsProvider, setTelematicsProvider] = useState('home_assistant');
+  const [telematicsHaEntityId, setTelematicsHaEntityId] = useState('');
+  const [telematicsLastSyncAt, setTelematicsLastSyncAt] = useState<string | null>(null);
+  const [telematicsLastStatus, setTelematicsLastStatus] = useState<string | null>(null);
+  const [telematicsLastOdometer, setTelematicsLastOdometer] = useState<number | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [rdwLoading, setRdwLoading] = useState(false);
@@ -55,6 +61,12 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setApkNotificationsEnabled(true);
     setTireSwapNotificationsEnabled(true);
     setTireTreadNotificationsEnabled(true);
+    setTelematicsEnabled(false);
+    setTelematicsProvider('home_assistant');
+    setTelematicsHaEntityId('');
+    setTelematicsLastSyncAt(null);
+    setTelematicsLastStatus(null);
+    setTelematicsLastOdometer(null);
     setImageFile(null);
     setImagePreview(null);
     setEditingVehicle(null);
@@ -88,6 +100,12 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setApkNotificationsEnabled(v.apk_notifications_enabled !== false);
     setTireSwapNotificationsEnabled(v.tire_swap_notifications_enabled !== false);
     setTireTreadNotificationsEnabled(v.tire_tread_notifications_enabled !== false);
+    setTelematicsEnabled(Boolean(v.telematics_enabled));
+    setTelematicsProvider(v.telematics_provider || 'home_assistant');
+    setTelematicsHaEntityId(v.telematics_ha_entity_id || '');
+    setTelematicsLastSyncAt(v.telematics_last_sync_at || null);
+    setTelematicsLastStatus(v.telematics_last_status || null);
+    setTelematicsLastOdometer(v.telematics_last_odometer ?? null);
     setImageFile(null);
     setImagePreview(v.image_path ? `/uploads/vehicles/${v.image_path}` : null);
     setError(null);
@@ -151,6 +169,9 @@ export function useVehicleForm(refreshVehicles: () => void) {
       apk_notifications_enabled: apkNotificationsEnabled,
       tire_swap_notifications_enabled: tireSwapNotificationsEnabled,
       tire_tread_notifications_enabled: tireTreadNotificationsEnabled,
+      telematics_enabled: telematicsEnabled,
+      telematics_provider: telematicsProvider,
+      telematics_ha_entity_id: telematicsHaEntityId || null,
     };
 
     try {
@@ -230,6 +251,15 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setTireSwapNotificationsEnabled,
     tireTreadNotificationsEnabled,
     setTireTreadNotificationsEnabled,
+    telematicsEnabled,
+    setTelematicsEnabled,
+    telematicsProvider,
+    setTelematicsProvider,
+    telematicsHaEntityId,
+    setTelematicsHaEntityId,
+    telematicsLastSyncAt,
+    telematicsLastStatus,
+    telematicsLastOdometer,
     imageFile,
     setImageFile,
     imagePreview,

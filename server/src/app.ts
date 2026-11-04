@@ -26,6 +26,7 @@ import expenseRoutes from './routes/expenseRoutes.js';
 import tripRoutes from './routes/tripRoutes.js';
 import tireRoutes from './routes/tireRoutes.js';
 import vignetteRoutes from './routes/vignetteRoutes.js';
+import telematicsRoutes from './routes/telematicsRoutes.js';
 import { httpLogger } from './utils/logger.js';
 import { ShowcaseController } from './controllers/showcaseController.js';
 import { toNodeHandler } from 'better-auth/node';
@@ -128,6 +129,7 @@ export function createApp(): express.Application {
   app.use('/api/trips', tripRoutes);
   app.use('/api/tires', tireRoutes);
   app.use('/api/vignettes', vignetteRoutes);
+  app.use('/api/telematics', telematicsRoutes);
 
   // Public Unauthenticated Showcase Endpoint
   app.get('/api/public/showcase/:slug', ShowcaseController.getPublic);

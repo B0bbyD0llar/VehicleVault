@@ -195,6 +195,13 @@ export const Vehicles: React.FC = () => {
         setTireSwapNotificationsEnabled={form.setTireSwapNotificationsEnabled}
         tireTreadNotificationsEnabled={form.tireTreadNotificationsEnabled}
         setTireTreadNotificationsEnabled={form.setTireTreadNotificationsEnabled}
+        telematicsEnabled={form.telematicsEnabled}
+        setTelematicsEnabled={form.setTelematicsEnabled}
+        telematicsHaEntityId={form.telematicsHaEntityId}
+        setTelematicsHaEntityId={form.setTelematicsHaEntityId}
+        telematicsLastSyncAt={form.telematicsLastSyncAt}
+        telematicsLastStatus={form.telematicsLastStatus}
+        telematicsLastOdometer={form.telematicsLastOdometer}
         imagePreview={form.imagePreview}
         setImagePreview={form.setImagePreview}
         setImageFile={form.setImageFile}

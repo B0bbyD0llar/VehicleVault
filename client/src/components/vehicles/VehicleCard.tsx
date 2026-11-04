@@ -8,6 +8,7 @@ import {
   Users,
   Landmark,
   BellOff,
+  Radio,
 } from 'lucide-react';
 import { Vehicle, VehicleType } from '../../types/index.js';
 import { StatusBadge } from '../StatusBadge.js';
@@ -99,6 +100,12 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
                 <span>{lang === 'nl' ? 'Stil' : 'Muted'}</span>
               </span>
             )}
+            {v.telematics_enabled && (
+              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/40" title={lang === 'nl' ? 'Telematica actief' : 'Telematics active'}>
+                <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
+                <span>Telematica</span>
+              </span>
+            )}
             {v.notifications_enabled !== false && v.maintenance_notifications_enabled === false && (
               <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/40" title={lang === 'nl' ? 'Onderhoudsherinneringen uitgeschakeld' : 'Maintenance alerts disabled'}>
                 <BellOff className="w-3 h-3 text-amber-500" />
@@ -165,6 +172,17 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
               <span className="text-slate-500">{t('purchasePrice')}</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">
                 € {v.purchase_price.toLocaleString()}
+              </span>
+            </div>
+          )}
+          {v.telematics_enabled && v.telematics_last_sync_at && (
+            <div className="flex justify-between border-t border-slate-200 dark:border-slate-800/80 pt-1.5 text-[11px]">
+              <span className="text-slate-500 flex items-center space-x-1">
+                <Radio className="w-3 h-3 text-emerald-500" />
+                <span>{lang === 'nl' ? 'Telematica sync' : 'Telematics sync'}</span>
+              </span>
+              <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                {new Date(v.telematics_last_sync_at).toLocaleDateString(lang === 'nl' ? 'nl-NL' : 'en-US')}
               </span>
             </div>
           )}

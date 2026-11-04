@@ -5,6 +5,7 @@ import { useLanguage } from '../../context/LanguageContext.js';
 import { VehicleBasicSpecsFields } from './VehicleBasicSpecsFields.js';
 import { VehiclePurchaseAndApkFields } from './VehiclePurchaseAndApkFields.js';
 import { VehicleNotificationSettingsFields } from './VehicleNotificationSettingsFields.js';
+import { VehicleTelematicsFields } from './VehicleTelematicsFields.js';
 
 interface VehicleModalProps {
   isOpen: boolean;
@@ -50,6 +51,13 @@ interface VehicleModalProps {
   setTireSwapNotificationsEnabled?: (v: boolean) => void;
   tireTreadNotificationsEnabled?: boolean;
   setTireTreadNotificationsEnabled?: (v: boolean) => void;
+  telematicsEnabled?: boolean;
+  setTelematicsEnabled?: (v: boolean) => void;
+  telematicsHaEntityId?: string;
+  setTelematicsHaEntityId?: (v: string) => void;
+  telematicsLastSyncAt?: string | null;
+  telematicsLastStatus?: string | null;
+  telematicsLastOdometer?: number | null;
   imagePreview: string | null;
   setImagePreview: (v: string | null) => void;
   setImageFile: (f: File | null) => void;
@@ -102,6 +110,13 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
   setTireSwapNotificationsEnabled,
   tireTreadNotificationsEnabled,
   setTireTreadNotificationsEnabled,
+  telematicsEnabled,
+  setTelematicsEnabled,
+  telematicsHaEntityId,
+  setTelematicsHaEntityId,
+  telematicsLastSyncAt,
+  telematicsLastStatus,
+  telematicsLastOdometer,
   imagePreview,
   setImagePreview,
   setImageFile,
@@ -191,6 +206,19 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
             tireTreadNotificationsEnabled={tireTreadNotificationsEnabled}
             setTireTreadNotificationsEnabled={setTireTreadNotificationsEnabled}
           />
+
+          {setTelematicsEnabled && setTelematicsHaEntityId && (
+            <VehicleTelematicsFields
+              vehicleId={editingVehicle?.id}
+              telematicsEnabled={Boolean(telematicsEnabled)}
+              setTelematicsEnabled={setTelematicsEnabled}
+              telematicsHaEntityId={telematicsHaEntityId || ''}
+              setTelematicsHaEntityId={setTelematicsHaEntityId}
+              telematicsLastSyncAt={telematicsLastSyncAt}
+              telematicsLastStatus={telematicsLastStatus}
+              telematicsLastOdometer={telematicsLastOdometer}
+            />
+          )}
 
           <div className="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button

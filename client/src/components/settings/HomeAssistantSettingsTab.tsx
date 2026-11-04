@@ -13,6 +13,7 @@ import {
 import { apiFetch } from '../../api/client.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { ApiKeyItem } from '../../types/index.js';
+import { HomeAssistantTelematicsCard } from './HomeAssistantTelematicsCard.js';
 
 interface HomeAssistantSettingsTabProps {
   onNavigateToUsers: () => void;
@@ -88,6 +89,9 @@ action:
 
   return (
     <div className="space-y-6">
+      {/* Outbound Home Assistant Telematics Sync (Pull Odometer from HA) */}
+      <HomeAssistantTelematicsCard />
+
       {/* Home Assistant Integration Guide (HACS & YAML) */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">

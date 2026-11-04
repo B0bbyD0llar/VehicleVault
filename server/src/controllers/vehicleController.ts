@@ -28,6 +28,9 @@ const vehicleSchema = z.object({
   apk_notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
   tire_swap_notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
   tire_tread_notifications_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
+  telematics_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
+  telematics_provider: z.string().default('home_assistant'),
+  telematics_ha_entity_id: z.string().optional().nullable(),
 });
 
 export class VehicleController {
@@ -80,6 +83,7 @@ export class VehicleController {
           apk_notifications_enabled: v.apk_notifications_enabled !== 0,
           tire_swap_notifications_enabled: v.tire_swap_notifications_enabled !== 0,
           tire_tread_notifications_enabled: v.tire_tread_notifications_enabled !== 0,
+          telematics_enabled: v.telematics_enabled === 1,
           apk_status: apk,
         };
       });
@@ -138,6 +142,7 @@ export class VehicleController {
           apk_notifications_enabled: vehicle.apk_notifications_enabled !== 0,
           tire_swap_notifications_enabled: vehicle.tire_swap_notifications_enabled !== 0,
           tire_tread_notifications_enabled: vehicle.tire_tread_notifications_enabled !== 0,
+          telematics_enabled: vehicle.telematics_enabled === 1,
           apk_status: RdwService.evaluateApkStatus(vehicle.apk_expiration_date),
         },
       });
@@ -181,6 +186,9 @@ export class VehicleController {
       const apkNotificationsEnabled = data.apk_notifications_enabled !== undefined ? (data.apk_notifications_enabled ? 1 : 0) : 1;
       const tireSwapNotificationsEnabled = data.tire_swap_notifications_enabled !== undefined ? (data.tire_swap_notifications_enabled ? 1 : 0) : 1;
       const tireTreadNotificationsEnabled = data.tire_tread_notifications_enabled !== undefined ? (data.tire_tread_notifications_enabled ? 1 : 0) : 1;
+      const telematicsEnabled = data.telematics_enabled ? 1 : 0;
+      const telematicsProvider = data.telematics_provider || 'home_assistant';
+      const telematicsHaEntityId = data.telematics_ha_entity_id ? data.telematics_ha_entity_id.trim() : null;
 
       db.run(
         `INSERT INTO vehicles (
@@ -189,8 +197,9 @@ export class VehicleController {
           notes, status, rdw_data, apk_expiration_date, plate_country, image_path,
           notifications_enabled, maintenance_notifications_enabled, apk_notifications_enabled,
           tire_swap_notifications_enabled, tire_tread_notifications_enabled,
+          telematics_enabled, telematics_provider, telematics_ha_entity_id,
           created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           req.user?.userId,
@@ -216,6 +225,9 @@ export class VehicleController {
           apkNotificationsEnabled,
           tireSwapNotificationsEnabled,
           tireTreadNotificationsEnabled,
+          telematicsEnabled,
+          telematicsProvider,
+          telematicsHaEntityId,
           now,
           now,
         ]
@@ -302,6 +314,13 @@ export class VehicleController {
       const tire_tread_notifications_enabled = data.tire_tread_notifications_enabled !== undefined
         ? (data.tire_tread_notifications_enabled ? 1 : 0)
         : (existing.tire_tread_notifications_enabled ?? 1);
+      const telematics_enabled = data.telematics_enabled !== undefined
+        ? (data.telematics_enabled ? 1 : 0)
+        : (existing.telematics_enabled ?? 0);
+      const telematics_provider = data.telematics_provider || existing.telematics_provider || 'home_assistant';
+      const telematics_ha_entity_id = data.telematics_ha_entity_id !== undefined
+        ? (data.telematics_ha_entity_id ? data.telematics_ha_entity_id.trim() : null)
+        : (existing.telematics_ha_entity_id ?? null);
 
       db.run(
         `UPDATE vehicles SET
@@ -310,6 +329,7 @@ export class VehicleController {
           notes = ?, status = ?, apk_expiration_date = ?, plate_country = ?, image_path = ?,
           notifications_enabled = ?, maintenance_notifications_enabled = ?, apk_notifications_enabled = ?,
           tire_swap_notifications_enabled = ?, tire_tread_notifications_enabled = ?,
+          telematics_enabled = ?, telematics_provider = ?, telematics_ha_entity_id = ?,
           updated_at = ?
          WHERE id = ?`,
         [
@@ -334,6 +354,9 @@ export class VehicleController {
           apk_notifications_enabled,
           tire_swap_notifications_enabled,
           tire_tread_notifications_enabled,
+          telematics_enabled,
+          telematics_provider,
+          telematics_ha_entity_id,
           now,
           id,
         ]

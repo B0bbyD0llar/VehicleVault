@@ -1,5 +1,6 @@
 import { ToadScheduler, SimpleIntervalJob, AsyncTask } from 'toad-scheduler';
 import { NotificationService } from './notificationService.js';
+import { TelematicsService } from './telematicsService.js';
 import { logger } from '../utils/logger.js';
 
 export class SchedulerService {
@@ -35,8 +36,34 @@ export class SchedulerService {
     });
 
     this.scheduler.addSimpleIntervalJob(alertJob);
+
+    // 2. Daily Telematics & Odometer Sync (Home Assistant / Kia Connect etc.)
+    const telematicsTask = new AsyncTask(
+      'daily-telematics-sync',
+      async () => {
+        try {
+          logger.info('Scheduler: Running daily telematics odometer sync...');
+          const result = await TelematicsService.syncAllVehicles();
+          logger.info(result, 'Scheduler: Telematics sync completed');
+        } catch (err: any) {
+          logger.error({ err: err?.message }, 'Scheduler: Error in telematics sync');
+        }
+      },
+      (err: Error) => {
+        logger.error({ err: err.message }, 'Scheduler: Unhandled error in telematics sync');
+      }
+    );
+
+    // Run every 12 hours
+    const telematicsJob = new SimpleIntervalJob({ hours: 12, runImmediately: false }, telematicsTask, {
+      id: 'job-telematics-sync',
+      preventOverrun: true,
+    });
+
+    this.scheduler.addSimpleIntervalJob(telematicsJob);
+
     this.isInitialized = true;
-    logger.info('ToadScheduler: Initialized background tasks (vehicle alerts every 6h)');
+    logger.info('ToadScheduler: Initialized background tasks (vehicle alerts & telematics)');
   }
 
   public static stop(): void {
@@ -51,7 +78,7 @@ export class SchedulerService {
   public static getStatus(): { isRunning: boolean; jobCount: number } {
     return {
       isRunning: this.isInitialized && this.scheduler !== null,
-      jobCount: this.scheduler ? 1 : 0,
+      jobCount: this.scheduler ? 2 : 0,
     };
   }
 }

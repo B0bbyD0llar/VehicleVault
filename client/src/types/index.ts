@@ -33,6 +33,12 @@ export interface Vehicle {
   apk_notifications_enabled?: boolean;
   tire_swap_notifications_enabled?: boolean;
   tire_tread_notifications_enabled?: boolean;
+  telematics_enabled?: boolean;
+  telematics_provider?: string;
+  telematics_ha_entity_id?: string | null;
+  telematics_last_sync_at?: string | null;
+  telematics_last_status?: string | null;
+  telematics_last_odometer?: number | null;
   is_owner?: boolean;
   access_role?: 'owner' | 'editor' | 'viewer';
   owner_email?: string;
