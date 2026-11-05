@@ -82,13 +82,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
       }
     } else {
-      // Attempt cookie refresh
+      // Attempt cookie refresh or direct cookie authentication
       try {
         const res = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'same-origin' });
         if (res.ok) {
           const data = await res.json();
           setAuthToken(data.accessToken);
           setUser(data.user);
+        } else {
+          const meRes = await fetch('/api/auth/me', { credentials: 'same-origin' });
+          if (meRes.ok) {
+            const meData = await meRes.json();
+            if (meData.user) {
+              setUser(meData.user);
+            }
+          }
         }
       } catch {
         // ignore unauthenticated

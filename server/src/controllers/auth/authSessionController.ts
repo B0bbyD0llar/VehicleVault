@@ -10,7 +10,7 @@ import {
   hashToken,
   generate2FaTempToken,
 } from '../../utils/token.js';
-import { startSession } from '../../utils/session.js';
+import { startSession, clearSessionCookies } from '../../utils/session.js';
 import { requestOrigin, classifyPasskeyOrigin } from '../../utils/passkeyHost.js';
 import { logger } from '../../utils/logger.js';
 
@@ -143,7 +143,7 @@ export class AuthSessionController {
         const tokenHash = hashToken(refreshToken);
         db.run('DELETE FROM refresh_tokens WHERE token_hash = ?', [tokenHash]);
       }
-      res.clearCookie('refresh_token');
+      clearSessionCookies(res);
       res.json({ success: true, message: 'Logged out successfully' });
     } catch (err: any) {
       logger.error({ err: err?.message }, 'Logout error');

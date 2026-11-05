@@ -43,5 +43,17 @@ export function startSession(
     maxAge: 90 * 24 * 60 * 60 * 1000,
   });
 
+  res.cookie('vv_token', accessToken, {
+    httpOnly: true,
+    secure: isSecureRequest(req),
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
   return { accessToken, user: { id: user.id, email: user.email, role: user.role } };
+}
+
+export function clearSessionCookies(res: Response): void {
+  res.clearCookie('refresh_token');
+  res.clearCookie('vv_token');
 }

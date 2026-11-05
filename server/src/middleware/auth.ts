@@ -108,6 +108,8 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     explicitToken = authHeader.substring(7).trim();
   } else if (apiKeyHeader) {
     explicitToken = apiKeyHeader.trim();
+  } else if (req.cookies?.vv_token) {
+    explicitToken = req.cookies.vv_token;
   }
 
   // 1. If an explicit API Key (vkv_) is provided, authenticate as the owner of that API key

@@ -29,6 +29,9 @@ import vignetteRoutes from './routes/vignetteRoutes.js';
 import telematicsRoutes from './routes/telematicsRoutes.js';
 import { httpLogger } from './utils/logger.js';
 import { ShowcaseController } from './controllers/showcaseController.js';
+import { AuthController } from './controllers/authController.js';
+import { getProxyUser } from './middleware/proxyAuth.js';
+import { startSession } from './utils/session.js';
 import { toNodeHandler } from 'better-auth/node';
 import { auth as betterAuthInstance } from './auth/betterAuth.js';
 
@@ -107,6 +110,9 @@ export function createApp(): express.Application {
     }
   });
 
+  // Diagnostic endpoint for reverse proxies (protected or non-protected routes)
+  app.get('/proxy-debug', AuthController.proxyDebug);
+
   // Apply general rate limiter to API routes
   app.use('/api', apiLimiter);
 
@@ -165,6 +171,19 @@ export function createApp(): express.Application {
       if (req.path.startsWith('/assets/') || /\.(js|mjs|css|map|json|txt|png|jpe?g|gif|svg|ico|webp|woff2?|ttf)$/i.test(req.path)) {
         res.status(404).type('text/plain').send('Not found');
         return;
+      }
+      try {
+        const proxyUser = getProxyUser(req);
+        if (proxyUser) {
+          startSession(
+            req,
+            res,
+            { id: proxyUser.userId, email: proxyUser.email, role: proxyUser.role },
+            { trackLogin: true }
+          );
+        }
+      } catch {
+        // Non-blocking: continue serving index.html if proxy session generation fails
       }
       res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(path.join(clientDist, 'index.html'));
