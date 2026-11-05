@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Lock, Mail, Loader2, AlertCircle, Languages } from 'lucide-react';
+import { AlertCircle, Languages } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.js';
 import { useLanguage } from '../context/LanguageContext.js';
 import { passkeyErrorMessage } from '../utils/passkeys.js';
@@ -10,6 +10,7 @@ import { PasskeyAuthSection } from '../components/auth/PasskeyAuthSection.js';
 import { GuestLoginButton } from '../components/auth/GuestLoginButton.js';
 import { LoginOidcSection } from '../components/auth/LoginOidcSection.js';
 import { InitialSetupBanner } from '../components/auth/InitialSetupBanner.js';
+import { EmailLoginForm } from '../components/auth/EmailLoginForm.js';
 
 export const Login: React.FC = () => {
   const { t, lang, setLang } = useLanguage();
@@ -23,7 +24,18 @@ export const Login: React.FC = () => {
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [oidcConfig, setOidcConfig] = useState<{ enabled: boolean; buttonLabel: string } | null>(null);
 
-  const { login, verify2Fa, loginWithPasskey, loginWithRecoveryCode, passkeyAvailable, user, authDisabled, hasUsers } = useAuth();
+  const {
+    login,
+    loginAsGuest,
+    allowGuestAccess,
+    verify2Fa,
+    loginWithPasskey,
+    loginWithRecoveryCode,
+    passkeyAvailable,
+    user,
+    authDisabled,
+    hasUsers,
+  } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,6 +43,23 @@ export const Login: React.FC = () => {
       navigate('/', { replace: true });
     }
   }, [user, authDisabled, navigate]);
+
+  useEffect(() => {
+    const isAutoGuest =
+      searchParams.get('guest') === '1' ||
+      searchParams.get('proef') === '1' ||
+      searchParams.has('invite') ||
+      searchParams.has('token');
+    if (isAutoGuest && allowGuestAccess && !user && !loading) {
+      setLoading(true);
+      loginAsGuest()
+        .then(() => navigate('/', { replace: true }))
+        .catch((err: any) => {
+          setError(err?.message || 'Gasttoegang starten mislukt');
+          setLoading(false);
+        });
+    }
+  }, [searchParams, allowGuestAccess, user]);
 
   useEffect(() => {
     const errParam = searchParams.get('error');
@@ -189,7 +218,7 @@ export const Login: React.FC = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+              <div className="space-y-4 text-xs">
                 {/* Prominent Biometric Passkey Login Button */}
                 {hasUsers && (
                   <PasskeyAuthSection
@@ -200,68 +229,20 @@ export const Login: React.FC = () => {
                   />
                 )}
 
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1.5">{lang === 'nl' ? 'E-mailadres' : 'Email Address'}</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="email"
-                      required
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="bestuurder@voorbeeld.nl"
-                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 font-medium transition shadow-inner"
-                    />
-                  </div>
-                </div>
+                <EmailLoginForm
+                  email={email}
+                  setEmail={setEmail}
+                  password={password}
+                  setPassword={setPassword}
+                  rememberMe={rememberMe}
+                  setRememberMe={setRememberMe}
+                  loading={loading}
+                  lang={lang}
+                  onSubmit={handleSubmit}
+                />
 
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1.5">{lang === 'nl' ? 'Wachtwoord' : 'Password'}</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="password"
-                      required
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition shadow-inner"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  <label className="flex items-center space-x-2 text-slate-400 hover:text-slate-300 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500/20"
-                    />
-                    <span className="text-[11px] font-medium">{lang === 'nl' ? 'Blijf ingelogd' : 'Remember me'}</span>
-                  </label>
-
-                  <Link
-                    to="/forgot-password"
-                    className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 hover:underline"
-                  >
-                    {lang === 'nl' ? 'Wachtwoord vergeten?' : 'Forgot password?'}
-                  </Link>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition disabled:opacity-50 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-950/60 hover:scale-[1.01] mt-2"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  <span>{loading ? (lang === 'nl' ? 'Inloggen...' : 'Signing in...') : (lang === 'nl' ? 'Inloggen op Vault' : 'Sign in to Vault')}</span>
-                </button>
-              </form>
-
-              <LoginOidcSection oidcConfig={oidcConfig} />
+                <LoginOidcSection oidcConfig={oidcConfig} />
+              </div>
             </>
           )}
 

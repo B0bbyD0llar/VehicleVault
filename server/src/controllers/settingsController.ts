@@ -5,7 +5,7 @@ import {
   setSystemSetting,
   maskApiKey,
 } from '../services/aiReceiptService.js';
-import { isAuthDisabled } from '../middleware/auth.js';
+import { isAuthDisabled, isProxyAuthEnabled } from '../middleware/auth.js';
 import { env } from '../config/env.js';
 
 export class SettingsController {
@@ -162,10 +162,12 @@ export class SettingsController {
       const isEnvEnforced = env.DISABLE_AUTH;
       const disableAuth = isAuthDisabled();
       const allowGuestAccess = getSystemSetting('allow_guest_access') !== 'false';
+      const enableProxyAuth = isProxyAuthEnabled();
       res.json({
         disableAuth,
         isEnvEnforced,
         allowGuestAccess,
+        enableProxyAuth,
       });
     } catch (err: any) {
       res.status(500).json({ error: err?.message || 'Fout bij ophalen van beveiligingsinstellingen' });
@@ -174,7 +176,7 @@ export class SettingsController {
 
   public static async updateSecuritySettings(req: Request, res: Response): Promise<void> {
     try {
-      const { disableAuth, allowGuestAccess } = req.body;
+      const { disableAuth, allowGuestAccess, enableProxyAuth } = req.body;
       const isEnvEnforced = env.DISABLE_AUTH;
 
       if (disableAuth !== undefined) {
@@ -191,13 +193,19 @@ export class SettingsController {
         setSystemSetting('allow_guest_access', allowGuestAccess ? 'true' : 'false');
       }
 
+      if (enableProxyAuth !== undefined) {
+        setSystemSetting('enable_proxy_auth', enableProxyAuth ? 'true' : 'false');
+      }
+
       const currentGuest = getSystemSetting('allow_guest_access') !== 'false';
       const currentAuth = isAuthDisabled();
+      const currentProxy = isProxyAuthEnabled();
 
       res.json({
         success: true,
         disableAuth: currentAuth,
         allowGuestAccess: currentGuest,
+        enableProxyAuth: currentProxy,
         message: 'Beveiligingsinstellingen succesvol bijgewerkt.',
       });
     } catch (err: any) {

@@ -36,6 +36,7 @@ export const UsersSettingsTab: React.FC = () => {
   const [disableAuth, setDisableAuth] = useState(false);
   const [isEnvEnforced, setIsEnvEnforced] = useState(false);
   const [allowGuestAccess, setAllowGuestAccess] = useState(true);
+  const [enableProxyAuth, setEnableProxyAuth] = useState(false);
   const [securityLoading, setSecurityLoading] = useState(false);
   const [securityMessage, setSecurityMessage] = useState<string | null>(null);
 
@@ -62,11 +63,14 @@ export const UsersSettingsTab: React.FC = () => {
 
   const loadSecuritySettings = async () => {
     try {
-      const res = await apiFetch<{ disableAuth: boolean; isEnvEnforced: boolean; allowGuestAccess?: boolean }>('/api/settings/security');
+      const res = await apiFetch<{ disableAuth: boolean; isEnvEnforced: boolean; allowGuestAccess?: boolean; enableProxyAuth?: boolean }>('/api/settings/security');
       setDisableAuth(res.disableAuth);
       setIsEnvEnforced(res.isEnvEnforced);
       if (typeof res.allowGuestAccess === 'boolean') {
         setAllowGuestAccess(res.allowGuestAccess);
+      }
+      if (typeof res.enableProxyAuth === 'boolean') {
+        setEnableProxyAuth(res.enableProxyAuth);
       }
     } catch {}
   };
@@ -127,6 +131,24 @@ export const UsersSettingsTab: React.FC = () => {
       await refreshAuthStatus();
     } catch (err: any) {
       setSecurityMessage(err?.message || 'Fout bij wijzigen van gasttoegang');
+    } finally {
+      setSecurityLoading(false);
+    }
+  };
+
+  const handleToggleProxyAuth = async (newVal: boolean) => {
+    setSecurityLoading(true);
+    setSecurityMessage(null);
+    try {
+      const res = await apiFetch<{ success: boolean; enableProxyAuth: boolean; message: string }>('/api/settings/security', {
+        method: 'PUT',
+        body: JSON.stringify({ enableProxyAuth: newVal }),
+      });
+      setEnableProxyAuth(res.enableProxyAuth);
+      setSecurityMessage(res.message);
+      await refreshAuthStatus();
+    } catch (err: any) {
+      setSecurityMessage(err?.message || 'Fout bij wijzigen van reverse proxy authenticatie');
     } finally {
       setSecurityLoading(false);
     }
@@ -289,6 +311,32 @@ export const UsersSettingsTab: React.FC = () => {
             <span
               className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                 disableAuth ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800">
+          <div className="space-y-0.5 pr-4">
+            <span className="text-xs font-bold text-slate-900 dark:text-white block">
+              Reverse Proxy SSO (Pangolin / Authelia / Authentik)
+            </span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
+              Logt gebruikers die al zijn ingelogd in Pangolin direct automatisch in op hun eigen account in VehicleVault (geen dubbel inlogscherm).
+            </span>
+          </div>
+
+          <button
+            type="button"
+            disabled={securityLoading}
+            onClick={() => handleToggleProxyAuth(!enableProxyAuth)}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              enableProxyAuth ? 'bg-sky-500' : 'bg-slate-300 dark:bg-slate-700'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                enableProxyAuth ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
           </button>
