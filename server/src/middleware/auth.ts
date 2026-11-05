@@ -65,7 +65,8 @@ export function getDefaultUser(): AuthenticatedUser {
   }
 }
 
-export { isProxyAuthEnabled, isTrustedProxy, getProxyUser } from './proxyAuth.js';
+import { isProxyAuthEnabled, isTrustedProxy, getProxyUser } from './proxyAuth.js';
+export { isProxyAuthEnabled, isTrustedProxy, getProxyUser };
 
 export function authenticateApiKey(token: string): AuthenticatedUser | null {
   if (!token || !token.startsWith('vkv_')) {
