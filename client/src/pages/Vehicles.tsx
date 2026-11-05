@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Plus, Car } from 'lucide-react';
+import { Plus, Car, ShieldCheck } from 'lucide-react';
 import { Vehicle } from '../types/index.js';
 import { apiFetch } from '../api/client.js';
 import { useLanguage } from '../context/LanguageContext.js';
+import { useAuth } from '../context/AuthContext.js';
 import { ShowcaseManagerModal } from '../components/ShowcaseManagerModal.js';
 import { VehicleCard } from '../components/vehicles/VehicleCard.js';
 import { VehicleModal } from '../components/vehicles/VehicleModal.js';
@@ -18,19 +19,37 @@ interface ContextType {
 
 export const Vehicles: React.FC = () => {
   const { vehicles, refreshVehicles } = useOutletContext<ContextType>();
+  const { user } = useAuth();
   const { t, lang } = useLanguage();
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'archived'>('active');
+  const [fleetView, setFleetView] = useState(false);
+  const [fleetVehicles, setFleetVehicles] = useState<Vehicle[]>([]);
   const [showcaseVehicle, setShowcaseVehicle] = useState<Vehicle | null>(null);
   const [isShowcaseModalOpen, setIsShowcaseModalOpen] = useState(false);
 
   const form = useVehicleForm(refreshVehicles);
   const share = useVehicleShare();
 
+  const fetchFleet = async () => {
+    try {
+      const res = await apiFetch<{ vehicles: Vehicle[] }>('/api/vehicles?all=true');
+      setFleetVehicles(res.vehicles || []);
+    } catch {}
+  };
+
+  const handleToggleFleet = (enabled: boolean) => {
+    setFleetView(enabled);
+    if (enabled) {
+      fetchFleet();
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (confirm(t('confirmDeleteVehicle'))) {
       try {
         await apiFetch(`/api/vehicles/${id}`, { method: 'DELETE' });
         refreshVehicles();
+        if (fleetView) fetchFleet();
       } catch (err: any) {
         alert(err?.message || 'Delete failed');
       }
@@ -45,12 +64,12 @@ export const Vehicles: React.FC = () => {
         body: JSON.stringify({ status: newStatus }),
       });
       refreshVehicles();
-    } catch {
-      // ignore
-    }
+      if (fleetView) fetchFleet();
+    } catch {}
   };
 
-  const filteredVehicles = vehicles.filter((v) => {
+  const currentList = fleetView ? fleetVehicles : vehicles;
+  const filteredVehicles = currentList.filter((v) => {
     if (filterStatus === 'all') return true;
     return v.status === filterStatus;
   });
@@ -61,14 +80,31 @@ export const Vehicles: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center space-x-2">
             <Car className="w-5 h-5 text-sky-500" />
-            <span>{lang === 'nl' ? 'Mijn Voertuigen' : 'My Vehicles'}</span>
+            <span>{fleetView ? 'Wagenpark (Super-Admin: Alle Voertuigen)' : (lang === 'nl' ? 'Mijn Voertuigen' : 'My Vehicles')}</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {lang === 'nl' ? 'Beheer al je geregistreerde auto\'s, motoren en aanhangers' : 'Manage your registered vehicles'}
+            {fleetView
+              ? 'Volledig overzicht van alle geregistreerde voertuigen van alle gebruikers op deze instantie'
+              : (lang === 'nl' ? 'Beheer al je geregistreerde auto\'s, motoren en aanhangers' : 'Manage your registered vehicles')}
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 flex-wrap gap-2">
+          {user?.role === 'admin' && (
+            <button
+              type="button"
+              onClick={() => handleToggleFleet(!fleetView)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 border transition ${
+                fleetView
+                  ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>{fleetView ? 'Alle Voertuigen Actief' : 'Toon Alle Voertuigen (Admin)'}</span>
+            </button>
+          )}
+
           <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
             <button
               onClick={() => setFilterStatus('active')}
@@ -78,7 +114,7 @@ export const Vehicles: React.FC = () => {
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              {t('active')} ({vehicles.filter((v) => v.status === 'active').length})
+              {t('active')} ({currentList.filter((v) => v.status === 'active').length})
             </button>
             <button
               onClick={() => setFilterStatus('archived')}
@@ -88,7 +124,7 @@ export const Vehicles: React.FC = () => {
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              {t('archived')} ({vehicles.filter((v) => v.status === 'archived').length})
+              {t('archived')} ({currentList.filter((v) => v.status === 'archived').length})
             </button>
             <button
               onClick={() => setFilterStatus('all')}
@@ -98,7 +134,7 @@ export const Vehicles: React.FC = () => {
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              {t('all')} ({vehicles.length})
+              {t('all')} ({currentList.length})
             </button>
           </div>
 
@@ -112,7 +148,7 @@ export const Vehicles: React.FC = () => {
         </div>
       </div>
 
-      {vehicles.length === 0 ? (
+      {currentList.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
           <Car className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
           <h3 className="text-sm font-bold text-slate-800 dark:text-white">
@@ -225,6 +261,7 @@ export const Vehicles: React.FC = () => {
           shareLoading={share.shareLoading}
           shareError={share.shareError}
           shareSuccess={share.shareSuccess}
+          lastInviteLink={share.lastInviteLink}
           onAddShare={share.handleAddShare}
           onRemoveShare={share.handleRemoveShare}
         />

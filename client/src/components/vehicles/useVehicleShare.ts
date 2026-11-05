@@ -12,12 +12,14 @@ export function useVehicleShare() {
   const [shareLoading, setShareLoading] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
   const [shareSuccess, setShareSuccess] = useState<string | null>(null);
+  const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
 
   const openShareModal = async (v: Vehicle) => {
     setSharingVehicle(v);
     setIsShareModalOpen(true);
     setShareError(null);
     setShareSuccess(null);
+    setLastInviteLink(null);
     setSelectedShareEmail('');
     setSelectedShareRole('editor');
     setShareLoading(true);
@@ -29,9 +31,6 @@ export function useVehicleShare() {
       ]);
       setShares(sharesRes?.shares || []);
       setShareableUsers(usersRes?.users || []);
-      if (usersRes?.users && usersRes.users.length > 0) {
-        setSelectedShareEmail(usersRes.users[0].email);
-      }
     } catch (err: any) {
       setShareError(err?.message || 'Fout bij het ophalen van gedeelde gebruikers');
     } finally {
@@ -45,20 +44,31 @@ export function useVehicleShare() {
 
     setShareError(null);
     setShareSuccess(null);
+    setLastInviteLink(null);
+    setShareLoading(true);
 
     try {
-      await apiFetch(`/api/vehicles/${sharingVehicle.id}/shares`, {
+      const res = await apiFetch<any>(`/api/vehicles/${sharingVehicle.id}/shares`, {
         method: 'POST',
         body: JSON.stringify({
+          email: selectedShareEmail,
           targetUserEmail: selectedShareEmail,
           role: selectedShareRole,
         }),
       });
-      setShareSuccess(`Toegang verleend aan ${selectedShareEmail}`);
+
+      setShareSuccess(res.message || `Toegang verleend aan ${selectedShareEmail}`);
+      if (res.inviteLink) {
+        setLastInviteLink(res.inviteLink);
+      }
+
       const updated = await apiFetch<{ shares: any[] }>(`/api/vehicles/${sharingVehicle.id}/shares`);
       setShares(updated.shares || []);
+      setSelectedShareEmail('');
     } catch (err: any) {
       setShareError(err?.message || 'Fout bij delen van voertuig');
+    } finally {
+      setShareLoading(false);
     }
   };
 
@@ -91,9 +101,9 @@ export function useVehicleShare() {
     shareLoading,
     shareError,
     shareSuccess,
+    lastInviteLink,
     openShareModal,
     handleAddShare,
     handleRemoveShare,
   };
 }
-

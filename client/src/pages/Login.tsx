@@ -49,7 +49,12 @@ export const Login: React.FC = () => {
       searchParams.get('guest') === '1' ||
       searchParams.get('proef') === '1' ||
       searchParams.has('invite') ||
-      searchParams.has('token');
+      searchParams.has('token') ||
+      searchParams.has('p_token') ||
+      searchParams.has('pangolin_token') ||
+      searchParams.has('share') ||
+      searchParams.has('invite_token') ||
+      searchParams.has('key');
     if (isAutoGuest && allowGuestAccess && !user && !loading) {
       setLoading(true);
       loginAsGuest()
@@ -59,7 +64,7 @@ export const Login: React.FC = () => {
           setLoading(false);
         });
     }
-  }, [searchParams, allowGuestAccess, user]);
+  }, [searchParams, allowGuestAccess, user, loading]);
 
   useEffect(() => {
     const errParam = searchParams.get('error');

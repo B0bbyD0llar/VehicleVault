@@ -1,5 +1,5 @@
-import React from 'react';
-import { Users, X, AlertCircle, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, X, AlertCircle, CheckCircle2, Copy, Check, Link2 } from 'lucide-react';
 import { Vehicle } from '../../types/index.js';
 import { formatDisplayDate } from '../../utils/format.js';
 
@@ -16,6 +16,7 @@ interface VehicleShareModalProps {
   shareLoading: boolean;
   shareError: string | null;
   shareSuccess: string | null;
+  lastInviteLink?: string | null;
   onAddShare: (e: React.FormEvent) => void;
   onRemoveShare: (userId: string) => void;
 }
@@ -33,10 +34,19 @@ export const VehicleShareModal: React.FC<VehicleShareModalProps> = ({
   shareLoading,
   shareError,
   shareSuccess,
+  lastInviteLink,
   onAddShare,
   onRemoveShare,
 }) => {
+  const [copiedLink, setCopiedLink] = useState(false);
   if (!isOpen) return null;
+
+  const handleCopyInvite = () => {
+    if (!lastInviteLink) return;
+    navigator.clipboard.writeText(lastInviteLink);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
@@ -77,38 +87,58 @@ export const VehicleShareModal: React.FC<VehicleShareModalProps> = ({
           </div>
         )}
 
+        {lastInviteLink && (
+          <div className="p-3 bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800/80 rounded-xl space-y-1.5">
+            <span className="text-[11px] font-bold text-sky-900 dark:text-sky-200 flex items-center space-x-1.5">
+              <Link2 className="w-3.5 h-3.5 text-sky-500" />
+              <span>Directe Uitnodigingslink voor de mede-bestuurder:</span>
+            </span>
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                readOnly
+                value={lastInviteLink}
+                className="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-700 dark:text-slate-300 font-mono select-all"
+              />
+              <button
+                type="button"
+                onClick={handleCopyInvite}
+                className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold inline-flex items-center space-x-1 shrink-0 transition"
+              >
+                {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedLink ? 'Gekopieerd!' : 'Kopiëren'}</span>
+              </button>
+            </div>
+            <p className="text-[10px] text-sky-700 dark:text-sky-400">
+              Stuur deze link via bijv. WhatsApp of e-mail. De mede-bestuurder kan direct inloggen of registreren en heeft meteen toegang tot dit voertuig.
+            </p>
+          </div>
+        )}
+
         {/* Add share form */}
         <form onSubmit={onAddShare} className="bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 space-y-3">
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-            Nieuw account toevoegen
+            Mede-bestuurder uitnodigen
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
               <label className="block text-[11px] text-slate-600 dark:text-slate-400 font-semibold mb-1">
-                Gebruiker (E-mail)
+                E-mailadres mede-bestuurder
               </label>
-              {shareableUsers.length > 0 ? (
-                <select
-                  value={selectedShareEmail}
-                  onChange={(e) => setSelectedShareEmail(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-accent-500"
-                >
-                  {shareableUsers.map((u) => (
-                    <option key={u.id} value={u.email}>
-                      {u.email}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type="email"
-                  required
-                  placeholder="bijv. vrouw@voorbeeld.nl"
-                  value={selectedShareEmail}
-                  onChange={(e) => setSelectedShareEmail(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-accent-500"
-                />
-              )}
+              <input
+                type="email"
+                required
+                list="shareable-users-list"
+                placeholder="bijv. vrouw@voorbeeld.nl"
+                value={selectedShareEmail}
+                onChange={(e) => setSelectedShareEmail(e.target.value)}
+                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-accent-500"
+              />
+              <datalist id="shareable-users-list">
+                {shareableUsers.map((u) => (
+                  <option key={u.id} value={u.email} />
+                ))}
+              </datalist>
             </div>
 
             <div>
@@ -133,7 +163,7 @@ export const VehicleShareModal: React.FC<VehicleShareModalProps> = ({
               className="px-3.5 py-1.5 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-xs font-semibold inline-flex items-center space-x-1.5 transition disabled:opacity-50"
             >
               <Users className="w-3.5 h-3.5" />
-              <span>Toegang Verlenen</span>
+              <span>{shareLoading ? 'Toevoegen...' : 'Toegang Verlenen'}</span>
             </button>
           </div>
         </form>
@@ -158,29 +188,18 @@ export const VehicleShareModal: React.FC<VehicleShareModalProps> = ({
                     </span>
                   </div>
                   <button
-                    type="button"
                     onClick={() => onRemoveShare(s.user_id)}
-                    className="text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 text-xs font-semibold px-2 py-1 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/50 transition"
+                    className="text-rose-500 hover:text-rose-700 p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
+                    title="Toegang intrekken"
                   >
-                    Intrekken
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
             </div>
           )}
         </div>
-
-        <div className="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold"
-          >
-            Sluiten
-          </button>
-        </div>
       </div>
     </div>
   );
 };
-
