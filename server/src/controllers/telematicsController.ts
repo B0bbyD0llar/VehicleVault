@@ -5,7 +5,7 @@ import { db } from '../db/database.js';
 export class TelematicsController {
   public static getConfig(req: Request, res: Response): void {
     try {
-      const config = TelematicsService.getHaConfig();
+      const config = TelematicsService.getHaConfig(req.user?.userId);
       res.json({
         configured: Boolean(config.baseUrl && config.token),
         ha_base_url: config.baseUrl,
@@ -18,18 +18,14 @@ export class TelematicsController {
 
   public static saveConfig(req: Request, res: Response): void {
     try {
-      if (req.user?.role !== 'admin') {
-        res.status(403).json({ error: 'Alleen beheerders kunnen telematica-instellingen wijzigen' });
-        return;
-      }
-
       const { ha_base_url, ha_access_token } = req.body;
       if (typeof ha_base_url !== 'string') {
         res.status(400).json({ error: 'ha_base_url is verplicht' });
         return;
       }
 
-      TelematicsService.saveHaConfig(ha_base_url, ha_access_token);
+      // Save per-user configuration (or global if unauthenticated/cli)
+      TelematicsService.saveHaConfig(ha_base_url, ha_access_token, req.user?.userId);
       res.json({ success: true, message: 'Home Assistant instellingen opgeslagen' });
     } catch (err: any) {
       res.status(500).json({ error: 'Kon instellingen niet opslaan' });
@@ -38,7 +34,7 @@ export class TelematicsController {
 
   public static async testConnection(req: Request, res: Response): Promise<void> {
     try {
-      const result = await TelematicsService.testHaConnection();
+      const result = await TelematicsService.testHaConnection(req.user?.userId);
       res.json(result);
     } catch (err: any) {
       res.status(500).json({ success: false, message: err?.message || 'Verbindingstest mislukt' });
@@ -47,7 +43,7 @@ export class TelematicsController {
 
   public static async listSensors(req: Request, res: Response): Promise<void> {
     try {
-      const sensors = await TelematicsService.getHaSensors();
+      const sensors = await TelematicsService.getHaSensors(req.user?.userId);
       res.json({ sensors });
     } catch (err: any) {
       res.status(500).json({ error: 'Kon sensoren niet ophalen uit Home Assistant' });
@@ -86,7 +82,8 @@ export class TelematicsController {
 
   public static async syncAll(req: Request, res: Response): Promise<void> {
     try {
-      const result = await TelematicsService.syncAllVehicles();
+      const forUserId = req.user?.role === 'admin' && req.query.all === 'true' ? undefined : req.user?.userId;
+      const result = await TelematicsService.syncAllVehicles(forUserId);
       res.json(result);
     } catch (err: any) {
       res.status(500).json({ error: 'Batch synchronisatie mislukt' });

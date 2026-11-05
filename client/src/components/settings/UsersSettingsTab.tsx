@@ -462,9 +462,9 @@ export const UsersSettingsTab: React.FC = () => {
                         onChange={(e) => handleUpdateRole(u.id, e.target.value)}
                         className="bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
                       >
-                        <option value="admin">👑 Beheerder (Admin)</option>
-                        <option value="driver">🚗 Chauffeur (Snel Tanken)</option>
-                        <option value="user">👤 Standaard Gebruiker</option>
+                        <option value="admin">👑 Super-Admin</option>
+                        <option value="user">👤 Gebruiker (Eigen HA &amp; Voertuigen)</option>
+                        <option value="driver">🚗 Chauffeur (Snel Tanken/Ritten)</option>
                       </select>
                     </td>
                     <td className="py-3 px-3">

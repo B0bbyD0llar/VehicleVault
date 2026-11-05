@@ -433,6 +433,13 @@ export function initializeDatabase(): void {
       value TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS user_ha_configs (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      ha_base_url TEXT NOT NULL,
+      ha_access_token TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
 
   if (!db.get('SELECT key FROM system_settings WHERE key = ?', ['allow_guest_access'])) {

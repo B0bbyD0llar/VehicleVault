@@ -7,19 +7,47 @@ import { HaSensorItem, fetchHaSensorsList } from './telematicsSensorHelper.js';
 export { HaSensorItem } from './telematicsSensorHelper.js';
 
 export class TelematicsService {
-  public static getHaConfig(): { baseUrl: string; token: string } {
-    const dbUrl = db.get<{ value: string }>('SELECT value FROM system_settings WHERE key = ?', ['ha_base_url'])?.value;
-    const dbToken = db.get<{ value: string }>('SELECT value FROM system_settings WHERE key = ?', ['ha_access_token'])?.value;
+  public static getHaConfig(userId?: string): { baseUrl: string; token: string } {
+    let baseUrl = '';
+    let token = '';
 
-    const baseUrl = (dbUrl || process.env.HA_BASE_URL || process.env.HOME_ASSISTANT_URL || '').trim().replace(/\/+$/, '');
-    const token = (dbToken || process.env.HA_ACCESS_TOKEN || process.env.HOME_ASSISTANT_TOKEN || '').trim();
+    if (userId) {
+      const userRow = db.get<{ ha_base_url: string; ha_access_token: string }>(
+        'SELECT ha_base_url, ha_access_token FROM user_ha_configs WHERE user_id = ?',
+        [userId]
+      );
+      if (userRow?.ha_base_url) {
+        baseUrl = userRow.ha_base_url.trim().replace(/\/+$/, '');
+        token = (userRow.ha_access_token || '').trim();
+      }
+    }
+
+    if (!baseUrl || !token) {
+      const dbUrl = db.get<{ value: string }>('SELECT value FROM system_settings WHERE key = ?', ['ha_base_url'])?.value;
+      const dbToken = db.get<{ value: string }>('SELECT value FROM system_settings WHERE key = ?', ['ha_access_token'])?.value;
+
+      baseUrl = baseUrl || (dbUrl || process.env.HA_BASE_URL || process.env.HOME_ASSISTANT_URL || '').trim().replace(/\/+$/, '');
+      token = token || (dbToken || process.env.HA_ACCESS_TOKEN || process.env.HOME_ASSISTANT_TOKEN || '').trim();
+    }
 
     return { baseUrl, token };
   }
 
-  public static saveHaConfig(baseUrl: string, token?: string): void {
+  public static saveHaConfig(baseUrl: string, token?: string, userId?: string): void {
     const cleanUrl = baseUrl.trim().replace(/\/+$/, '');
     const now = new Date().toISOString();
+
+    if (userId) {
+      const existing = db.get<{ ha_access_token: string }>('SELECT ha_access_token FROM user_ha_configs WHERE user_id = ?', [userId]);
+      const finalToken = token !== undefined && token.trim().length > 0 ? token.trim() : (existing?.ha_access_token || '');
+      db.run(
+        `INSERT INTO user_ha_configs (user_id, ha_base_url, ha_access_token, updated_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(user_id) DO UPDATE SET ha_base_url = excluded.ha_base_url, ha_access_token = excluded.ha_access_token, updated_at = excluded.updated_at`,
+        [userId, cleanUrl, finalToken, now]
+      );
+      return;
+    }
 
     db.run(
       'INSERT INTO system_settings (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at',
@@ -34,8 +62,8 @@ export class TelematicsService {
     }
   }
 
-  public static async testHaConnection(): Promise<{ success: boolean; message: string; haVersion?: string }> {
-    const { baseUrl, token } = this.getHaConfig();
+  public static async testHaConnection(userId?: string): Promise<{ success: boolean; message: string; haVersion?: string }> {
+    const { baseUrl, token } = this.getHaConfig(userId);
     if (!baseUrl || !token) {
       return {
         success: false,
@@ -74,8 +102,8 @@ export class TelematicsService {
     }
   }
 
-  public static async getHaSensors(): Promise<HaSensorItem[]> {
-    const { baseUrl, token } = this.getHaConfig();
+  public static async getHaSensors(userId?: string): Promise<HaSensorItem[]> {
+    const { baseUrl, token } = this.getHaConfig(userId);
     if (!baseUrl || !token) return [];
     return fetchHaSensorsList(baseUrl, token);
   }
@@ -96,7 +124,7 @@ export class TelematicsService {
       return { success: false, error: 'Geen Home Assistant sensor-entiteit geconfigureerd voor dit voertuig' };
     }
 
-    const { baseUrl, token } = this.getHaConfig();
+    const { baseUrl, token } = this.getHaConfig(vehicle.user_id);
     if (!baseUrl || !token) {
       const msg = 'Home Assistant URL of Access Token ontbreekt in instellingen';
       db.run('UPDATE vehicles SET telematics_last_status = ?, updated_at = ? WHERE id = ?', [
@@ -221,20 +249,19 @@ export class TelematicsService {
     }
   }
 
-  public static async syncAllVehicles(): Promise<{ total: number; synced: number; errors: number }> {
-    const { baseUrl, token } = this.getHaConfig();
-    if (!baseUrl || !token) {
-      logger.info('Telematics: syncAllVehicles skipped (Home Assistant not configured)');
-      return { total: 0, synced: 0, errors: 0 };
-    }
+  public static async syncAllVehicles(forUserId?: string): Promise<{ total: number; synced: number; errors: number }> {
+    const whereUser = forUserId ? 'AND user_id = ?' : '';
+    const params = forUserId ? [forUserId] : [];
 
     const vehicles = db.query<any>(
-      `SELECT id, name, telematics_ha_entity_id
+      `SELECT id, user_id, name, telematics_ha_entity_id
        FROM vehicles
        WHERE status = 'active'
          AND telematics_enabled = 1
          AND telematics_ha_entity_id IS NOT NULL
-         AND TRIM(telematics_ha_entity_id) != ''`
+         AND TRIM(telematics_ha_entity_id) != ''
+         ${whereUser}`,
+      params
     );
 
     let synced = 0;
@@ -250,7 +277,7 @@ export class TelematicsService {
       }
     }
 
-    logger.info({ total: vehicles.length, synced, errors }, 'Telematics: Finished batch vehicle sync');
+    logger.info({ total: vehicles.length, synced, errors, forUserId }, 'Telematics: Finished batch vehicle sync');
     return { total: vehicles.length, synced, errors };
   }
 }

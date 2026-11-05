@@ -10,6 +10,7 @@ import {
   FileSpreadsheet,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext.js';
+import { useAuth } from '../context/AuthContext.js';
 import { GeneralSettingsTab } from '../components/settings/GeneralSettingsTab.js';
 import { AiSettingsTab } from '../components/settings/AiSettingsTab.js';
 import { UsersSettingsTab } from '../components/settings/UsersSettingsTab.js';
@@ -21,6 +22,8 @@ import { ImportSettingsTab } from '../components/settings/ImportSettingsTab.js';
 export const Settings: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { lang } = useLanguage();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   const validTabs = ['general', 'ai', 'users', 'notifications', 'homeassistant', 'backup', 'import'] as const;
   type TabType = typeof validTabs[number];
@@ -85,17 +88,19 @@ export const Settings: React.FC = () => {
           <span>{lang === 'nl' ? 'AI Bonherkenning' : 'AI Receipt Scanner'}</span>
         </button>
 
-        <button
-          onClick={() => handleTabClick('users')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center space-x-2 transition shrink-0 ${
-            activeTab === 'users'
-              ? 'bg-accent-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          <span>{lang === 'nl' ? 'Gebruikers & Toegang' : 'Users & Access'}</span>
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => handleTabClick('users')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center space-x-2 transition shrink-0 ${
+              activeTab === 'users'
+                ? 'bg-accent-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>{lang === 'nl' ? 'Server Gebruikers (Admin)' : 'Server Users (Admin)'}</span>
+          </button>
+        )}
 
         <button
           onClick={() => handleTabClick('notifications')}
@@ -121,17 +126,19 @@ export const Settings: React.FC = () => {
           <span>Home Assistant</span>
         </button>
 
-        <button
-          onClick={() => handleTabClick('backup')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center space-x-2 transition shrink-0 ${
-            activeTab === 'backup'
-              ? 'bg-accent-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-          }`}
-        >
-          <Database className="w-4 h-4" />
-          <span>{lang === 'nl' ? 'Database & Backups' : 'Database & Backups'}</span>
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => handleTabClick('backup')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center space-x-2 transition shrink-0 ${
+              activeTab === 'backup'
+                ? 'bg-accent-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <Database className="w-4 h-4" />
+            <span>{lang === 'nl' ? 'Database & Backups' : 'Database & Backups'}</span>
+          </button>
+        )}
 
         <button
           onClick={() => handleTabClick('import')}
@@ -149,12 +156,12 @@ export const Settings: React.FC = () => {
       {/* Tab Panels */}
       {activeTab === 'general' && <GeneralSettingsTab />}
       {activeTab === 'ai' && <AiSettingsTab />}
-      {activeTab === 'users' && <UsersSettingsTab />}
+      {activeTab === 'users' && (isAdmin ? <UsersSettingsTab /> : <GeneralSettingsTab />)}
       {activeTab === 'notifications' && <NotificationsSettingsTab />}
       {activeTab === 'homeassistant' && (
-        <HomeAssistantSettingsTab onNavigateToUsers={() => handleTabClick('users')} />
+        <HomeAssistantSettingsTab onNavigateToUsers={() => handleTabClick('general')} />
       )}
-      {activeTab === 'backup' && <BackupSettingsTab />}
+      {activeTab === 'backup' && (isAdmin ? <BackupSettingsTab /> : <GeneralSettingsTab />)}
       {activeTab === 'import' && <ImportSettingsTab />}
     </div>
   );

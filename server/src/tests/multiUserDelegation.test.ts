@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { db } from '../db/database.js';
 import { initializeDatabase } from '../db/schema.js';
 import { VehicleShareController } from '../controllers/vehicleShareController.js';
+import { UserManagementController } from '../controllers/auth/userManagementController.js';
+import { TelematicsService } from '../services/telematicsService.js';
 import { HaService } from '../services/haService.js';
 import { getVehicleAccess } from '../utils/vehicleAccess.js';
 
@@ -94,5 +96,39 @@ describe('Multi-User Delegation & Super-Admin Capabilities', () => {
     const randomUserId = 'unrelated-user-999';
     const unrelatedSensors = HaService.getSensorsPayload(randomUserId);
     assert.equal(unrelatedSensors.total_vehicles, 0);
+  });
+
+  it('allows non-admin user to configure and isolate their own Home Assistant credentials', () => {
+    TelematicsService.saveHaConfig('https://ha.fatherinlaw.local', 'token_father_123', fatherInLawId);
+
+    const fatherConfig = TelematicsService.getHaConfig(fatherInLawId);
+    assert.equal(fatherConfig.baseUrl, 'https://ha.fatherinlaw.local');
+    assert.equal(fatherConfig.token, 'token_father_123');
+
+    // Other users don't get polluted by father-in-law's config
+    const otherUserConfig = TelematicsService.getHaConfig('other-user-999');
+    assert.notEqual(otherUserConfig.baseUrl, 'https://ha.fatherinlaw.local');
+  });
+
+  it('allows super-admin to update user role from user to admin and vice versa', async () => {
+    const req: any = {
+      params: { id: fatherInLawId },
+      body: { role: 'admin' },
+    };
+    let jsonResult: any = null;
+    const res: any = {
+      json: (d: any) => {
+        jsonResult = d;
+        return res;
+      },
+      status: () => res,
+    };
+
+    await UserManagementController.updateUserRole(req, res);
+    assert.equal(jsonResult.success, true);
+    assert.equal(jsonResult.user.role, 'admin');
+
+    const updated = db.get<any>('SELECT role FROM users WHERE id = ?', [fatherInLawId]);
+    assert.equal(updated.role, 'admin');
   });
 });
