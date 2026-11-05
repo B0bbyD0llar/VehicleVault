@@ -20,6 +20,7 @@ export class AuthController {
   public static refresh = AuthSessionController.refresh;
   public static logout = AuthSessionController.logout;
   public static status = AuthSessionController.status;
+  public static proxyDebug = AuthSessionController.proxyDebug;
   public static me = AuthSessionController.me;
   public static changePassword = AuthSessionController.changePassword;
 

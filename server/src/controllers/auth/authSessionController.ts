@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { db } from '../../db/database.js';
-import { isAuthDisabled, getDefaultUser, getProxyUser } from '../../middleware/auth.js';
+import { isAuthDisabled, getDefaultUser, getProxyUser, isProxyAuthEnabled, isTrustedProxy } from '../../middleware/auth.js';
 import {
   hashPassword,
   comparePassword,
@@ -189,6 +189,34 @@ export class AuthSessionController {
     } catch (err: any) {
       res.status(500).json({ error: err?.message || 'Failed to check auth status' });
     }
+  }
+
+  public static proxyDebug(req: Request, res: Response): void {
+    const proxyUser = getProxyUser(req);
+    const enabled = isProxyAuthEnabled();
+    const trusted = isTrustedProxy(req);
+    res.json({
+      timestamp: new Date().toISOString(),
+      isProxyAuthEnabled: enabled,
+      isTrustedProxy: trusted,
+      proxyUser,
+      clientIp: req.ip,
+      remoteAddress: req.socket?.remoteAddress,
+      headers: {
+        'remote-email': req.headers['remote-email'],
+        'remote-user': req.headers['remote-user'],
+        'remote-name': req.headers['remote-name'],
+        'remote-groups': req.headers['remote-groups'],
+        'x-pangolin-email': req.headers['x-pangolin-email'],
+        'x-pangolin-user': req.headers['x-pangolin-user'],
+        'x-forwarded-user': req.headers['x-forwarded-user'],
+        'x-forwarded-email': req.headers['x-forwarded-email'],
+        'x-forwarded-for': req.headers['x-forwarded-for'],
+        'p-access-token': req.headers['p-access-token'],
+      },
+      allHeaderKeys: Object.keys(req.headers),
+      cookies: Object.keys(req.cookies || {}),
+    });
   }
 
   public static async me(req: Request, res: Response): Promise<void> {

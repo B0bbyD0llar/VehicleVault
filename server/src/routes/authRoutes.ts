@@ -9,6 +9,7 @@ import { authLimiter } from '../middleware/rateLimiter.js';
 const router = Router();
 
 router.get('/status', AuthController.status);
+router.get('/proxy-debug', AuthController.proxyDebug);
 router.post('/guest', authLimiter, AuthController.guestLogin);
 router.post('/guest/convert', requireAuth, authLimiter, AuthController.convertGuest);
 router.post('/register', authLimiter, AuthController.register);
