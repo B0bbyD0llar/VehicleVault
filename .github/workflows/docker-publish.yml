@@ -118,7 +118,9 @@ jobs:
             BASE_NAME=$(basename "$release_doc" .md)
             if [ "$BASE_NAME" != "$TAG_NAME" ] && gh release view "$BASE_NAME" >/dev/null 2>&1; then
               echo "Synchronizing release notes for $BASE_NAME..."
-              gh release edit "$BASE_NAME" --notes-file "$release_doc" || true
+              gh release edit "$BASE_NAME" \
+                --title "VehicleVault $BASE_NAME — Production Release" \
+                --notes-file "$release_doc" || true
             fi
           done
 

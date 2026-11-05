@@ -3,7 +3,7 @@
   <h1>VehicleVault</h1>
   <p><strong>Self-Hosted Vehicle Lifecycle, Fuel, AI Maintenance Scanner, Digital Glovebox, and TCO Platform</strong></p>
 
-  [![Release](https://img.shields.io/badge/Release-v3.3.2-0ea5e9.svg)](https://github.com/TeeCodeDev/VehicleVault/releases)
+  [![Release](https://img.shields.io/badge/Release-v3.4.0-0ea5e9.svg)](https://github.com/TeeCodeDev/VehicleVault/releases)
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
   [![Tests](https://img.shields.io/badge/Tests-233%2F233%20Passing-emerald.svg)](server/src/tests/vehiclevault.test.ts)
   [![Node.js](https://img.shields.io/badge/Node.js-24%20LTS-green.svg)](https://nodejs.org/)
