@@ -95,17 +95,32 @@ jobs:
           TAG_NAME="v${VERSION}"
           echo "Releasing version: $TAG_NAME"
 
+          NOTES_FILE="RELEASE_NOTES.md"
+          if [ -f "docs/releases/${TAG_NAME}.md" ]; then
+            NOTES_FILE="docs/releases/${TAG_NAME}.md"
+          fi
+
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
             gh release edit "$TAG_NAME" \
               --title "VehicleVault $TAG_NAME — Production Release" \
-              --notes-file RELEASE_NOTES.md \
+              --notes-file "$NOTES_FILE" \
               --latest
           else
             gh release create "$TAG_NAME" \
               --title "VehicleVault $TAG_NAME — Production Release" \
-              --notes-file RELEASE_NOTES.md \
+              --notes-file "$NOTES_FILE" \
               --latest
           fi
+
+          # Harmonize historical releases with isolated, clean release notes
+          for release_doc in docs/releases/*.md; do
+            [ -e "$release_doc" ] || continue
+            BASE_NAME=$(basename "$release_doc" .md)
+            if [ "$BASE_NAME" != "$TAG_NAME" ] && gh release view "$BASE_NAME" >/dev/null 2>&1; then
+              echo "Synchronizing release notes for $BASE_NAME..."
+              gh release edit "$BASE_NAME" --notes-file "$release_doc" || true
+            fi
+          done
 
       - name: Publish docs/wiki to GitHub Wiki (if initialized)
         continue-on-error: true
