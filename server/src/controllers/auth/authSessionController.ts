@@ -155,10 +155,17 @@ export class AuthSessionController {
     try {
       const proxyUser = getProxyUser(req);
       if (proxyUser) {
+        const session = startSession(
+          req,
+          res,
+          { id: proxyUser.userId, email: proxyUser.email, role: proxyUser.role },
+          { trackLogin: true }
+        );
         res.json({
           authDisabled: false,
           isProxyAuth: true,
-          user: proxyUser,
+          user: session.user,
+          accessToken: session.accessToken,
         });
         return;
       }

@@ -49,6 +49,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPasskeyUnavailableReason(statusRes?.passkeyUnavailableReason || null);
 
       if (statusRes?.isProxyAuth && statusRes.user) {
+        if (statusRes.accessToken) {
+          setAuthToken(statusRes.accessToken);
+        }
         setUser(statusRes.user);
         setAuthDisabled(false);
         setLoading(false);

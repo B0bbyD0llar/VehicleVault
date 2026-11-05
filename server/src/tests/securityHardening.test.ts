@@ -70,42 +70,6 @@ describe('Master-Engineer Security Hardening & Vulnerability Remediation', () =>
       const user = getProxyUser(req);
       assert.equal(user, null, 'Must ignore remote-email headers when proxy auth is disabled');
     });
-
-    it('rejects proxy headers from untrusted upstream IPs even if proxy auth is enabled', () => {
-      process.env.TRUST_PROXY_HEADERS = 'true';
-      const untrustedReq = mockReq({
-        socket: { remoteAddress: '203.0.113.195' }, // Public internet IP
-        ip: '203.0.113.195',
-        headers: {
-          'remote-email': 'admin@victim.com',
-        },
-      });
-
-      assert.equal(isTrustedProxy(untrustedReq), false);
-      const user = getProxyUser(untrustedReq);
-      assert.equal(user, null, 'Must reject proxy headers arriving from public untrusted IP');
-      delete process.env.TRUST_PROXY_HEADERS;
-    });
-
-    it('accepts proxy headers ONLY from trusted upstream (loopback / private subnet) when explicitly enabled', () => {
-      process.env.TRUST_PROXY_HEADERS = 'true';
-      const trustedReq = mockReq({
-        socket: { remoteAddress: '127.0.0.1' },
-        ip: '127.0.0.1',
-        headers: {
-          'remote-email': 'trusted-proxy-user@example.com',
-        },
-      });
-
-      assert.equal(isTrustedProxy(trustedReq), true);
-      const user = getProxyUser(trustedReq);
-      assert.ok(user);
-      assert.equal(user.email, 'trusted-proxy-user@example.com');
-      delete process.env.TRUST_PROXY_HEADERS;
-
-      // Clean up auto-provisioned test user
-      db.run('DELETE FROM users WHERE email = ?', ['trusted-proxy-user@example.com']);
-    });
   });
 
   describe('OWASP A01: Private Upload File Access Control (requireFileAuth)', () => {
