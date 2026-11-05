@@ -21,23 +21,33 @@ Under **Settings → Meldingen (Notifications)**, configure automated alerts for
 
 ---
 
-## 2. Multi-User Garage Isolation & Vehicle Sharing
+## 2. Super-Admin Fleet Management, User Audit & Vehicle Sharing
 
-### Strict Per-User Isolation
-By default, every registered user has a strictly isolated garage: User A cannot see User B's vehicles.
+### Strict Multi-Tenant Isolation
+By default, every registered user has a strictly isolated garage: User A cannot see User B's vehicles or private records.
 
-### Granular Vehicle Sharing (`vehicle_shares`)
-Want to share a family car with your partner, parents, or co-driver?
-1. Go to **My Garage (`Mijn Garage`)** and click the **Share (`Delen`)** button on any vehicle you own.
-2. Select or enter the email address of a registered user and choose their access level:
-   - **`Editor (Bewerker)`:** Can view and log fuel fill-ups, maintenance records, documents, tire measurements, trips, fixed expenses, and view TCO analytics. Only the owner can delete the vehicle itself.
-   - **`Viewer (Kijker)`:** Read-only access to the vehicle's dashboard, fuel history, maintenance history, documents, tires, and TCO analytics.
-3. Shared vehicles display a **`Gedeeld door ...` (Shared by)** badge in the recipient's garage.
+### Super-Admin (Container & Server Owner) Capabilities
+The server owner retains full administrative authority over the deployment:
+- **Server Users Overview:** Under **Settings → Server Gebruikers (Admin)**, Super-Admins view every account registered on the server.
+- **Real-Time Audit Trail:** Review exact **last login** (`last_login_at`) and **last activity** (`last_active_at`) timestamps, account creation dates, vehicle counts, and shared access.
+- **Global Role Management:** Promote or demote users between roles (`Super-Admin`, `Gebruiker`, `Chauffeur`) with 1-click select controls.
+- **Full Fleet View Toggle:** In the **My Garage (`Voertuigen`)** screen, Super-Admins can toggle **Toon Alle Voertuigen (Admin)** to view all registered vehicles across the entire server, with owner tags (`Gedeeld (vriend@voorbeeld.nl)`), while keeping private documents and invoices confidential to the vehicle owner.
+- **Server Settings Safeguard:** Server-critical tabs (Database Backups, Reverse Proxy controls, AI models) remain strictly hidden from non-admin accounts.
 
-### Roles (`admin`, `user`, `driver`)
-- **`admin`:** Full system access, AI/Notification/Backup settings, and user management.
-- **`user`:** Full VehicleVault interface for their own vehicles and any vehicles shared with them.
-- **`driver` (`Chauffeur Modus`):** Simplified, high-contrast mobile dashboard focused on 1-click fueling, EV charging, and trip logging.
+### Direct Co-Driver Invitations (`vehicle_shares`)
+Want to share a family car with your partner, wife, parents, or co-driver?
+1. Go to **My Garage (`Mijn Garage`)** and click the **Delen (Share)** button on any vehicle you own.
+2. Enter the email address of the person you want to invite (even if they don't have an account yet).
+3. Choose their access level:
+   - **`Editor (Bewerker / Bestuurder)`:** Can view and log fuel fill-ups, maintenance records, documents, tire measurements, trips, fixed expenses, and view TCO analytics.
+   - **`Viewer (Kijker / Toeschouwer)`:** Read-only access to the vehicle's dashboard, fuel history, maintenance history, documents, tires, and TCO analytics.
+4. **Instant Onboarding Link:** Click **Kopieer Uitnodigingslink** to send a direct onboarding URL via WhatsApp or email. The co-driver is auto-provisioned and granted instant access upon opening the link.
+5. The vehicle owner can modify permissions or revoke access at any time.
+
+### Account Roles
+- **`Super-Admin` (`admin`):** Full server management, user audit, server backups, proxy settings, and global fleet overview.
+- **`Gebruiker` (`user`):** Independent vehicle owner with their own vehicles, personal Home Assistant coupling, and vehicle driver invitation management.
+- **`Chauffeur` (`driver`):** Simplified, high-contrast mobile dashboard focused on 1-click fueling, EV charging, and trip logging on shared vehicles.
 
 ---
 
@@ -46,7 +56,9 @@ Want to share a family car with your partner, parents, or co-driver?
 VehicleVault integrates seamlessly behind authentication reverse proxies:
 - **Supported Proxies:** **Pangolin**, **Authelia**, **Authentik**, **Traefik Forward-Auth**, and **Cloudflare Access**.
 - **Supported Headers:** `Remote-Email`, `X-Forwarded-Email`, `Remote-User`, `X-Forwarded-User`, or `X-Pangolin-User`.
-- **Admin UI Toggle:** Under **Settings → Gebruikers & Toegang**, administrators can toggle **Reverse Proxy SSO** on or off at any time. When disabled, proxy headers are safely ignored.
+- **Automatic Page Load Session Minting:** When entering via Pangolin or Authelia, VehicleVault detects the identity headers on initial page navigation (`GET /`), immediately issues HTTP-only session cookies (`refresh_token` and `vv_token` with `Path=/`), and logs the user in without landing on a secondary login prompt.
+- **Diagnostic Endpoint:** Inspect live proxy headers and proxy trust in real time by visiting `https://your-domain.com/proxy-debug` while logged into your reverse proxy.
+- **Admin UI Toggle:** Under **Settings → Server Gebruikers**, administrators can toggle **Reverse Proxy SSO** on or off at any time. When disabled, proxy headers are safely ignored.
 - **Strict IP Validation:** VehicleVault validates that incoming requests containing proxy headers originate from trusted loopback (`127.0.0.1`, `::1`) or standard RFC 1918 private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). Public clients cannot inject spoofed headers.
 - **Auto-Provisioning:** When a user logs in through Pangolin or Authentik for the first time, a corresponding VehicleVault account is automatically provisioned for them.
 

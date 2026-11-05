@@ -1,6 +1,6 @@
 # 🚗 Welcome to the VehicleVault Wiki
 
-**VehicleVault v3.2.0** is a complete, self-hosted, privacy-first vehicle lifecycle, fuel & EV charging, AI maintenance invoice translator, tire management, fiscal trip registration, digital glovebox, Cockpit Telemetry HUD, and Total Cost of Ownership (TCO) platform.
+**VehicleVault v3.3.2** is a complete, self-hosted, privacy-first vehicle lifecycle, fuel & EV charging, AI maintenance invoice translator, tire management, fiscal trip registration, digital glovebox, Cockpit Telemetry HUD, and Total Cost of Ownership (TCO) platform.
 
 ---
 
@@ -31,17 +31,19 @@
    - Multi-car Belastingdienst sheet importer with preview & duplicate detection
 
 5. **[Home Assistant, Calendar & MCP Server](Home-Assistant-and-MCP)**
+   - **Multi-Tenant Per-User Home Assistant:** Every account can connect their own private Home Assistant URL & Token without server collision
    - Home Assistant REST sensor integration & live odometer webhook (`POST /api/integrations/ha/odometer`)
    - Animated Cockpit Telemetry HUD with real-time speed, RPM, and fuel status
    - RFC 5545 `.ics` Calendar Feed for APK/MOT/TÜV and maintenance reminders
    - Model Context Protocol (MCP) server for Claude Desktop & Antigravity
 
-6. **[Notifications, Multi-User Sharing & Security](Notifications-and-Security)**
+6. **[Notifications, Super-Admin & Multi-User Sharing](Notifications-and-Security)**
+   - **Super-Admin Server Fleet & User Audit:** Live last login (`last_login_at`) & activity timestamps, global user role management, and fleet-wide visibility
+   - **Direct Co-Driver Invitations:** Vehicle owners can invite drivers by email, assign `Editor` or `Viewer` roles, and copy instant onboarding links
+   - **Reverse Proxy SSO:** Hardened header authentication (Pangolin, Authelia, Authentik, Traefik, Cloudflare Access) with auto-minted session cookies and `/proxy-debug` endpoint
    - **1-Click Guest / Proef Sandbox Mode:** Isolated trial accounts for prospective users with 1-click permanent conversion
-   - **Reverse Proxy SSO:** Hardened header authentication (Pangolin, Authelia, Authentik, Traefik, Cloudflare Access) with loopback & private CIDR checks and UI toggle
    - **Adaptive Visitor Experience:** Zero-flash automatic system theme (Dark/Light) and browser language (Dutch/English) detection
    - Push & email notifications via **Web Push (PWA)**, **Pushover**, **Ntfy**, **Gotify**, **Discord/Slack Webhooks**, and **E-mail (Microsoft 365, Gmail, SMTP, Graph)**
-   - Multi-user vehicle isolation, granular **Vehicle Sharing (`editor` / `viewer`)**, and **Driver Mode (`Chauffeur Modus`)**
    - Passkeys (WebAuthn) with one-time recovery codes
 
 ---
