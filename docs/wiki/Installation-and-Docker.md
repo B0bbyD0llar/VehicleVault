@@ -58,7 +58,9 @@ All application data is stored inside the mounted `/data` volume:
 | `JWT_SECRET` | *(auto-generated)* | Secret key for signing JWT access tokens |
 | `JWT_REFRESH_SECRET` | *(auto-generated)* | Secret key for signing long-lived refresh tokens |
 | `DISABLE_AUTH` | `false` | Set to `true` to bypass login completely (e.g., behind a trusted LAN or tunnel) |
-| `ENABLE_PROXY_AUTH` | `true` | Automatically authenticate users via reverse proxy headers (`Remote-Email`, `X-Forwarded-Email`) |
+| `ENABLE_PROXY_AUTH` | `true` | Authenticate users via reverse proxy headers (`Remote-Email`, `X-Pangolin-User`) |
+| `ALLOW_GUEST_ACCESS` | `true` | Enable 1-click isolated guest trial sandbox access (`?guest=1`, `?proef=1`) |
+| `PUBLIC_URL` | *(request origin)* | Canonical external URL (e.g. `https://voertuigen.jouwdomein.nl`) for OAuth callbacks |
 | `RP_ID` | *(request host)* | Domain that passkeys are bound to (optional; needs HTTPS and a domain name) |
 | `RP_ORIGINS` | *(request origin)* | Comma-separated https origins allowed for passkeys, e.g. `https://vault.yourdomain.com` |
 | `GEMINI_API_KEY` | *(optional)* | Default Google Gemini API key (can also be configured in the web UI) |

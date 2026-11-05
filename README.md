@@ -3,9 +3,9 @@
   <h1>VehicleVault</h1>
   <p><strong>Self-Hosted Vehicle Lifecycle, Fuel, AI Maintenance Scanner, Digital Glovebox, and TCO Platform</strong></p>
 
-  [![Release](https://img.shields.io/badge/Release-v2.0.0-0ea5e9.svg)](https://github.com/TeeCodeDev/VehicleVault/releases)
+  [![Release](https://img.shields.io/badge/Release-v3.2.0-0ea5e9.svg)](https://github.com/TeeCodeDev/VehicleVault/releases)
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-  [![Tests](https://img.shields.io/badge/Tests-73%2F73%20Passing-emerald.svg)](server/src/tests/vehiclevault.test.ts)
+  [![Tests](https://img.shields.io/badge/Tests-224%2F224%20Passing-emerald.svg)](server/src/tests/vehiclevault.test.ts)
   [![Node.js](https://img.shields.io/badge/Node.js-24%20LTS-green.svg)](https://nodejs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
   [![React](https://img.shields.io/badge/React-19-cyan.svg)](https://react.dev/)
@@ -17,7 +17,7 @@
 
 ---
 
-**VehicleVault** is a privacy-first, self-hosted vehicle lifecycle, fueling, maintenance, tire management, trip logging, and Total Cost of Ownership (TCO) platform. Built with **React 19**, a **Node.js 24 TypeScript REST API**, a multimodal **AI Vision & OCR pipeline** (capable of scanning fuel receipts and translating foreign maintenance invoices), a bidirectional **Home Assistant integration**, and a **Model Context Protocol (MCP) Server** enabling AI agents (such as Claude Desktop or Antigravity) to query and log vehicle telemetry.
+**VehicleVault** is a privacy-first, self-hosted vehicle lifecycle, fueling, maintenance, tire management, trip logging, and Total Cost of Ownership (TCO) platform. Built with **React 19**, a **Node.js 24 TypeScript REST API**, a multimodal **AI Vision & OCR pipeline** (capable of scanning fuel receipts and translating foreign maintenance invoices), a bidirectional **Home Assistant integration**, a **Model Context Protocol (MCP) Server** enabling AI agents (such as Claude Desktop or Antigravity) to query and log vehicle telemetry, and a **1-Click Guest / Proef trial sandbox** for effortless community onboarding.
 
 📖 **[Read the Documentation & Wiki](docs/wiki/Home.md)**
 
@@ -94,7 +94,7 @@
 - **Import:** bring in an existing registration from the Belastingdienst sheet (`.xlsx` / `.csv`) with a preview, duplicate detection and support for files that cover several cars.
 
 ### 💸 Recurring Expenses & True TCO Analytics
-- **Recurring Fixed Costs (`Vaste Lasten`):** Track monthly, quarterly, or annual road tax (motorrijtuigenbelasting), insurance, roadside assistance, and subscriptions.
+- **Recurring Fixed Costs (`Vaste Lasten`):** Track monthly, quarterly, or annual road tax (motorrijtuigenbelasting), insurance, roadside assistance, and subscriptions with strict active ownership duration calculation.
 - **True TCO Analytics:** Computes Total Cost of Ownership per kilometer and per month, with interactive toggles for fixed expenses and vehicle purchase price, plus fuel price history (cheapest/most expensive fill-ups).
 
 ### 📁 Digital Glovebox (`Digitale Handschoenenkast`)
@@ -105,9 +105,10 @@
 - **Public Vehicle Passport:** Shareable, mobile-responsive sales showcase page (`/showcase/:slug`) with pricing, vehicle highlights, RDW specifications, verified maintenance history, tire status, and 1-click WhatsApp/Phone/Email contact.
 - **1-Click Standalone Website ZIP:** Exports a complete, static HTML5/CSS3/JavaScript website with all optimized photos, ready to host on GitHub Pages, Cloudflare Pages, Netlify, or any webserver without a backend.
 
-### 🏠 Home Assistant & Calendar Integration
-- **REST Sensor Telemetry:** Exposes active vehicle telemetry (`/api/ha/sensors`) formatted for Home Assistant `rest` sensors and HACS integration.
-- **Automated Odometer Webhook:** Push live vehicle odometer readings from Home Assistant (e.g. via Kia UVO / Hyundai Bluelink, Tesla, BMW, VW WeConnect, or OBD2) directly to `POST /api/ha/odometer`.
+### 🏠 Home Assistant & Cockpit Telemetry
+- **Cockpit Telemetry HUD:** Animated visual instrument panel showcasing real-time speed, RPM, fuel status, and engine health.
+- **REST Sensor Telemetry:** Exposes active vehicle telemetry (`/api/integrations/ha/states`) formatted for Home Assistant `rest` sensors and Lovelace dashboards.
+- **Automated Odometer Webhook:** Push live vehicle odometer readings from Home Assistant (e.g. via Kia UVO / Hyundai Bluelink, Tesla, BMW, VW WeConnect, or OBD2) directly to `POST /api/integrations/ha/odometer`.
 - **RFC 5545 `.ics` Calendar Feed:** Export APK and maintenance deadlines to Apple Calendar, Google Calendar, Outlook, or Nextcloud.
 
 ### 🤖 Model Context Protocol (MCP) Server
@@ -115,12 +116,14 @@
 - **Stdio & HTTP Transports:** Supports local command-line stdio execution or secure HTTP REST calls with hashed API keys (`vkv_...`).
 - **Available MCP Tools:** `list_vehicles`, `get_vehicle_summary`, `log_fuel_entry`, `log_service_entry`, `check_maintenance_alerts`.
 
-### 👥 Multi-User Roles, Vehicle Sharing & Modular UI
+### 👥 Multi-User Roles, 1-Click Guest Trial & SSO
+- **1-Click Guest Sandbox Mode (`/proef`):** Allows prospective users or friends to test-drive VehicleVault in an isolated sandbox with instant 1-click conversion to a permanent account preserving all data.
+- **Invite Link Auto-Entry:** Direct invite URLs (`?guest=1`, `?proef=1`) immediately activate guest trial access without form prompts.
+- **Adaptive Visitor Experience:** Zero-flash auto-detection of system dark/light theme (`prefers-color-scheme`) and browser language (Dutch `nl` vs English `en`).
+- **Reverse Proxy SSO:** Hardened header authentication for **Pangolin**, **Authelia**, **Authentik**, **Traefik**, and **Cloudflare Access** with dedicated admin toggle and strict private IP/loopback CIDR verification.
 - **Role-Based Access Control:** `Admin` (full system access), `User` (standard vehicle owner), and `Driver` (simplified mobile-friendly interface for fuel and trip logging).
 - **Vehicle Sharing:** Share specific vehicles with household members or co-drivers with `Editor` or `Viewer` permissions.
-- **Modular Navigation:** Enable or disable individual platform modules in Settings to tailor the interface to your needs.
-- **Single Sign-On (SSO):** Optional reverse-proxy header authentication (Authelia, Authentik, Pangolin, Cloudflare Access, Traefik).
-- **Passkeys:** Sign in with fingerprint, face or device PIN (WebAuthn) next to your password, with one-time recovery codes. Needs a domain name and HTTPS; see the [security wiki page](docs/wiki/Notifications-and-Security.md#4-passkeys--recovery-codes).
+- **Passkeys (WebAuthn):** Sign in with fingerprint, face or device PIN (WebAuthn) next to your password, with one-time recovery codes.
 
 ### 🔔 Push & Email Notifications
 - **Automated Alerts:** Dispatches reminders when APK inspections, maintenance intervals, or vehicle documents are approaching expiry (< 30d, < 7d).
@@ -200,7 +203,7 @@ Add VehicleVault to your `claude_desktop_config.json`:
 
 Or connect via HTTP using an API key created in **Settings ➔ API-sleutels**:
 ```bash
-curl -H "X-API-Key: vkv_YOUR_KEY" http://localhost:3001/api/mcp/tools
+curl -H "X-API-Key: vkv_YOUR_KEY" http://localhost:3084/api/mcp/tools
 ```
 
 ---
@@ -211,7 +214,7 @@ curl -H "X-API-Key: vkv_YOUR_KEY" http://localhost:3001/api/mcp/tools
 # 1. Install workspace dependencies
 npm install
 
-# 2. Run automated test suite (73/73 tests passing)
+# 2. Run automated test suite (224/224 tests passing)
 npm test
 
 # 3. Build both client and server

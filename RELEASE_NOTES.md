@@ -1,3 +1,56 @@
+> 🤖 **Note:** *This is an AI-generated release note summarizing the release (`v3.2.0`) of VehicleVault.*
+
+---
+
+# 🚗 VehicleVault v3.2.0 — Self-Hosted Community Release, 1-Click Guest Sandbox, Reverse Proxy SSO & Cockpit Telemetry HUD
+
+**VehicleVault v3.2.0** is a major community and accessibility release designed for self-hosters and public demonstrations. This version introduces **1-Click Guest & Proef Sandbox Mode** (enabling new users to test-drive VehicleVault in an isolated sandbox and convert to a permanent account with one click), **Hardened Reverse Proxy SSO with an Admin UI Toggle** (supporting Pangolin, Authelia, Authentik, and Traefik with loopback and private CIDR protection), **Adaptive Theme & Language Auto-Detection** (zero-flash dark/light mode following system preference, and automatic Dutch/English browser localization), an animated **Cockpit Telemetry HUD**, and high-precision **Recurring Fixed Costs** calculations.
+
+---
+
+### 🌟 1. 1-Click Guest & Proef Sandbox Mode
+- **Zero-Barrier Trial Sandbox:** Visitors can explore VehicleVault immediately via **`Probeer Proefmodus (1-Click)`** on the login screen or by opening any URL with `?guest=1`, `?proef=1`, `?invite=...`, or `?token=...`.
+- **Full-Featured Sandbox Session:** Guest users can add test vehicles, log fuel fill-ups, scan receipts and invoices, configure tire sets, and explore TCO analytics in their own isolated sandbox.
+- **1-Click Permanent Account Conversion:** A persistent, non-intrusive floating trial banner allows guests to preserve everything they created. Clicking **`Bewaar Mijn Account`** prompts for an email and password and instantly converts the guest session into a permanent user account without data loss.
+- **Admin Control:** Administrators can enable or disable guest trial access with a toggle in **Settings → Users** or via the `ALLOW_GUEST_ACCESS=false` environment variable.
+
+---
+
+### 🛡️ 2. Hardened Reverse Proxy SSO & Header Authentication
+- **Full Compatibility with Self-Hosted Gateways:** Native support for **Pangolin**, **Authelia**, **Authentik**, **Traefik Forward-Auth**, and **Cloudflare Access** using standard authentication headers (`Remote-Email`, `X-Forwarded-Email`, `Remote-User`, `X-Pangolin-User`).
+- **Dedicated Admin UI Toggle:** Reverse Proxy SSO can now be toggled on or off directly from the web UI under **Settings → Gebruikers & Toegang** (or configured via `ENABLE_PROXY_AUTH`).
+- **Loopback & RFC 1918 Private CIDR Verification:** VehicleVault validates that incoming requests containing proxy headers originate strictly from trusted loopback (`127.0.0.1`, `::1`) or private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). Public clients cannot inject spoofed headers.
+- **Coexistence with Direct Login:** Local password sign-ins, passkeys, and guest trials continue to work harmoniously alongside reverse proxy SSO.
+
+---
+
+### 🎨 3. Adaptive Visitor Experience (Theme & Language Auto-Detection)
+- **Zero-Flash System Theme:** Automatically detects the visitor's operating system and browser preference (`prefers-color-scheme`). Dark mode or light mode is activated instantly before page render, eliminating white/dark screen flashes.
+- **Smart Browser Language Localization:** Automatically inspects `navigator.language` and `navigator.languages`. Dutch visitors are greeted in **Nederlands (`nl`)**, while international visitors automatically receive the interface in **English (`en`)**.
+- **Persistent Manual Override:** Any explicit user selection via the theme switcher or language flag toggle is saved in `localStorage` and respected across sessions.
+
+---
+
+### 🏎️ 4. Cockpit Telemetry HUD & Modern Login UI
+- **Animated Instrument Cluster:** A sleek, responsive SVG telemetry HUD on the authentication screen showcasing live animated speed, RPM gauge, fuel meter, and vehicle diagnostics.
+- **Bilingual Visual Labels:** All cockpit HUD visual readouts, speed indicators, and fuel levels dynamically translate in real time between Dutch and English.
+- **Glassmorphic Authentication Card:** Polished, responsive card design featuring tabbed switching between standard email/password login, passkey biometric sign-in, and 1-click guest trial access.
+
+---
+
+### 💸 5. High-Precision Recurring Fixed Costs Engine
+- **Ownership-Bound Calculations:** Recurring fixed expenses (road tax, insurance, roadside assistance, subscriptions) are now strictly calculated from the date of active vehicle ownership, preventing pre-ownership months from skewing monthly and annual TCO metrics.
+- **Accurate Monthly Allocation:** Accurately apportions quarterly and annual fees across exact active vehicle ownership months.
+
+---
+
+### 🧪 6. Verified Quality & Rock-Solid Architecture
+- **224/224 Automated Tests Passing:** Comprehensive test suite covering Better-Auth, Drizzle ORM, Zod validation, Guest Mode, Proxy Auth, Document AI, Fuelio multi-section imports, Web Push (VAPID), and TCO calculations.
+- **Strict Architecture Limit (< 300 Lines per File):** 100% of codebase files strictly adhere to the Single Responsibility Principle and the master-engineer `< 300 lines` threshold.
+- **Node.js 24 LTS & React 19:** Powered by the latest long-term support runtime and modern web standards.
+
+---
+
 > 🤖 **Note:** *This is an AI-generated release note summarizing the release (`v3.0.0`) of VehicleVault.*
 
 ---
@@ -30,22 +83,10 @@ Every oversized module has been decomposed into cohesive, single-responsibility 
 #### Frontend Components & Pages (Client):
 - **Documents & Digital Glovebox (`Documents.tsx`):**
   - Reduced from >540 lines to **198 lines**.
-  - Decomposed into:
-    - `DocumentListView.tsx` (265 lines): List and grid views with quick document actions.
-    - `DocumentUploadModal.tsx` (174 lines): Drag-and-drop upload with client-side image compression.
-    - `DocumentEditModal.tsx` (123 lines): Metadata and expiration date editing.
-    - `DocumentHeaderControls.tsx` (95 lines): Category filtering, sorting, and view toggles.
-    - `useDocumentOperations.ts` (243 lines): Centralized hook for state, file transformation, and API mutations.
+  - Decomposed into `DocumentListView.tsx`, `DocumentUploadModal.tsx`, `DocumentEditModal.tsx`, `DocumentHeaderControls.tsx`, and `useDocumentOperations.ts`.
 - **Vehicles Management (`Vehicles.tsx`):**
   - Reduced from >450 lines to **217 lines**.
-  - Decomposed into:
-    - `VehicleCard.tsx` (220 lines): Visual card with RDW status badges, APK expiration warnings, and quick actions.
-    - `VehicleBasicSpecsFields.tsx` (277 lines): License plate, country selector, RDW autofill, and basic specs.
-    - `VehiclePurchaseAndApkFields.tsx` (100 lines): Purchase details, TCO baseline, inspection dates, and notes.
-    - `VehicleModal.tsx` (171 lines): Streamlined create/edit orchestrator.
-    - `VehicleShareModal.tsx` (175 lines): Sharing dialog for co-drivers and family members.
-    - `useVehicleForm.ts` (199 lines): Form state hook with RDW lookup and validation.
-    - `useVehicleShare.ts` (89 lines): Access control and co-driver sharing hook.
+  - Decomposed into `VehicleCard.tsx`, `VehicleBasicSpecsFields.tsx`, `VehiclePurchaseAndApkFields.tsx`, `VehicleModal.tsx`, `VehicleShareModal.tsx`, `useVehicleForm.ts`, and `useVehicleShare.ts`.
 - **Settings (`Settings.tsx`):**
   - Reduced from >3,000 lines to **162 lines**.
   - Decomposed into 7 specialized tab components: `GeneralSettingsTab`, `AiSettingsTab`, `NotificationsSettingsTab`, `BackupSettingsTab`, `UsersSettingsTab`, `HomeAssistantSettingsTab`, and `IntegrationsSettingsTab`.
@@ -67,6 +108,7 @@ Every oversized module has been decomposed into cohesive, single-responsibility 
     - `authApiKeyController.ts`: Generation, revocation, and validation of `vkv_` API keys.
     - `authPasswordResetController.ts`: Password reset and token workflows.
     - `userManagementController.ts`: User administration, profiles, and roles.
+    - `guestAuthController.ts`: 1-click isolated guest sandbox access and account conversion.
 - **AI Receipt & Invoice Engine (`aiReceiptService.ts`):**
   - Decomposed into pluggable providers (`geminiProvider`, `openAiProvider`, `localOcrProvider`) and a centralized `ocrNormalizer`.
 

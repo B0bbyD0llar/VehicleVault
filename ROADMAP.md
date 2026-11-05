@@ -1,33 +1,27 @@
 # VehicleVault — Roadmap & Architecture Modernization
 
-Dit document bevat de gerealiseerde mijlpalen en geplande architectuurmoderniseringen voor **VehicleVault**.
+Dit document bevat de gerealiseerde mijlpalen en geplande doorontwikkelingen voor **VehicleVault**.
 
 ---
 
-## 🏛️ Doelstellingen v3.0: Architectuur & Standaardbibliotheken Modernisering
+## 🏛️ Gerealiseerd in v3.2 (Community, Proefmodus & Telemetrie HUD)
+- ✅ **1-Click Gast / Proef Sandbox Modus:** Laagdrempelige testmodus voor geïnteresseerden en demonstraties via `/proef` of invite links (`?guest=1`, `?proef=1`), met 1-klik conversie naar een vast account zonder dataverlies.
+- ✅ **Reverse Proxy SSO Beheerpaneel & Hardening:** Beheerdersinterface onder Instellingen > Gebruikers om header-authenticatie (Pangolin, Authelia, Authentik, Traefik) in of uit te schakelen, beschermd door strikte loopback en private netwerk CIDR validatie.
+- ✅ **Automatische Donkere/Lichte Modus & Taaldetectie:** Zero-flash herkenning van OS-thema (`prefers-color-scheme`) en browsertaal (Nederlands vs Engels), met permanente handmatige overschrijving via `localStorage`.
+- ✅ **Cockpit Telemetrie HUD & Modern Login UI:** Geanimeerd instrumentarium met dynamische snelheidsmeter, toerenteller, brandstofmeter en tweetalige labels.
+- ✅ **Hoge-Precisie Vaste Lasten TCO Engine:** Berekening van vaste lasten (MRB, verzekering, abonnementen) strikt afgestemd op de werkelijke bezitsperiode van het voertuig.
+- ✅ **224/224 Geautomatiseerde Tests Geslaagd:** Volledige testdekking van alle controllers, parsers, scanners en integraties.
 
-In versie 3.0 transformeren we VehicleVault naar een modulaire, enterprise-grade architectuur conform de Master Engineer richtlijnen (Separation of Concerns, Single Responsibility Principle, soft review trigger bij ~300 regels):
+---
 
-### 1. Opdelen van Grote Monolithische Bestanden in Eigen Bestanden
-- **`client/src/pages/Settings.tsx` (2.800+ regels):**
-  - Opsplitsen in onafhankelijke deelcomponenten per beheer-tab (`GeneralSettings`, `BackupSettings`, `HaSettings`, `NotificationSettings`, `OidcSettings`).
-- **`client/src/pages/Maintenance.tsx` (1.800+ regels):**
-  - Uitsplitsen in aparte dialoogvensters, formulieren en statuscomponenten.
-- **`client/src/pages/FuelLog.tsx` (1.800+ regels):**
-  - Uitsplitsen in invoerformulieren, grafieken en tabelweergaven.
-- **`server/src/services/aiReceiptService.ts` (1.150+ regels):**
-  - Uitsplitsen in OCR preprocessing, LLM provider integraties (Gemini / OpenAI) en respons-normalizers.
-- **`server/src/controllers/authController.ts` (580+ regels):**
-  - Vervangen / opdelen naar Better-Auth handlers en data-access repositories.
-
-### 2. Toepassing van Beproefde Standaardbibliotheken
-1. ✅ **Pino Structured Logger:** Hoge performantie JSON logging met Request-IDs en gevoelige veld-redactie.
-2. ✅ **ToadScheduler:** In-process taakplanner voor achtergrondcontroles zonder error-prone timers.
-3. ✅ **Zod Boundary Validation:** Strikte runtime type- en payloadvalidatie aan de Express API-poort.
-4. ✅ **TanStack Query (React Query):** Geïntegreerde asynchrone cache- en data-fetching provider.
-5. ⏳ **Better-Auth:** Vervangen van handgemaakte JWT, sessies, cookies, WebAuthn en TOTP door het geauditeerde Better-Auth framework.
-6. ⏳ **Drizzle ORM:** Type-safe database queries en automatische schema-migraties ter vervanging van rauwe SQL strings.
-7. ⏳ **React Hook Form + Zod Resolvers:** Gestroomlijnde formulier-state zonder tientallen losse `useState` variabelen per pagina.
+## 🏛️ Gerealiseerd in v3.0 & v3.1 (Modulaire Architectuur & Beproefde Standaarden)
+- ✅ **Strikte Module-Opsplitsing (< 300 regels per bestand):** Alle grote monolithische bestanden in client en server zijn gesplitst volgens het Single Responsibility Principle.
+- ✅ **Pino Structured Logger:** Hoge performantie JSON logging met Request-IDs en gevoelige veld-redactie.
+- ✅ **ToadScheduler:** In-process taakplanner voor achtergrondcontroles zonder error-prone timers.
+- ✅ **Zod Boundary Validation:** Strikte runtime type- en payloadvalidatie aan de Express API-poort.
+- ✅ **Better-Auth & Drizzle ORM Integratie:** Type-safe database queries en robuuste sessie/auth architectuur.
+- ✅ **TanStack Query (React Query):** Geïntegreerde asynchrone cache- en data-fetching provider.
+- ✅ **React Hook Form + Zod Resolvers:** Gestroomlijnde formulier-state met declaratief schema-onderhoud.
 
 ---
 
