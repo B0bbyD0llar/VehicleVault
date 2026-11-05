@@ -195,11 +195,17 @@ export class AuthSessionController {
     const proxyUser = getProxyUser(req);
     const enabled = isProxyAuthEnabled();
     const trusted = isTrustedProxy(req);
+    let session = null;
+    if (proxyUser) {
+      session = startSession(req, res, { id: proxyUser.userId, email: proxyUser.email, role: proxyUser.role }, { trackLogin: true });
+    }
     res.json({
       timestamp: new Date().toISOString(),
       isProxyAuthEnabled: enabled,
       isTrustedProxy: trusted,
       proxyUser,
+      sessionCreated: !!session,
+      cookiesSet: !!session,
       clientIp: req.ip,
       remoteAddress: req.socket?.remoteAddress,
       headers: {

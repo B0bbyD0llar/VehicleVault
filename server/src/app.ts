@@ -151,6 +151,24 @@ export function createApp(): express.Application {
   const clientDist = possiblePaths.find((p) => fs.existsSync(p));
 
   if (clientDist) {
+    // Auto-authenticate reverse proxy SSO users on any incoming page request before static assets or index.html are served
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      if (req.method === 'GET' && !req.path.startsWith('/assets/')) {
+        try {
+          const proxyUser = getProxyUser(req);
+          if (proxyUser) {
+            startSession(
+              req,
+              res,
+              { id: proxyUser.userId, email: proxyUser.email, role: proxyUser.role },
+              { trackLogin: true }
+            );
+          }
+        } catch {}
+      }
+      next();
+    });
+
     app.use(
       express.static(clientDist, {
         setHeaders: (res, filePath) => {
