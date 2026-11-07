@@ -47,6 +47,19 @@ export const ProfilePreferencesSection: React.FC = () => {
               <span>🇬🇧 English</span>
               {lang === 'en' && <Check className="w-3.5 h-3.5 ml-1 text-accent-600" />}
             </button>
+
+            <button
+              type="button"
+              onClick={() => setLang('de')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold border transition flex items-center space-x-2 ${
+                lang === 'de'
+                  ? 'bg-accent-50 dark:bg-accent-950/60 border-accent-300 dark:border-accent-700 text-accent-700 dark:text-accent-300 shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-400 hover:bg-slate-100'
+              }`}
+            >
+              <span>🇩🇪 Deutsch</span>
+              {lang === 'de' && <Check className="w-3.5 h-3.5 ml-1 text-accent-600" />}
+            </button>
           </div>
         </div>
 
