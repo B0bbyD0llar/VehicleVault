@@ -2,6 +2,7 @@ import { db } from '../db/database.js';
 import { RdwService } from './rdwService.js';
 import { EmailService } from './emailService.js';
 import { PushService } from './pushService.js';
+import { MaintenanceService } from './maintenanceService.js';
 
 export interface NotificationSettings {
   provider: 'none' | 'email' | 'webpush' | 'pushover' | 'ntfy' | 'gotify' | 'webhook';
@@ -308,62 +309,43 @@ export class NotificationService {
         }
       }
 
-      // 2. Overdue Maintenance Check
+      // 2. Overdue Maintenance Check (uses unified MaintenanceService logic + 14-day anti-spam cooldown)
       const vehicleMaintEnabled = v.maintenance_notifications_enabled === undefined || v.maintenance_notifications_enabled === null || Number(v.maintenance_notifications_enabled) !== 0;
       if (config.enabledMaintenance && vehicleMaintEnabled) {
-        const intervals = db.query<any>(`
-          SELECT mi.*, sc.name as category_name
-          FROM maintenance_intervals mi
-          JOIN service_categories sc ON sc.id = mi.category_id
-          WHERE mi.vehicle_id = ?
-        `, [v.id]);
-
-        const currentOdo = Number(v.current_odometer) || 0;
+        const statuses = MaintenanceService.getVehicleMaintenanceStatus(v.id);
         const now = new Date();
 
-        for (const item of intervals) {
-          let isOverdue = false;
-          let reason = '';
+        for (const item of statuses) {
+          if (item.status === 'overdue') {
+            const cacheKey = `notif_maint_${item.id}`;
+            const lastSent = db.get<{ updated_at: string }>(
+              'SELECT updated_at FROM system_settings WHERE key = ?',
+              [cacheKey]
+            );
 
-          if (item.interval_km) {
-            const baseKm = item.last_service_odometer !== null && item.last_service_odometer !== undefined
-              ? Number(item.last_service_odometer)
-              : Number(v.initial_odometer) || 0;
-            const diff = (baseKm + Number(item.interval_km)) - currentOdo;
-            if (diff < 0) {
-              isOverdue = true;
-              reason = `${Math.abs(diff)} km overschreden`;
+            // Cooldown: send at most once every 14 days to prevent daily spam
+            if (lastSent?.updated_at) {
+              const daysSince = (now.getTime() - new Date(lastSent.updated_at).getTime()) / (1000 * 60 * 60 * 24);
+              if (daysSince < 14) {
+                continue;
+              }
             }
-          }
 
-          if (item.interval_months && !isOverdue) {
-            const baseDate = item.last_service_date ? new Date(item.last_service_date) : new Date(v.purchase_date || v.created_at);
-            const dueDate = new Date(baseDate);
-            dueDate.setMonth(dueDate.getMonth() + Number(item.interval_months));
-            if (dueDate < now) {
-              isOverdue = true;
-              reason = 'tijdsinterval verstreken';
-            }
-          }
+            const itemName = item.customName || item.categoryName;
+            const title = `🔧 Onderhoud Vereist: ${v.name}`;
+            const reason = item.triggerReason === 'distance'
+              ? `${Math.abs(item.kmRemaining ?? 0)} km overschreden`
+              : 'tijdsinterval verstreken';
+            const msg = `Het onderhoudsinterval voor "${itemName}" is overschreden (${reason}).`;
 
-          if (isOverdue) {
-            const cacheKey = `notif_maint_${item.id}_${todayStr}`;
-            const alreadySent = db.get<{ value: string }>('SELECT value FROM system_settings WHERE key = ?', [cacheKey]);
-
-            if (!alreadySent) {
-              const itemName = item.custom_name || item.category_name;
-              const title = `🔧 Onderhoud Vereist: ${v.name}`;
-              const msg = `Het onderhoudsinterval voor "${itemName}" is overschreden (${reason}).`;
-
-              await this.send(title, msg, 'high', ['wrench', 'car']);
-              db.run('INSERT OR REPLACE INTO system_settings (key, value, updated_at) VALUES (?, ?, ?)', [
-                cacheKey,
-                'sent',
-                new Date().toISOString(),
-              ]);
-              count++;
-              details.push(`Onderhoud alert verzonden voor ${v.name} (${itemName})`);
-            }
+            await this.send(title, msg, 'high', ['wrench', 'car']);
+            db.run('INSERT OR REPLACE INTO system_settings (key, value, updated_at) VALUES (?, ?, ?)', [
+              cacheKey,
+              'sent',
+              now.toISOString(),
+            ]);
+            count++;
+            details.push(`Onderhoud alert verzonden voor ${v.name} (${itemName})`);
           }
         }
       }

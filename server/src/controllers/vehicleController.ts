@@ -220,4 +220,5 @@ export class VehicleController {
   public static getShares = VehicleShareController.getShares;
   public static addShare = VehicleShareController.addShare;
   public static removeShare = VehicleShareController.removeShare;
+  public static transferOwnership = VehicleShareController.transferOwnership;
 }

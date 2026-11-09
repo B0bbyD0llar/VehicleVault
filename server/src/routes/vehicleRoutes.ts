@@ -30,10 +30,11 @@ router.get('/:id/showcase', ShowcaseController.get);
 router.put('/:id/showcase', ShowcaseController.update);
 router.get('/:id/showcase/export-zip', ShowcaseController.exportZip);
 
-// Vehicle Sharing
+// Vehicle Sharing & Ownership Transfer
 router.get('/:id/shares', VehicleController.getShares);
 router.post('/:id/shares', VehicleController.addShare);
 router.delete('/:id/shares/:userId', VehicleController.removeShare);
+router.post('/:id/transfer', VehicleController.transferOwnership);
 
 // iCalendar (.ics) Export
 router.get('/calendar.ics', VehicleController.exportIcs);

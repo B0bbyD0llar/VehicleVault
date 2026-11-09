@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Users, X, AlertCircle, CheckCircle2, Copy, Check, Link2 } from 'lucide-react';
+import { Users, X, AlertCircle, CheckCircle2, Copy, Check, Link2, ArrowRightLeft } from 'lucide-react';
 import { Vehicle } from '../../types/index.js';
 import { formatDisplayDate } from '../../utils/format.js';
+import { VehicleTransferOwnershipTab } from './VehicleTransferOwnershipTab.js';
 
 interface VehicleShareModalProps {
   vehicle: Vehicle;
@@ -19,6 +20,7 @@ interface VehicleShareModalProps {
   lastInviteLink?: string | null;
   onAddShare: (e: React.FormEvent) => void;
   onRemoveShare: (userId: string) => void;
+  onTransferOwnership?: (email: string, retainAccess: boolean) => void;
 }
 
 export const VehicleShareModal: React.FC<VehicleShareModalProps> = ({
@@ -37,7 +39,9 @@ export const VehicleShareModal: React.FC<VehicleShareModalProps> = ({
   lastInviteLink,
   onAddShare,
   onRemoveShare,
+  onTransferOwnership,
 }) => {
+  const [activeTab, setActiveTab] = useState<'share' | 'transfer'>('share');
   const [copiedLink, setCopiedLink] = useState(false);
   if (!isOpen) return null;
 
@@ -70,6 +74,34 @@ export const VehicleShareModal: React.FC<VehicleShareModalProps> = ({
             className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg"
           >
             <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Tab switcher: Delen vs Overdragen */}
+        <div className="flex border-b border-slate-200 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setActiveTab('share')}
+            className={`flex-1 py-2 text-xs font-bold border-b-2 transition flex items-center justify-center space-x-1.5 ${
+              activeTab === 'share'
+                ? 'border-accent-600 text-accent-600 dark:text-accent-400'
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Mede-bestuurder Delen</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('transfer')}
+            className={`flex-1 py-2 text-xs font-bold border-b-2 transition flex items-center justify-center space-x-1.5 ${
+              activeTab === 'transfer'
+                ? 'border-accent-600 text-accent-600 dark:text-accent-400'
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
+          >
+            <ArrowRightLeft className="w-3.5 h-3.5" />
+            <span>Eigendom Overdragen</span>
           </button>
         </div>
 
@@ -115,90 +147,102 @@ export const VehicleShareModal: React.FC<VehicleShareModalProps> = ({
           </div>
         )}
 
-        {/* Add share form */}
-        <form onSubmit={onAddShare} className="bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 space-y-3">
-          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-            Mede-bestuurder uitnodigen
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <div>
-              <label className="block text-[11px] text-slate-600 dark:text-slate-400 font-semibold mb-1">
-                E-mailadres mede-bestuurder
-              </label>
-              <input
-                type="email"
-                required
-                list="shareable-users-list"
-                placeholder="bijv. vrouw@voorbeeld.nl"
-                value={selectedShareEmail}
-                onChange={(e) => setSelectedShareEmail(e.target.value)}
-                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-accent-500"
-              />
-              <datalist id="shareable-users-list">
-                {shareableUsers.map((u) => (
-                  <option key={u.id} value={u.email} />
-                ))}
-              </datalist>
-            </div>
-
-            <div>
-              <label className="block text-[11px] text-slate-600 dark:text-slate-400 font-semibold mb-1">
-                Toegangsrechten
-              </label>
-              <select
-                value={selectedShareRole}
-                onChange={(e) => setSelectedShareRole(e.target.value as any)}
-                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-accent-500"
-              >
-                <option value="editor">Bewerker (Tanken, ritten & onderhoud)</option>
-                <option value="viewer">Alleen-lezen (Alleen inzien)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-1">
-            <button
-              type="submit"
-              disabled={shareLoading || !selectedShareEmail}
-              className="px-3.5 py-1.5 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-xs font-semibold inline-flex items-center space-x-1.5 transition disabled:opacity-50"
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span>{shareLoading ? 'Toevoegen...' : 'Toegang Verlenen'}</span>
-            </button>
-          </div>
-        </form>
-
-        {/* List of active shares */}
-        <div className="space-y-2">
-          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-            Actieve delingen ({shares.length})
-          </span>
-          {shares.length === 0 ? (
-            <p className="text-xs text-slate-400 italic py-2 text-center bg-slate-50 dark:bg-slate-950/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-              Dit voertuig is momenteel nog met niemand gedeeld.
-            </p>
-          ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/80 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 max-h-48 overflow-y-auto">
-              {shares.map((s) => (
-                <div key={s.id} className="p-3 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-slate-900 dark:text-white block">{s.email}</span>
-                    <span className="text-[10px] text-slate-400 capitalize">
-                      Rol: {s.role === 'editor' ? 'Bewerker' : 'Alleen-lezen'} • Gedeeld op {formatDisplayDate(s.created_at)}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => onRemoveShare(s.user_id)}
-                    className="text-rose-500 hover:text-rose-700 p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
-                    title="Toegang intrekken"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+        {activeTab === 'share' ? (
+          <>
+            {/* Add share form */}
+            <form onSubmit={onAddShare} className="bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                Mede-bestuurder uitnodigen
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 font-semibold mb-1">
+                    E-mailadres mede-bestuurder
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    list="shareable-users-list"
+                    placeholder="bijv. vrouw@voorbeeld.nl"
+                    value={selectedShareEmail}
+                    onChange={(e) => setSelectedShareEmail(e.target.value)}
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-accent-500"
+                  />
+                  <datalist id="shareable-users-list">
+                    {shareableUsers.map((u) => (
+                      <option key={u.id} value={u.email} />
+                    ))}
+                  </datalist>
                 </div>
-              ))}
+
+                <div>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 font-semibold mb-1">
+                    Toegangsrechten
+                  </label>
+                  <select
+                    value={selectedShareRole}
+                    onChange={(e) => setSelectedShareRole(e.target.value as any)}
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-accent-500"
+                  >
+                    <option value="editor">Bewerker (Tanken, ritten & onderhoud)</option>
+                    <option value="viewer">Alleen-lezen (Alleen inzien)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="submit"
+                  disabled={shareLoading || !selectedShareEmail}
+                  className="px-3.5 py-1.5 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-xs font-semibold inline-flex items-center space-x-1.5 transition disabled:opacity-50"
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>{shareLoading ? 'Toevoegen...' : 'Toegang Verlenen'}</span>
+                </button>
+              </div>
+            </form>
+
+            {/* List of active shares */}
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                Actieve delingen ({shares.length})
+              </span>
+              {shares.length === 0 ? (
+                <p className="text-xs text-slate-400 italic py-2 text-center bg-slate-50 dark:bg-slate-950/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                  Dit voertuig is momenteel nog met niemand gedeeld.
+                </p>
+              ) : (
+                <div className="divide-y divide-slate-100 dark:divide-slate-800/80 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 max-h-48 overflow-y-auto">
+                  {shares.map((s) => (
+                    <div key={s.id} className="p-3 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-bold text-slate-900 dark:text-white block">{s.email}</span>
+                        <span className="text-[10px] text-slate-400 capitalize">
+                          Rol: {s.role === 'editor' ? 'Bewerker' : 'Alleen-lezen'} • Gedeeld op {formatDisplayDate(s.created_at)}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => onRemoveShare(s.user_id)}
+                        className="text-rose-500 hover:text-rose-700 p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
+                        title="Toegang intrekken"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        ) : (
+          onTransferOwnership && (
+            <VehicleTransferOwnershipTab
+              vehicle={vehicle}
+              loading={shareLoading}
+              onTransfer={onTransferOwnership}
+            />
+          )
+        )}
       </div>
     </div>
   );

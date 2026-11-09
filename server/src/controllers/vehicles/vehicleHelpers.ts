@@ -47,10 +47,24 @@ export function enrichVehicle(v: any) {
   };
 }
 
-export function createDefaultIntervals(vehicleId: string, purchaseDate: string | null, initialOdometer: number) {
+export function createDefaultIntervals(
+  vehicleId: string,
+  purchaseDateOrType: string | null = null,
+  initialOdometer: number = 0,
+  vehicleType: string = 'car'
+) {
   const categories = db.query<any>('SELECT * FROM service_categories WHERE is_preset = 1');
   const now = new Date().toISOString();
+  const today = now.split('T')[0];
+  // Determine if first argument is a date or type
+  const isDate = purchaseDateOrType && purchaseDateOrType.includes('-');
+  const type = isDate ? vehicleType : (purchaseDateOrType || vehicleType);
+
   for (const cat of categories) {
+    // Exclude motorcycle-specific presets for cars and other vehicles
+    if (cat.name.includes('(Motor)') && type !== 'motorcycle') {
+      continue;
+    }
     db.run(
       `INSERT INTO maintenance_intervals (
         id, vehicle_id, category_id, custom_name, interval_km, interval_months,
@@ -63,8 +77,8 @@ export function createDefaultIntervals(vehicleId: string, purchaseDate: string |
         cat.name,
         cat.default_distance_interval,
         cat.default_time_months,
-        purchaseDate || now.split('T')[0],
-        initialOdometer,
+        today,
+        initialOdometer || 0,
         now,
       ]
     );

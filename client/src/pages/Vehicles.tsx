@@ -264,6 +264,7 @@ export const Vehicles: React.FC = () => {
           lastInviteLink={share.lastInviteLink}
           onAddShare={share.handleAddShare}
           onRemoveShare={share.handleRemoveShare}
+          onTransferOwnership={(email, retain) => share.handleTransferOwnership(email, retain, refreshVehicles)}
         />
       )}
 

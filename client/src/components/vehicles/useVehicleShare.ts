@@ -88,6 +88,34 @@ export function useVehicleShare() {
     }
   };
 
+  const handleTransferOwnership = async (email: string, retainAccess: boolean, onSuccess?: () => void) => {
+    if (!sharingVehicle || !email) return;
+
+    setShareError(null);
+    setShareSuccess(null);
+    setLastInviteLink(null);
+    setShareLoading(true);
+
+    try {
+      const res = await apiFetch<any>(`/api/vehicles/${sharingVehicle.id}/transfer`, {
+        method: 'POST',
+        body: JSON.stringify({ email, retain_access: retainAccess }),
+      });
+
+      setShareSuccess(res.message || `Eigendom overgedragen aan ${email}`);
+      if (res.inviteLink) {
+        setLastInviteLink(res.inviteLink);
+      }
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (err: any) {
+      setShareError(err?.message || 'Fout bij overdragen van voertuig');
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
   return {
     isShareModalOpen,
     setIsShareModalOpen,
@@ -105,5 +133,6 @@ export function useVehicleShare() {
     openShareModal,
     handleAddShare,
     handleRemoveShare,
+    handleTransferOwnership,
   };
 }

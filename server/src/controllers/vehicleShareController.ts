@@ -126,6 +126,86 @@ export class VehicleShareController {
     }
   }
 
+  public static async transferOwnership(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const currentUserId = req.user?.userId;
+      const access = getVehicleAccess(id, currentUserId, req.user?.role);
+
+      if (!access.isOwner && req.user?.role !== 'admin') {
+        res.status(403).json({ error: 'Alleen de eigenaar kan het eigendom van dit voertuig overdragen' });
+        return;
+      }
+
+      const rawEmail = req.body.email || req.body.targetUserEmail;
+      if (!rawEmail || typeof rawEmail !== 'string' || !rawEmail.includes('@')) {
+        res.status(400).json({ error: 'Een geldig e-mailadres is verplicht' });
+        return;
+      }
+
+      const cleanEmail = rawEmail.trim().toLowerCase();
+      let targetUser = db.get<any>('SELECT id, email FROM users WHERE LOWER(email) = ?', [cleanEmail]);
+      let isNewUser = false;
+
+      // If user does not exist yet, provision an account and invite them
+      if (!targetUser) {
+        const newUserId = crypto.randomUUID();
+        const now = new Date().toISOString();
+        db.run(
+          'INSERT INTO users (id, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+          [newUserId, cleanEmail, 'invited_user_placeholder', 'user', now, now]
+        );
+        targetUser = { id: newUserId, email: cleanEmail };
+        isNewUser = true;
+      }
+
+      if (targetUser.id === access.vehicle?.user_id) {
+        res.status(400).json({ error: 'Dit voertuig is al eigendom van deze gebruiker' });
+        return;
+      }
+
+      const now = new Date().toISOString();
+      const formerOwnerId = access.vehicle.user_id;
+      const retainAccess = req.body.retain_access === true;
+
+      // 1. Update vehicle owner
+      db.run('UPDATE vehicles SET user_id = ?, updated_at = ? WHERE id = ?', [targetUser.id, now, id]);
+
+      // 2. Remove any previous share entry for the new owner on this vehicle
+      db.run('DELETE FROM vehicle_shares WHERE vehicle_id = ? AND user_id = ?', [id, targetUser.id]);
+
+      // 3. Handle former owner's access
+      if (retainAccess && formerOwnerId) {
+        const shareId = crypto.randomUUID();
+        db.run(
+          `INSERT INTO vehicle_shares (id, vehicle_id, user_id, role, created_at)
+           VALUES (?, ?, ?, ?, ?)
+           ON CONFLICT(vehicle_id, user_id) DO UPDATE SET role = excluded.role`,
+          [shareId, id, formerOwnerId, 'editor', now]
+        );
+      } else if (formerOwnerId) {
+        db.run('DELETE FROM vehicle_shares WHERE vehicle_id = ? AND user_id = ?', [id, formerOwnerId]);
+      }
+
+      const host = req.get('host') || 'localhost';
+      const protocol = req.protocol || 'http';
+      const inviteLink = `${protocol}://${host}/login?invite=${targetUser.id}`;
+
+      res.json({
+        success: true,
+        message: isNewUser
+          ? `Eigendom succesvol overgedragen. Er is een account aangemaakt voor ${targetUser.email}.`
+          : `Eigendom van het voertuig is succesvol overgedragen aan ${targetUser.email}.`,
+        isNewUser,
+        inviteLink,
+        newOwner: targetUser.email,
+      });
+    } catch (err: any) {
+      console.error('Transfer vehicle ownership error:', err);
+      res.status(500).json({ error: 'Eigendom overdragen mislukt' });
+    }
+  }
+
   public static async listShareableUsers(req: Request, res: Response): Promise<void> {
     try {
       const currentUserId = req.user?.userId;
