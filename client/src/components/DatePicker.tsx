@@ -19,11 +19,16 @@ const MONTH_NAMES = {
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ],
+  de: [
+    'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+    'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+  ],
 };
 
 const WEEKDAYS = {
   nl: ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'],
   en: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+  de: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
 };
 
 export const DatePicker: React.FC<DatePickerProps> = ({

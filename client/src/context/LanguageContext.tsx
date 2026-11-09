@@ -10,38 +10,41 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const categoryTranslations: Record<string, { nl: string; en: string }> = {
-  'Engine Oil & Filter': { nl: 'Motorolie & Oliefilter', en: 'Engine Oil & Filter' },
-  'Motorolie & Oliefilter': { nl: 'Motorolie & Oliefilter', en: 'Engine Oil & Filter' },
-  'Spark Plugs': { nl: 'Bougies', en: 'Spark Plugs' },
-  'Bougies': { nl: 'Bougies', en: 'Spark Plugs' },
-  'Brake Fluid': { nl: 'Remvloeistof', en: 'Brake Fluid' },
-  'Remvloeistof': { nl: 'Remvloeistof', en: 'Brake Fluid' },
-  'Tires (Front)': { nl: 'Banden (Voor)', en: 'Tires (Front)' },
-  'Banden (Voor)': { nl: 'Banden (Voor)', en: 'Tires (Front)' },
-  'Tires (Rear)': { nl: 'Banden (Achter)', en: 'Tires (Rear)' },
-  'Banden (Achter)': { nl: 'Banden (Achter)', en: 'Tires (Rear)' },
-  'Transmission Fluid': { nl: 'Versnellingsbakolie', en: 'Transmission Fluid' },
-  'Transmissievloeistof': { nl: 'Versnellingsbakolie', en: 'Transmission Fluid' },
-  'Versnellingsbakolie': { nl: 'Versnellingsbakolie', en: 'Transmission Fluid' },
-  'Air / Cabin Filter': { nl: 'Lucht- / Interieurfilter', en: 'Air / Cabin Filter' },
-  'Lucht- & Interieurfilter': { nl: 'Lucht- / Interieurfilter', en: 'Air / Cabin Filter' },
-  'Lucht- / Interieurfilter': { nl: 'Lucht- / Interieurfilter', en: 'Air / Cabin Filter' },
-  'Chain & Sprockets (Motorcycle)': { nl: 'Ketting & Tandwielen (Motor)', en: 'Chain & Sprockets (Motorcycle)' },
-  'Ketting & Tandwielen (Motor)': { nl: 'Ketting & Tandwielen (Motor)', en: 'Chain & Sprockets (Motorcycle)' },
-  'General Inspection / Custom': { nl: 'Algemene Inspectie / Maatwerk', en: 'General Inspection / Custom' },
-  'Algemene Inspectie / Maatwerk': { nl: 'Algemene Inspectie / Maatwerk', en: 'General Inspection / Custom' },
+const categoryTranslations: Record<string, { nl: string; en: string; de: string }> = {
+  'Engine Oil & Filter': { nl: 'Motorolie & Oliefilter', en: 'Engine Oil & Filter', de: 'Motoröl & Ölfilter' },
+  'Motorolie & Oliefilter': { nl: 'Motorolie & Oliefilter', en: 'Engine Oil & Filter', de: 'Motoröl & Ölfilter' },
+  'Spark Plugs': { nl: 'Bougies', en: 'Spark Plugs', de: 'Zündkerzen' },
+  'Bougies': { nl: 'Bougies', en: 'Spark Plugs', de: 'Zündkerzen' },
+  'Brake Fluid': { nl: 'Remvloeistof', en: 'Brake Fluid', de: 'Bremsflüssigkeit' },
+  'Remvloeistof': { nl: 'Remvloeistof', en: 'Brake Fluid', de: 'Bremsflüssigkeit' },
+  'Tires (Front)': { nl: 'Banden (Voor)', en: 'Tires (Front)', de: 'Reifen (vorne)' },
+  'Banden (Voor)': { nl: 'Banden (Voor)', en: 'Tires (Front)', de: 'Reifen (vorne)' },
+  'Tires (Rear)': { nl: 'Banden (Achter)', en: 'Tires (Rear)', de: 'Reifen (hinten)' },
+  'Banden (Achter)': { nl: 'Banden (Achter)', en: 'Tires (Rear)', de: 'Reifen (hinten)' },
+  'Transmission Fluid': { nl: 'Versnellingsbakolie', en: 'Transmission Fluid', de: 'Getriebeöl' },
+  'Transmissievloeistof': { nl: 'Versnellingsbakolie', en: 'Transmission Fluid', de: 'Getriebeöl' },
+  'Versnellingsbakolie': { nl: 'Versnellingsbakolie', en: 'Transmission Fluid', de: 'Getriebeöl' },
+  'Air / Cabin Filter': { nl: 'Lucht- / Interieurfilter', en: 'Air / Cabin Filter', de: 'Luft- / Innenraumfilter' },
+  'Lucht- & Interieurfilter': { nl: 'Lucht- / Interieurfilter', en: 'Air / Cabin Filter', de: 'Luft- / Innenraumfilter' },
+  'Lucht- / Interieurfilter': { nl: 'Lucht- / Interieurfilter', en: 'Air / Cabin Filter', de: 'Luft- / Innenraumfilter' },
+  'Chain & Sprockets (Motorcycle)': { nl: 'Ketting & Tandwielen (Motor)', en: 'Chain & Sprockets (Motorcycle)', de: 'Kette & Ritzel (Motorrad)' },
+  'Ketting & Tandwielen (Motor)': { nl: 'Ketting & Tandwielen (Motor)', en: 'Chain & Sprockets (Motorcycle)', de: 'Kette & Ritzel (Motorrad)' },
+  'General Inspection / Custom': { nl: 'Algemene Inspectie / Maatwerk', en: 'General Inspection / Custom', de: 'Allgemeine Inspektion / Individuell' },
+  'Algemene Inspectie / Maatwerk': { nl: 'Algemene Inspectie / Maatwerk', en: 'General Inspection / Custom', de: 'Allgemeine Inspektion / Individuell' },
 };
 
 function getInitialLanguage(): Language {
   const saved = localStorage.getItem('vv_lang');
-  if (saved === 'nl' || saved === 'en') return saved;
+  if (saved === 'nl' || saved === 'en' || saved === 'de') return saved;
 
   if (typeof navigator !== 'undefined') {
     const navLang = (navigator.language || (navigator as any).userLanguage || '').toLowerCase();
     const navLangs = navigator.languages ? Array.from(navigator.languages).map((l) => l.toLowerCase()) : [];
     if (navLang.startsWith('nl') || navLangs.some((l) => l.startsWith('nl'))) {
       return 'nl';
+    }
+    if (navLang.startsWith('de') || navLangs.some((l) => l.startsWith('de'))) {
+      return 'de';
     }
   }
 
