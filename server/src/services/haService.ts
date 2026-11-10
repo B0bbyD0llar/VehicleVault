@@ -1,5 +1,6 @@
 import { db } from '../db/database.js';
 import { RdwService } from './rdwService.js';
+import { MaintenanceService } from './maintenanceService.js';
 
 export interface HaVehicleSensorData {
   id: string;
@@ -107,49 +108,18 @@ export class HaService {
       }
 
       const lastFuel = fuelEntries.length > 0 ? fuelEntries[fuelEntries.length - 1] : null;
-
-      // 3. Maintenance intervals
-      const intervals = db.query<any>(`
-        SELECT mi.*, sc.name as category_name
-        FROM maintenance_intervals mi
-        JOIN service_categories sc ON sc.id = mi.category_id
-        WHERE mi.vehicle_id = ?
-      `, [v.id]);
-
-      const now = new Date();
       const currentOdo = Number(v.current_odometer) || 0;
-      const alerts: any[] = [];
 
-      for (const item of intervals) {
-        let kmRemaining: number | null = null;
-        if (item.interval_km) {
-          const baselineKm = item.last_service_odometer !== null && item.last_service_odometer !== undefined
-            ? Number(item.last_service_odometer)
-            : Number(v.initial_odometer) || 0;
-          const dueKm = baselineKm + Number(item.interval_km);
-          kmRemaining = dueKm - currentOdo;
-        }
-
-        let daysRemaining: number | null = null;
-        if (item.interval_months) {
-          const baseDate = item.last_service_date ? new Date(item.last_service_date) : new Date(v.purchase_date || v.created_at);
-          const dueDate = new Date(baseDate);
-          dueDate.setMonth(dueDate.getMonth() + Number(item.interval_months));
-          daysRemaining = Math.round((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        }
-
-        const isOverdue = (kmRemaining !== null && kmRemaining < 0) || (daysRemaining !== null && daysRemaining < 0);
-        const isWarning = (kmRemaining !== null && kmRemaining <= 1000) || (daysRemaining !== null && daysRemaining <= 30);
-
-        if (isOverdue || isWarning) {
-          alerts.push({
-            item: item.custom_name || item.category_name,
-            status: isOverdue ? 'overdue' : 'warning',
-            remaining_km: kmRemaining,
-            remaining_days: daysRemaining,
-          });
-        }
-      }
+      // 3. Maintenance intervals via unified MaintenanceService
+      const maintStatuses = MaintenanceService.getVehicleMaintenanceStatus(v.id);
+      const alerts = maintStatuses
+        .filter((s) => s.status === 'overdue' || s.status === 'warning')
+        .map((s) => ({
+          item: s.customName || s.categoryName,
+          status: s.status,
+          remaining_km: s.kmRemaining,
+          remaining_days: s.daysRemaining,
+        }));
 
       return {
         id: v.id,

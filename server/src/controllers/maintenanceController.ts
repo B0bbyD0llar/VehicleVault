@@ -526,10 +526,13 @@ export class MaintenanceController {
     }
 
     try {
-      const extraction = await AiReceiptService.analyzeInvoice(req.file.path, targetLang);
+      const isConfigured = AiReceiptService.isConfigured();
+      const extraction = isConfigured
+        ? await AiReceiptService.analyzeInvoice(req.file.path, targetLang)
+        : null;
       res.json({
         fileName: req.file.filename,
-        aiConfigured: true,
+        aiConfigured: isConfigured,
         extraction,
       });
     } catch (err: any) {

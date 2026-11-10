@@ -23,7 +23,7 @@ export class MaintenanceService {
    * Evaluates the dual-trigger interval status for all maintenance items of a vehicle.
    */
   public static getVehicleMaintenanceStatus(vehicleId: string): IntervalStatus[] {
-    // Get vehicle initial odometer and highest odometer across fuel & service records
+    // Get vehicle initial odometer and highest odometer across fuel, service, and telematics logs
     const vehicle = db.get<{ initial_odometer: number }>(
       'SELECT initial_odometer FROM vehicles WHERE id = ?',
       [vehicleId]
@@ -37,11 +37,16 @@ export class MaintenanceService {
       'SELECT MAX(odometer) as max_odo FROM service_records WHERE vehicle_id = ?',
       [vehicleId]
     );
+    const maxOdoLog = db.get<{ max_odo: number | null }>(
+      'SELECT MAX(odometer) as max_odo FROM odometer_logs WHERE vehicle_id = ?',
+      [vehicleId]
+    );
 
     const currentOdometer = Math.max(
       vehicle?.initial_odometer || 0,
       maxFuel?.max_odo || 0,
-      maxService?.max_odo || 0
+      maxService?.max_odo || 0,
+      maxOdoLog?.max_odo || 0
     );
 
     const intervals = db.query<any>(
@@ -63,8 +68,17 @@ export class MaintenanceService {
 
       // Distance calculation
       if (interval.interval_km && interval.interval_km > 0) {
-        const lastKm = interval.last_service_odometer ?? (vehicle?.initial_odometer || 0);
-        const kmDriven = Math.max(0, currentOdometer - lastKm);
+        let lastKm = interval.last_service_odometer;
+        if (
+          lastKm === null ||
+          lastKm === undefined ||
+          (Number(lastKm) === 0 && currentOdometer > interval.interval_km)
+        ) {
+          lastKm = (vehicle?.initial_odometer && Number(vehicle.initial_odometer) > 0)
+            ? Number(vehicle.initial_odometer)
+            : currentOdometer;
+        }
+        const kmDriven = Math.max(0, currentOdometer - Number(lastKm));
         kmPercent = (kmDriven / interval.interval_km) * 100;
         kmRemaining = interval.interval_km - kmDriven;
       }

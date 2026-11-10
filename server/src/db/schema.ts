@@ -764,6 +764,29 @@ export function initializeDatabase(): void {
     // Non-fatal migration check
   }
 
+  // 16b. Clean up invalid/misleading maintenance presets on existing vehicles
+  try {
+    // Remove motorcycle-specific intervals from non-motorcycle vehicles
+    db.run(`
+      DELETE FROM maintenance_intervals
+      WHERE vehicle_id IN (SELECT id FROM vehicles WHERE type IS NOT 'motorcycle')
+        AND category_id IN (SELECT id FROM service_categories WHERE name LIKE '%Motor%')
+    `);
+
+    // Fix intervals with last_service_odometer = 0 on vehicles with initial_odometer > 0 where no service records exist
+    db.run(`
+      UPDATE maintenance_intervals
+      SET last_service_odometer = (
+        SELECT v.initial_odometer FROM vehicles v WHERE v.id = maintenance_intervals.vehicle_id
+      )
+      WHERE (last_service_odometer = 0 OR last_service_odometer IS NULL)
+        AND vehicle_id IN (SELECT id FROM vehicles WHERE initial_odometer > 0)
+        AND id NOT IN (SELECT DISTINCT maintenance_interval_id FROM service_records WHERE maintenance_interval_id IS NOT NULL)
+    `);
+  } catch {
+    // Non-fatal cleanup
+  }
+
   // Seed default presets
   seedPresets();
 

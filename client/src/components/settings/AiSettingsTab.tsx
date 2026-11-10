@@ -17,6 +17,7 @@ import { useLanguage } from '../../context/LanguageContext.js';
 export const AiSettingsTab: React.FC = () => {
   const { lang } = useLanguage();
 
+  const [aiDisabled, setAiDisabled] = useState(false);
   const [aiProvider, setAiProvider] = useState<'gemini' | 'openai' | 'none'>('gemini');
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [geminiModel, setGeminiModel] = useState('gemini-3.8-flash');
@@ -44,6 +45,7 @@ export const AiSettingsTab: React.FC = () => {
   const loadAiSettings = async () => {
     try {
       const res = await apiFetch<{
+        aiDisabled?: boolean;
         provider: 'gemini' | 'openai' | 'none';
         geminiModel: string;
         hasGeminiKey: boolean;
@@ -59,6 +61,7 @@ export const AiSettingsTab: React.FC = () => {
         openaiKeySource?: string | null;
       }>('/api/settings/ai');
 
+      setAiDisabled(Boolean(res.aiDisabled || res.provider === 'none'));
       setAiProvider(res.provider || 'gemini');
       setGeminiModel(res.geminiModel || 'gemini-3.8-flash');
       setHasGeminiKey(res.hasGeminiKey);
@@ -120,7 +123,8 @@ export const AiSettingsTab: React.FC = () => {
       await apiFetch('/api/settings/ai', {
         method: 'PUT',
         body: JSON.stringify({
-          provider: aiProvider,
+          aiDisabled,
+          provider: aiDisabled ? 'none' : aiProvider,
           geminiApiKey,
           geminiModel,
           openaiApiKey,
@@ -188,6 +192,52 @@ export const AiSettingsTab: React.FC = () => {
             <span>OpenAI Actief</span>
           </span>
         )}
+      </div>
+
+      {/* Privacy Master Toggle */}
+      <div className="bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-bold text-slate-900 dark:text-white">
+              {lang === 'nl' ? 'AI functionaliteiten inschakelen' : 'Enable AI features'}
+            </span>
+            {aiDisabled ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
+                {lang === 'nl' ? 'Uitgeschakeld' : 'Disabled'}
+              </span>
+            ) : (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-bold">
+                {lang === 'nl' ? 'Ingeschakeld' : 'Enabled'}
+              </span>
+            )}
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl">
+            {lang === 'nl'
+              ? 'Wanneer uitgeschakeld worden er nooit bonnen of documenten naar externe cloud AI (Google Gemini / OpenAI) verzonden. Bonnen worden dan uitsluitend lokaal verwerkt via Tesseract OCR.'
+              : 'When disabled, no receipts or documents are ever sent to external cloud AI models. Receipts are processed strictly locally using Tesseract OCR.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            const next = !aiDisabled;
+            setAiDisabled(next);
+            if (next) {
+              setAiProvider('none');
+            } else if (aiProvider === 'none') {
+              setAiProvider('gemini');
+            }
+          }}
+          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+            !aiDisabled ? 'bg-sky-500' : 'bg-slate-300 dark:bg-slate-700'
+          }`}
+        >
+          <span
+            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              !aiDisabled ? 'translate-x-5' : 'translate-x-0'
+            }`}
+          />
+        </button>
       </div>
 
       {/* Provider Selection Buttons */}

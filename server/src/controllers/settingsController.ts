@@ -33,6 +33,7 @@ export class SettingsController {
       const openaiSuffix = settings.openaiApiKey ? settings.openaiApiKey.trim().slice(-4) : null;
 
       res.json({
+        aiDisabled: settings.aiDisabled,
         provider: settings.provider,
         geminiModel: settings.geminiModel,
         hasGeminiKey,
@@ -55,6 +56,7 @@ export class SettingsController {
   public static async updateAiSettings(req: Request, res: Response): Promise<void> {
     try {
       const {
+        aiDisabled,
         provider,
         geminiApiKey,
         geminiModel,
@@ -65,8 +67,16 @@ export class SettingsController {
         clearOpenaiKey,
       } = req.body;
 
+      if (typeof aiDisabled === 'boolean') {
+        setSystemSetting('ai_disabled', aiDisabled ? 'true' : 'false');
+        if (aiDisabled) setSystemSetting('ai_provider', 'none');
+      }
+
       if (provider && ['gemini', 'openai', 'none'].includes(provider)) {
         setSystemSetting('ai_provider', provider);
+        if (provider !== 'none' && aiDisabled === undefined) {
+          setSystemSetting('ai_disabled', 'false');
+        }
       }
 
       if (geminiModel && typeof geminiModel === 'string') {
@@ -113,6 +123,11 @@ export class SettingsController {
 
   public static async testAiConnection(req: Request, res: Response): Promise<void> {
     try {
+      if (AiReceiptService.getActiveSettings().aiDisabled) {
+        res.status(400).json({ success: false, message: 'AI functionaliteiten zijn uitgeschakeld in de instellingen.' });
+        return;
+      }
+
       const { provider, apiKey, model, baseUrl } = req.body;
 
       if (!provider || !['gemini', 'openai'].includes(provider)) {

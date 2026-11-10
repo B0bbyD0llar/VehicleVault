@@ -41,14 +41,14 @@ export const IntervalModal: React.FC<IntervalModalProps> = ({
       setIntervalKm(editingInterval.intervalKm ? String(editingInterval.intervalKm) : '');
       setIntervalMonths(editingInterval.intervalMonths ? String(editingInterval.intervalMonths) : '');
       setLastServiceDate(editingInterval.lastServiceDate ? editingInterval.lastServiceDate.split('T')[0] : '');
-      setLastServiceOdo(editingInterval.lastServiceOdometer ? String(editingInterval.lastServiceOdometer) : '0');
+      setLastServiceOdo(editingInterval.lastServiceOdometer ? String(editingInterval.lastServiceOdometer) : '');
     } else {
       setCategoryId(categories[0]?.id || '');
       setCustomName('');
       setIntervalKm('15000');
       setIntervalMonths('12');
       setLastServiceDate('');
-      setLastServiceOdo(defaultOdometer ? String(defaultOdometer) : '0');
+      setLastServiceOdo(defaultOdometer ? String(defaultOdometer) : '');
     }
   }, [editingInterval, categories, defaultOdometer, isOpen]);
 

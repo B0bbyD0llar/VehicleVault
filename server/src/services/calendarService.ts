@@ -102,8 +102,8 @@ export class CalendarService {
       );
 
       for (const item of intervals) {
-        if (item.interval_months && (item.last_service_date || v.purchase_date || v.created_at)) {
-          const baseDate = new Date(item.last_service_date || v.purchase_date || v.created_at);
+        if (item.interval_months && (item.last_service_date || v.created_at)) {
+          const baseDate = new Date(item.last_service_date || v.created_at);
           if (!isNaN(baseDate.getTime())) {
             const dueDate = new Date(baseDate);
             dueDate.setMonth(dueDate.getMonth() + Number(item.interval_months));

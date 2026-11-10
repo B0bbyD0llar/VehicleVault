@@ -1,6 +1,7 @@
 import { db } from '../../db/database.js';
 
 export interface AiSettings {
+  aiDisabled: boolean;
   provider: 'gemini' | 'openai' | 'none';
   geminiApiKey?: string;
   geminiModel: string;
@@ -26,6 +27,18 @@ export function setSystemSetting(key: string, value: string): void {
      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
     [key, value, now]
   );
+}
+
+export function isAiDisabled(): boolean {
+  const envDisable = (process.env.DISABLE_AI || '').trim().toLowerCase();
+  if (['true', '1', 'yes'].includes(envDisable)) return true;
+  const envEnable = (process.env.ENABLE_AI || '').trim().toLowerCase();
+  if (['false', '0', 'no'].includes(envEnable)) return true;
+
+  const dbDisabled = getSystemSetting('ai_disabled');
+  if (dbDisabled === 'true') return true;
+
+  return false;
 }
 
 export function maskApiKey(key?: string | null): string | null {
@@ -70,9 +83,11 @@ export function filterVisionModels(models: string[]): string[] {
 }
 
 export function getActiveAiSettings(): AiSettings {
+  const aiDisabled = isAiDisabled();
   const storedProvider = getSystemSetting('ai_provider');
   const envProvider = process.env.AI_PROVIDER;
-  const provider = (storedProvider || envProvider || 'gemini') as 'gemini' | 'openai' | 'none';
+  const rawProvider = (storedProvider || envProvider || 'gemini') as 'gemini' | 'openai' | 'none';
+  const provider = aiDisabled ? 'none' : rawProvider;
 
   const geminiApiKey = getSystemSetting('gemini_api_key') || process.env.GEMINI_API_KEY || '';
   let geminiModel = getSystemSetting('gemini_model') || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
@@ -89,6 +104,7 @@ export function getActiveAiSettings(): AiSettings {
   const openaiBaseUrl = getSystemSetting('openai_base_url') || process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
 
   return {
+    aiDisabled,
     provider,
     geminiApiKey,
     geminiModel,

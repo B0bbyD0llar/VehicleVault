@@ -2,7 +2,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { db } from '../db/database.js';
 import { VehicleShareController } from '../controllers/vehicleShareController.js';
-import { NotificationService } from '../services/notificationService.js';
 import crypto from 'node:crypto';
 
 describe('Vehicle Transfer Ownership & Maintenance Notification Improvements', () => {
@@ -11,10 +10,12 @@ describe('Vehicle Transfer Ownership & Maintenance Notification Improvements', (
     const buyerId = crypto.randomUUID();
     const vehicleId = crypto.randomUUID();
     const now = new Date().toISOString();
+    const sellerEmail = `seller_${crypto.randomUUID().slice(0, 8)}@test.local`;
+    const buyerEmail = `buyer_${crypto.randomUUID().slice(0, 8)}@test.local`;
 
     db.run('INSERT INTO users (id, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)', [
       ownerId,
-      'seller@test.local',
+      sellerEmail,
       'hash',
       'user',
       now,
@@ -22,7 +23,7 @@ describe('Vehicle Transfer Ownership & Maintenance Notification Improvements', (
     ]);
     db.run('INSERT INTO users (id, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)', [
       buyerId,
-      'buyer@test.local',
+      buyerEmail,
       'hash',
       'user',
       now,
@@ -43,7 +44,7 @@ describe('Vehicle Transfer Ownership & Maintenance Notification Improvements', (
     const req: any = {
       params: { id: vehicleId },
       user: { userId: ownerId, role: 'user' },
-      body: { email: 'buyer@test.local', retain_access: false },
+      body: { email: buyerEmail, retain_access: false },
       get: () => 'localhost',
       protocol: 'http',
     };
@@ -61,7 +62,7 @@ describe('Vehicle Transfer Ownership & Maintenance Notification Improvements', (
 
     assert.equal(resStatus, 200);
     assert.equal(resJson.success, true);
-    assert.equal(resJson.newOwner, 'buyer@test.local');
+    assert.equal(resJson.newOwner, buyerEmail);
 
     const updatedVehicle = db.get<any>('SELECT user_id FROM vehicles WHERE id = ?', [vehicleId]);
     assert.equal(updatedVehicle.user_id, buyerId);
@@ -76,10 +77,12 @@ describe('Vehicle Transfer Ownership & Maintenance Notification Improvements', (
     const buyerId = crypto.randomUUID();
     const vehicleId = crypto.randomUUID();
     const now = new Date().toISOString();
+    const sellerEmail = `seller2_${crypto.randomUUID().slice(0, 8)}@test.local`;
+    const buyerEmail = `buyer2_${crypto.randomUUID().slice(0, 8)}@test.local`;
 
     db.run('INSERT INTO users (id, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)', [
       ownerId,
-      'seller2@test.local',
+      sellerEmail,
       'hash',
       'user',
       now,
@@ -87,7 +90,7 @@ describe('Vehicle Transfer Ownership & Maintenance Notification Improvements', (
     ]);
     db.run('INSERT INTO users (id, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)', [
       buyerId,
-      'buyer2@test.local',
+      buyerEmail,
       'hash',
       'user',
       now,
@@ -107,7 +110,7 @@ describe('Vehicle Transfer Ownership & Maintenance Notification Improvements', (
     const req: any = {
       params: { id: vehicleId },
       user: { userId: ownerId, role: 'user' },
-      body: { email: 'buyer2@test.local', retain_access: true },
+      body: { email: buyerEmail, retain_access: true },
       get: () => 'localhost',
       protocol: 'http',
     };
@@ -134,10 +137,11 @@ describe('Vehicle Transfer Ownership & Maintenance Notification Improvements', (
     const ownerId = crypto.randomUUID();
     const vehicleId = crypto.randomUUID();
     const now = new Date().toISOString();
+    const selfEmail = `self_${crypto.randomUUID().slice(0, 8)}@test.local`;
 
     db.run('INSERT INTO users (id, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)', [
       ownerId,
-      'self@test.local',
+      selfEmail,
       'hash',
       'user',
       now,
@@ -158,7 +162,7 @@ describe('Vehicle Transfer Ownership & Maintenance Notification Improvements', (
     const req: any = {
       params: { id: vehicleId },
       user: { userId: ownerId, role: 'user' },
-      body: { email: 'self@test.local' },
+      body: { email: selfEmail },
       get: () => 'localhost',
       protocol: 'http',
     };
