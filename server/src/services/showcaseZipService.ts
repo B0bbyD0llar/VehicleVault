@@ -226,9 +226,9 @@ export class ShowcaseZipService {
     <section id="specificaties" class="section">
       <div class="container">
         <div class="section-header">
-          <span class="section-tag">Officiële RDW Specificaties</span>
-          <h3 class="section-title">Technische Gegevens</h3>
-          <p class="section-description">Geverifieerd via het officiële Nederlandse RDW-register.</p>
+          <span class="section-tag">Specificaties & Voertuigdata</span>
+          <h3 class="section-title">Technische Specificaties</h3>
+          <p class="section-description">Officiële RDW-kentekengegevens gecombineerd met fabrieks- en voertuigspecificaties.</p>
         </div>
 
         <div class="specs-wrapper">
@@ -397,7 +397,7 @@ export class ShowcaseZipService {
   <footer class="site-footer">
     <div class="container footer-content">
       <p><strong>${this.escapeHtml(showcase.title)}</strong> ${v.license_plate ? `(${this.escapeHtml(RdwService.formatPlate(v.license_plate))})` : ''}</p>
-      <p>Aangemaakt via VehicleVault 2.0 &bull; Alle gegevens zijn met zorg samengesteld en geverifieerd via het RDW-register.</p>
+      <p>Aangemaakt via VehicleVault 2.0 &bull; Samengesteld op basis van officiële RDW-gegevens en voertuigspecificaties.</p>
     </div>
   </footer>
 

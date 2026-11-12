@@ -462,13 +462,13 @@ export const PublicShowcase: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="mb-8">
               <span className="text-xs font-black uppercase tracking-widest text-blue-600 block mb-1">
-                Officiële RDW Specificaties
+                Specificaties & Voertuigdata
               </span>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Technische Gegevens
+                Technische Specificaties
               </h3>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Geverifieerd via het officiële Nederlandse RDW-register.
+                Officiële RDW-kentekengegevens gecombineerd met fabrieks- en voertuigspecificaties.
               </p>
             </div>
 

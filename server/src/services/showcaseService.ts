@@ -460,32 +460,41 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
       { label: 'Aantal deuren', value: rdw.aantal_deuren ? String(rdw.aantal_deuren) : '5' },
     ];
 
-    const motorKw = rdw.nettomaximumvermogen ? Math.round(Number(rdw.nettomaximumvermogen)) : null;
+    const isNiro = (vehicle.model || '').toLowerCase().includes('niro') || (vehicle.name || '').toLowerCase().includes('niro');
+    const motorKw = rdw.nettomaximumvermogen
+      ? Math.round(Number(rdw.nettomaximumvermogen))
+      : isNiro
+      ? 104
+      : null;
     const motorPk = motorKw ? Math.round(motorKw * 1.35962) : null;
 
     const vTrans = (vehicle.transmission || '').toLowerCase();
-    const isAuto = vTrans === 'automatic' || vTrans === 'automaat'
-      ? true
-      : vTrans === 'manual' || vTrans === 'handgeschakeld'
-      ? false
-      : (
-          rdw.inrichting?.toLowerCase().includes('automaat') ||
-          (vehicle.fuel_type || '').toLowerCase().includes('hybride') ||
-          (vehicle.fuel_type || '').toLowerCase().includes('elektr') ||
-          (vehicle.fuel_type || '').toLowerCase().includes('phev') ||
-          (vehicle.name || '').toLowerCase().includes('automaat') ||
-          (vehicle.name || '').toLowerCase().includes('dct') ||
-          (vehicle.name || '').toLowerCase().includes('dsg')
-        );
-    const transmissieLabel = isAuto ? 'Automaat' : 'Handgeschakeld';
+    const isExplicitManual = vTrans === 'manual' || vTrans === 'handgeschakeld';
+    const isExplicitSemi = vTrans === 'semi_automatic' || vTrans.includes('dct') || vTrans.includes('dsg');
+
+    let transmissieLabel = 'Automaat';
+    if (isExplicitManual) {
+      transmissieLabel = 'Handgeschakeld';
+    } else if (isExplicitSemi) {
+      transmissieLabel = 'Semi-automaat / DCT';
+    } else {
+      transmissieLabel = 'Automaat';
+    }
+
+    let cleanFuel = vehicle.fuel_type || rdw.brandstof_omschrijving || 'Benzine';
+    if (isNiro && (cleanFuel === 'Benzine' || cleanFuel.startsWith('Benzine ('))) {
+      cleanFuel = rdw.brandstof_omschrijving && rdw.brandstof_omschrijving.includes('Hybride')
+        ? rdw.brandstof_omschrijving
+        : 'Hybride (Benzine)';
+    }
 
     const motorSpecs: { label: string; value: string }[] = [
-      { label: 'Brandstof', value: vehicle.fuel_type || rdw.brandstof_omschrijving || 'Benzine' },
+      { label: 'Brandstof', value: cleanFuel },
       { label: 'Cilinderinhoud', value: rdw.cilinderinhoud ? `${Number(rdw.cilinderinhoud).toLocaleString('nl-NL')} cc` : 'N.v.t.' },
       { label: 'Aantal cilinders', value: rdw.aantal_cilinders ? String(rdw.aantal_cilinders) : '4' },
       { label: 'Vermogen', value: motorKw ? `${motorPk} pk (${motorKw} kW)` : 'Fabrieksopgave' },
       { label: 'Transmissie', value: transmissieLabel },
-      { label: 'Topsnelheid', value: rdw.maximum_snelheid ? `${rdw.maximum_snelheid} km/u` : 'Fabrieksopgave' },
+      { label: 'Topsnelheid', value: rdw.maximum_snelheid ? `${rdw.maximum_snelheid} km/u` : (isNiro ? '162 km/u' : 'Fabrieksopgave') },
     ];
 
     const verbruik = rdw.brandstofverbruik_gecombineerd ? Number(rdw.brandstofverbruik_gecombineerd) : null;

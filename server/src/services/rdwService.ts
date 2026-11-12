@@ -85,6 +85,7 @@ export class RdwService {
 
       // Fetch fuel and hybrid classification from RDW dataset 8ys7-d773
       let detectedFuel = 'Benzine';
+      let rawFuelData: any = {};
       try {
         const fuelUrl = `https://opendata.rdw.nl/resource/8ys7-d773.json?kenteken=${cleanPlate}`;
         const fuelRes = await fetch(fuelUrl, {
@@ -122,6 +123,15 @@ export class RdwService {
               const primary = fuelItems[0]?.brandstof_omschrijving;
               detectedFuel = primary ? primary.charAt(0).toUpperCase() + primary.slice(1).toLowerCase() : 'Benzine';
             }
+
+            const primaryFuel = fuelItems[0] || {};
+            rawFuelData = {
+              brandstof_omschrijving: detectedFuel,
+              nettomaximumvermogen: primaryFuel.nettomaximumvermogen,
+              co2_uitstoot_gecombineerd: primaryFuel.co2_uitstoot_gecombineerd || primaryFuel.emissie_co2_gecombineerd_wltp,
+              brandstofverbruik_gecombineerd: primaryFuel.brandstofverbruik_gecombineerd,
+              klasse_hybride: isOvc ? 'OVC-HEV' : isNovc ? 'NOVC-HEV' : undefined,
+            };
           }
         }
       } catch (err) {
@@ -139,7 +149,7 @@ export class RdwService {
         datum_tenaamstelling: formatRdwDate(item.datum_tenaamstelling),
         vervaldatum_apk: apkFormatted,
         brandstof_omschrijving: detectedFuel,
-        raw: item,
+        raw: { ...item, ...rawFuelData },
       };
     } catch (err) {
       console.error('Error fetching RDW data:', err);
