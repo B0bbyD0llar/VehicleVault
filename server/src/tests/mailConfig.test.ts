@@ -244,7 +244,7 @@ describe('Mail configuration', () => {
     });
 
     it('does not call Microsoft when the configuration is invalid', async () => {
-      EmailService.saveMailConfig({ graphClientId: 'nope' });
+      EmailService.saveMailConfig({ transport: 'graph', graphClientId: 'nope' });
       const mock = mockFetch(() => tokenOk);
       try {
         const res = await EmailService.sendMail({ to: 'a@example.com', subject: 's', text: 't' });

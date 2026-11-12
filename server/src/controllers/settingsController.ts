@@ -22,15 +22,10 @@ export class SettingsController {
         } catch {}
       }
 
-      const dbGemini = getSystemSetting('gemini_api_key');
-      const envGemini = process.env.GEMINI_API_KEY;
-      const geminiSource = dbGemini ? 'database' : (envGemini ? 'env' : null);
-      const geminiSuffix = settings.geminiApiKey ? settings.geminiApiKey.trim().slice(-4) : null;
-
-      const dbOpenai = getSystemSetting('openai_api_key');
-      const envOpenai = process.env.OPENAI_API_KEY;
-      const openaiSource = dbOpenai ? 'database' : (envOpenai ? 'env' : null);
-      const openaiSuffix = settings.openaiApiKey ? settings.openaiApiKey.trim().slice(-4) : null;
+      const geminiSource = getSystemSetting('gemini_api_key') ? 'database' : (process.env.GEMINI_API_KEY ? 'env' : null);
+      const geminiSuffix = settings.geminiApiKey?.trim().slice(-4) || null;
+      const openaiSource = getSystemSetting('openai_api_key') ? 'database' : (process.env.OPENAI_API_KEY ? 'env' : null);
+      const openaiSuffix = settings.openaiApiKey?.trim().slice(-4) || null;
 
       res.json({
         aiDisabled: settings.aiDisabled,
@@ -54,6 +49,10 @@ export class SettingsController {
   }
 
   public static async updateAiSettings(req: Request, res: Response): Promise<void> {
+    if (req.user?.role !== 'admin') {
+      res.status(403).json({ error: 'Beheerderstoegang vereist' });
+      return;
+    }
     try {
       const {
         aiDisabled,
@@ -122,6 +121,10 @@ export class SettingsController {
   }
 
   public static async testAiConnection(req: Request, res: Response): Promise<void> {
+    if (req.user?.role !== 'admin') {
+      res.status(403).json({ error: 'Beheerderstoegang vereist' });
+      return;
+    }
     try {
       if (AiReceiptService.getActiveSettings().aiDisabled) {
         res.status(400).json({ success: false, message: 'AI functionaliteiten zijn uitgeschakeld in de instellingen.' });
@@ -190,6 +193,10 @@ export class SettingsController {
   }
 
   public static async updateSecuritySettings(req: Request, res: Response): Promise<void> {
+    if (req.user?.role !== 'admin') {
+      res.status(403).json({ error: 'Beheerderstoegang vereist' });
+      return;
+    }
     try {
       const { disableAuth, allowGuestAccess, enableProxyAuth } = req.body;
       const isEnvEnforced = env.DISABLE_AUTH;
@@ -257,6 +264,10 @@ export class SettingsController {
   }
 
   public static async updateModuleSettings(req: Request, res: Response): Promise<void> {
+    if (req.user?.role !== 'admin') {
+      res.status(403).json({ error: 'Beheerderstoegang vereist' });
+      return;
+    }
     try {
       const { modules } = req.body;
       if (!modules || typeof modules !== 'object') {
@@ -264,21 +275,8 @@ export class SettingsController {
         return;
       }
 
-      const defaultModules = {
-        fuel: true,
-        trips: true,
-        maintenance: true,
-        tires: true,
-        fixedExpenses: true,
-        documents: true,
-        vignettes: true,
-        analytics: true,
-      };
-
-      const updated = {
-        ...defaultModules,
-        ...modules,
-      };
+      const defaultModules = { fuel: true, trips: true, maintenance: true, tires: true, fixedExpenses: true, documents: true, vignettes: true, analytics: true };
+      const updated = { ...defaultModules, ...modules };
 
       setSystemSetting('enabled_modules', JSON.stringify(updated));
       res.json({

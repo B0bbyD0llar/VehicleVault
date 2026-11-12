@@ -7,6 +7,33 @@ import { HaSensorItem, fetchHaSensorsList } from './telematicsSensorHelper.js';
 import { TelematicsLogService } from './telematicsLogService.js';
 export { HaSensorItem } from './telematicsSensorHelper.js';
 
+export function validateSafeExternalUrl(rawUrl: string): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    throw new Error('Ongeldige URL indeling. Gebruik bijvoorbeeld http://homeassistant.local:8123');
+  }
+
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('Alleen HTTP en HTTPS protocollen zijn toegestaan');
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  if (
+    hostname === '169.254.169.254' ||
+    hostname.startsWith('169.254.') ||
+    hostname === 'metadata.google.internal' ||
+    hostname.endsWith('.metadata.google.internal') ||
+    hostname === 'instance-data' ||
+    hostname === '100.100.100.200'
+  ) {
+    throw new Error('Toegang tot cloud metadata endpoints is om veiligheidsredenen geblokkeerd');
+  }
+
+  return rawUrl.trim().replace(/\/+$/, '');
+}
+
 export class TelematicsService {
   public static getHaConfig(userId?: string): { baseUrl: string; token: string } {
     let baseUrl = '';
@@ -35,7 +62,7 @@ export class TelematicsService {
   }
 
   public static saveHaConfig(baseUrl: string, token?: string, userId?: string): void {
-    const cleanUrl = baseUrl.trim().replace(/\/+$/, '');
+    const cleanUrl = validateSafeExternalUrl(baseUrl);
     const now = new Date().toISOString();
 
     if (userId) {
@@ -73,7 +100,8 @@ export class TelematicsService {
     }
 
     try {
-      const res = await fetch(`${baseUrl}/api/`, {
+      const cleanBase = validateSafeExternalUrl(baseUrl);
+      const res = await fetch(`${cleanBase}/api/`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',

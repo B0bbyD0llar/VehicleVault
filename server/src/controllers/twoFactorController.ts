@@ -53,9 +53,13 @@ export class TwoFactorController {
       return;
     }
 
-    const user = db.get<any>('SELECT email FROM users WHERE id = ?', [userId]);
+    const user = db.get<{ email: string; is_guest: number }>('SELECT email, is_guest FROM users WHERE id = ?', [userId]);
     if (!user) {
       res.status(404).json({ error: 'Gebruiker niet gevonden' });
+      return;
+    }
+    if (user.is_guest === 1 || user.email.endsWith('@proef.local') || req.user?.role === 'guest') {
+      res.status(403).json({ error: 'Proefaccounts kunnen geen tweeledige verificatie instellen.' });
       return;
     }
 

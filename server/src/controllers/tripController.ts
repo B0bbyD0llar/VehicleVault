@@ -10,10 +10,7 @@ export class TripController {
   public static async list(req: Request, res: Response): Promise<void> {
     try {
       const { vehicleId, year, purpose } = req.query;
-      if (!vehicleId || typeof vehicleId !== 'string') {
-        res.status(400).json({ error: 'vehicleId query parameter is required' });
-        return;
-      }
+      if (!TripController.canViewVehicle(req, res, vehicleId)) return;
 
       let query = 'SELECT * FROM trips WHERE vehicle_id = ?';
       const params: any[] = [vehicleId];
@@ -76,8 +73,9 @@ export class TripController {
         isReturnTrip = false,
       } = req.body;
 
-      if (!vehicleId || !date || startOdometer === undefined || endOdometer === undefined || !fromLocation || !toLocation) {
-        res.status(400).json({ error: 'vehicleId, date, startOdometer, endOdometer, fromLocation, and toLocation are required' });
+      if (!TripController.canEditVehicle(req, res, vehicleId)) return;
+      if (!date || startOdometer === undefined || endOdometer === undefined || !fromLocation || !toLocation) {
+        res.status(400).json({ error: 'date, startOdometer, endOdometer, fromLocation, and toLocation are required' });
         return;
       }
 
@@ -141,11 +139,12 @@ export class TripController {
         isReturnTrip,
       } = req.body;
 
-      const existing = db.get('SELECT * FROM trips WHERE id = ?', [id]);
+      const existing = db.get<any>('SELECT * FROM trips WHERE id = ?', [id]);
       if (!existing) {
         res.status(404).json({ error: 'Trip not found' });
         return;
       }
+      if (!TripController.canEditVehicle(req, res, existing.vehicle_id)) return;
 
       const start = startOdometer !== undefined ? Number(startOdometer) : existing.start_odometer;
       const end = endOdometer !== undefined ? Number(endOdometer) : existing.end_odometer;
@@ -187,6 +186,13 @@ export class TripController {
   public static async delete(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+      const existing = db.get<any>('SELECT * FROM trips WHERE id = ?', [id]);
+      if (!existing) {
+        res.status(404).json({ error: 'Trip not found' });
+        return;
+      }
+      if (!TripController.canEditVehicle(req, res, existing.vehicle_id)) return;
+
       const result = db.run('DELETE FROM trips WHERE id = ?', [id]);
       if (result.changes === 0) {
         res.status(404).json({ error: 'Trip not found' });
@@ -196,6 +202,20 @@ export class TripController {
     } catch (err: any) {
       res.status(500).json({ error: err?.message || 'Failed to delete trip' });
     }
+  }
+
+  /** The caller may view trips for this vehicle (owner, editor or viewer); answers the request itself when not. */
+  private static canViewVehicle(req: Request, res: Response, vehicleId: unknown): vehicleId is string {
+    if (!vehicleId || typeof vehicleId !== 'string') {
+      res.status(400).json({ error: 'vehicleId is verplicht' });
+      return false;
+    }
+    const access = getVehicleAccess(vehicleId, req.user?.userId);
+    if (!access.hasAccess && req.user?.role !== 'admin') {
+      res.status(404).json({ error: 'Voertuig niet gevonden' });
+      return false;
+    }
+    return true;
   }
 
   /** The caller may add trips to this vehicle (owner or editor); answers the request itself when not. */
@@ -275,10 +295,7 @@ export class TripController {
   public static async exportCsv(req: Request, res: Response): Promise<void> {
     try {
       const { vehicleId, year } = req.query;
-      if (!vehicleId || typeof vehicleId !== 'string') {
-        res.status(400).json({ error: 'vehicleId query parameter is required' });
-        return;
-      }
+      if (!TripController.canViewVehicle(req, res, vehicleId)) return;
 
       const vehicle = db.get<{ name: string; license_plate: string }>(
         'SELECT name, license_plate FROM vehicles WHERE id = ?',
@@ -322,10 +339,7 @@ export class TripController {
   public static async exportExcel(req: Request, res: Response): Promise<void> {
     try {
       const { vehicleId, year } = req.query;
-      if (!vehicleId || typeof vehicleId !== 'string') {
-        res.status(400).json({ error: 'vehicleId query parameter is required' });
-        return;
-      }
+      if (!TripController.canViewVehicle(req, res, vehicleId)) return;
 
       const vehicle = db.get<any>(
         'SELECT * FROM vehicles WHERE id = ?',
@@ -362,10 +376,7 @@ export class TripController {
   public static async exportPdf(req: Request, res: Response): Promise<void> {
     try {
       const { vehicleId, year } = req.query;
-      if (!vehicleId || typeof vehicleId !== 'string') {
-        res.status(400).json({ error: 'vehicleId query parameter is required' });
-        return;
-      }
+      if (!TripController.canViewVehicle(req, res, vehicleId)) return;
 
       const vehicle = db.get<any>(
         'SELECT * FROM vehicles WHERE id = ?',

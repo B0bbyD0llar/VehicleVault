@@ -51,8 +51,22 @@ export class UserManagementController {
   public static async listShareableUsers(req: Request, res: Response): Promise<void> {
     try {
       const currentUserId = req.user?.userId;
+      const currentUser = currentUserId
+        ? db.get<{ is_guest: number; email: string }>('SELECT is_guest, email FROM users WHERE id = ?', [currentUserId])
+        : null;
+
+      if (
+        currentUser &&
+        (currentUser.is_guest === 1 ||
+          currentUser.email?.endsWith('@proef.local') ||
+          req.user?.role === 'guest')
+      ) {
+        res.json({ users: [] });
+        return;
+      }
+
       const users = db.query<any>(
-        'SELECT id, email, role FROM users WHERE id != ? ORDER BY email ASC',
+        'SELECT id, email FROM users WHERE id != ? AND is_guest = 0 ORDER BY email ASC',
         currentUserId ? [currentUserId] : []
       );
       res.json({ users });

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import crypto from 'node:crypto';
 import { db } from '../db/database.js';
+import { getVehicleAccess } from '../utils/vehicleAccess.js';
 
 export class ExpenseController {
   public static async list(req: Request, res: Response): Promise<void> {
@@ -8,6 +9,12 @@ export class ExpenseController {
       const { vehicleId } = req.query;
       if (!vehicleId || typeof vehicleId !== 'string') {
         res.status(400).json({ error: 'vehicleId query parameter is required' });
+        return;
+      }
+
+      const access = getVehicleAccess(vehicleId, req.user?.userId);
+      if (!access.hasAccess && req.user?.role !== 'admin') {
+        res.status(403).json({ error: 'Geen toegang tot dit voertuig' });
         return;
       }
 
@@ -55,6 +62,12 @@ export class ExpenseController {
         return;
       }
 
+      const access = getVehicleAccess(vehicleId, req.user?.userId);
+      if ((!access.hasAccess || access.role === 'viewer') && req.user?.role !== 'admin') {
+        res.status(403).json({ error: 'Geen bewerkrechten voor dit voertuig' });
+        return;
+      }
+
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
 
@@ -86,9 +99,15 @@ export class ExpenseController {
         notes,
       } = req.body;
 
-      const existing = db.get('SELECT * FROM recurring_expenses WHERE id = ?', [id]);
+      const existing = db.get<any>('SELECT * FROM recurring_expenses WHERE id = ?', [id]);
       if (!existing) {
         res.status(404).json({ error: 'Expense not found' });
+        return;
+      }
+
+      const access = getVehicleAccess(existing.vehicle_id, req.user?.userId);
+      if ((!access.hasAccess || access.role === 'viewer') && req.user?.role !== 'admin') {
+        res.status(403).json({ error: 'Geen bewerkrechten voor dit voertuig' });
         return;
       }
 
@@ -126,11 +145,19 @@ export class ExpenseController {
   public static async delete(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const result = db.run('DELETE FROM recurring_expenses WHERE id = ?', [id]);
-      if (result.changes === 0) {
+      const existing = db.get<any>('SELECT * FROM recurring_expenses WHERE id = ?', [id]);
+      if (!existing) {
         res.status(404).json({ error: 'Expense not found' });
         return;
       }
+
+      const access = getVehicleAccess(existing.vehicle_id, req.user?.userId);
+      if ((!access.hasAccess || access.role === 'viewer') && req.user?.role !== 'admin') {
+        res.status(403).json({ error: 'Geen bewerkrechten voor dit voertuig' });
+        return;
+      }
+
+      db.run('DELETE FROM recurring_expenses WHERE id = ?', [id]);
       res.json({ message: 'Recurring expense deleted' });
     } catch (err: any) {
       res.status(500).json({ error: err?.message || 'Failed to delete recurring expense' });

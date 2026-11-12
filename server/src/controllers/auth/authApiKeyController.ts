@@ -25,6 +25,15 @@ export class AuthApiKeyController {
 
   public static async createApiKey(req: Request, res: Response): Promise<void> {
     try {
+      const currentUserId = req.user?.userId;
+      const user = currentUserId
+        ? db.get<{ is_guest: number; email: string }>('SELECT is_guest, email FROM users WHERE id = ?', [currentUserId])
+        : null;
+      if (user && (user.is_guest === 1 || user.email?.endsWith('@proef.local') || req.user?.role === 'guest')) {
+        res.status(403).json({ error: 'Proefaccounts kunnen geen permanente API-sleutels aanmaken.' });
+        return;
+      }
+
       const parse = createApiKeySchema.safeParse(req.body);
       if (!parse.success) {
         res.status(400).json({ error: parse.error.issues[0].message });

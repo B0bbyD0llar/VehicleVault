@@ -81,9 +81,13 @@ export class PasskeyController {
       const userId = sessionUserId(req, res);
       if (!userId || !ensureAvailable(req, res)) return;
 
-      const user = db.get<{ id: string; email: string }>('SELECT id, email FROM users WHERE id = ?', [userId]);
+      const user = db.get<{ id: string; email: string; is_guest: number }>('SELECT id, email, is_guest FROM users WHERE id = ?', [userId]);
       if (!user) {
         res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      if (user.is_guest === 1 || user.email.endsWith('@proef.local') || req.user?.role === 'guest') {
+        res.status(403).json({ error: 'Proefaccounts kunnen geen passkeys registreren.' });
         return;
       }
 

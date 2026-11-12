@@ -3,6 +3,12 @@ import { TelematicsService } from '../services/telematicsService.js';
 import { TelematicsLogService } from '../services/telematicsLogService.js';
 import { db } from '../db/database.js';
 
+function isGuest(userId?: string, role?: string): boolean {
+  if (!userId || role === 'guest') return true;
+  const user = db.get<{ is_guest: number; email: string }>('SELECT is_guest, email FROM users WHERE id = ?', [userId]);
+  return Boolean(user && (user.is_guest === 1 || user.email?.endsWith('@proef.local')));
+}
+
 export class TelematicsController {
   public static getConfig(req: Request, res: Response): void {
     try {
@@ -19,6 +25,11 @@ export class TelematicsController {
 
   public static saveConfig(req: Request, res: Response): void {
     try {
+      if (isGuest(req.user?.userId, req.user?.role)) {
+        res.status(403).json({ error: 'Proefaccounts kunnen geen telematica-configuratie aanpassen.' });
+        return;
+      }
+
       const { ha_base_url, ha_access_token } = req.body;
       if (typeof ha_base_url !== 'string') {
         res.status(400).json({ error: 'ha_base_url is verplicht' });
@@ -29,12 +40,17 @@ export class TelematicsController {
       TelematicsService.saveHaConfig(ha_base_url, ha_access_token, req.user?.userId);
       res.json({ success: true, message: 'Home Assistant instellingen opgeslagen' });
     } catch (err: any) {
-      res.status(500).json({ error: 'Kon instellingen niet opslaan' });
+      res.status(500).json({ error: err?.message || 'Kon instellingen niet opslaan' });
     }
   }
 
   public static async testConnection(req: Request, res: Response): Promise<void> {
     try {
+      if (isGuest(req.user?.userId, req.user?.role)) {
+        res.status(403).json({ error: 'Proefaccounts kunnen geen verbindingstest uitvoeren.' });
+        return;
+      }
+
       const result = await TelematicsService.testHaConnection(req.user?.userId);
       res.json(result);
     } catch (err: any) {
@@ -44,6 +60,11 @@ export class TelematicsController {
 
   public static async listSensors(req: Request, res: Response): Promise<void> {
     try {
+      if (isGuest(req.user?.userId, req.user?.role)) {
+        res.status(403).json({ error: 'Proefaccounts kunnen geen sensoren opvragen.' });
+        return;
+      }
+
       const sensors = await TelematicsService.getHaSensors(req.user?.userId);
       res.json({ sensors });
     } catch (err: any) {

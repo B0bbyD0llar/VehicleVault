@@ -1,15 +1,39 @@
 import { Request, Response } from 'express';
 import crypto from 'node:crypto';
 import { db } from '../db/database.js';
+import { getVehicleAccess } from '../utils/vehicleAccess.js';
+
+function canViewVehicleTires(req: Request, res: Response, vehicleId: unknown): vehicleId is string {
+  if (!vehicleId || typeof vehicleId !== 'string') {
+    res.status(400).json({ error: 'vehicleId is verplicht' });
+    return false;
+  }
+  const access = getVehicleAccess(vehicleId, req.user?.userId);
+  if (!access.hasAccess && req.user?.role !== 'admin') {
+    res.status(403).json({ error: 'Geen toegang tot dit voertuig' });
+    return false;
+  }
+  return true;
+}
+
+function canEditVehicleTires(req: Request, res: Response, vehicleId: unknown): vehicleId is string {
+  if (!vehicleId || typeof vehicleId !== 'string') {
+    res.status(400).json({ error: 'vehicleId is verplicht' });
+    return false;
+  }
+  const access = getVehicleAccess(vehicleId, req.user?.userId);
+  if ((!access.hasAccess || access.role === 'viewer') && req.user?.role !== 'admin') {
+    res.status(403).json({ error: 'Geen bewerkrechten voor dit voertuig' });
+    return false;
+  }
+  return true;
+}
 
 export class TireController {
   public static async list(req: Request, res: Response): Promise<void> {
     try {
       const { vehicleId } = req.query;
-      if (!vehicleId || typeof vehicleId !== 'string') {
-        res.status(400).json({ error: 'vehicleId query parameter is required' });
-        return;
-      }
+      if (!canViewVehicleTires(req, res, vehicleId)) return;
 
       const tireSets = db.query(
         "SELECT * FROM tire_sets WHERE vehicle_id = ? ORDER BY CASE WHEN status = 'mounted' THEN 0 ELSE 1 END, created_at DESC",
@@ -110,6 +134,7 @@ export class TireController {
         res.status(400).json({ error: 'vehicleId and name are required' });
         return;
       }
+      if (!canEditVehicleTires(req, res, vehicleId)) return;
 
       // If status is 'mounted', ensure no other tire set is already mounted
       if (status === 'mounted') {
@@ -222,6 +247,7 @@ export class TireController {
         res.status(404).json({ error: 'Tire set not found' });
         return;
       }
+      if (!canEditVehicleTires(req, res, existing.vehicle_id)) return;
 
       if (status === 'mounted' && existing.status !== 'mounted') {
         db.run("UPDATE tire_sets SET status = 'stored' WHERE vehicle_id = ? AND status = 'mounted'", [existing.vehicle_id]);
@@ -319,6 +345,7 @@ export class TireController {
         res.status(404).json({ error: 'Target tire set not found' });
         return;
       }
+      if (!canEditVehicleTires(req, res, targetSet.vehicle_id)) return;
 
       // Find currently mounted set (if any)
       const currentMounted = db.get<{ id: string; mounted_odometer: number; total_km: number }>(
@@ -350,11 +377,12 @@ export class TireController {
       const { id } = req.params;
       const { fl, fr, rl, rr, date = new Date().toISOString().split('T')[0] } = req.body;
 
-      const existing = db.get('SELECT * FROM tire_sets WHERE id = ?', [id]);
+      const existing = db.get<any>('SELECT * FROM tire_sets WHERE id = ?', [id]);
       if (!existing) {
         res.status(404).json({ error: 'Tire set not found' });
         return;
       }
+      if (!canEditVehicleTires(req, res, existing.vehicle_id)) return;
 
       db.run(
         `UPDATE tire_sets SET
@@ -384,6 +412,13 @@ export class TireController {
   public static async delete(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+      const existing = db.get<any>('SELECT * FROM tire_sets WHERE id = ?', [id]);
+      if (!existing) {
+        res.status(404).json({ error: 'Tire set not found' });
+        return;
+      }
+      if (!canEditVehicleTires(req, res, existing.vehicle_id)) return;
+
       const result = db.run('DELETE FROM tire_sets WHERE id = ?', [id]);
       if (result.changes === 0) {
         res.status(404).json({ error: 'Tire set not found' });

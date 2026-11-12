@@ -232,8 +232,13 @@ export class VehicleShareController {
   public static async listShareableUsers(req: Request, res: Response): Promise<void> {
     try {
       const currentUserId = req.user?.userId;
+      if (isGuestUser(currentUserId, req.user?.role)) {
+        res.json({ users: [] });
+        return;
+      }
+
       const users = db.query<{ id: string; email: string }>(
-        'SELECT id, email FROM users WHERE id != ? ORDER BY email ASC',
+        'SELECT id, email FROM users WHERE id != ? AND is_guest = 0 ORDER BY email ASC',
         [currentUserId || '']
       );
       res.json({ users });
