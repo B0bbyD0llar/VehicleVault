@@ -126,12 +126,20 @@ export class ShowcaseService {
    */
   public static formatDutchDate(isoDate?: string | null): string {
     if (!isoDate) return 'Onbekend';
+    const str = String(isoDate).trim();
+    if (/^\d{8}$/.test(str)) {
+      return `${str.substring(6, 8)}-${str.substring(4, 6)}-${str.substring(0, 4)}`;
+    }
+    if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+      const parts = str.substring(0, 10).split('-');
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
     try {
-      const d = new Date(isoDate);
-      if (isNaN(d.getTime())) return isoDate;
+      const d = new Date(str);
+      if (isNaN(d.getTime())) return str;
       return d.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch {
-      return isoDate;
+      return str;
     }
   }
 
@@ -199,6 +207,20 @@ export class ShowcaseService {
 
       // Auto-generate highlights
       const serviceCount = db.get<any>('SELECT COUNT(*) as count FROM service_records WHERE vehicle_id = ?', [vehicleId])?.count || 0;
+      const isNiroVeh = (vehicle.model || '').toLowerCase().includes('niro') || (vehicle.name || '').toLowerCase().includes('niro');
+      const isHybridVeh = isNiroVeh
+        || (vehicle.fuel_type || '').toLowerCase().includes('hybride')
+        || (vehicle.fuel_type || '').toLowerCase().includes('phev')
+        || (rdw.brandstof_omschrijving || '').toLowerCase().includes('hybride');
+      const isElectricVeh = (vehicle.fuel_type || '').toLowerCase().includes('elektr')
+        || (rdw.brandstof_omschrijving || '').toLowerCase().includes('elektr');
+
+      const techTitle = isHybridVeh
+        ? 'Hybride Aandrijflijn'
+        : isElectricVeh
+        ? 'Elektrische Aandrijflijn'
+        : `${vehicle.fuel_type || 'Moderne'} Aandrijflijn`;
+
       const highlights: ShowcaseHighlight[] = [
         {
           id: 'hl-apk',
@@ -223,8 +245,10 @@ export class ShowcaseService {
         {
           id: 'hl-tech',
           icon: 'Cpu',
-          title: `${vehicle.fuel_type || 'Moderne'} Aandrijflijn`,
-          description: rdw.nettomaximumvermogen
+          title: techTitle,
+          description: isNiroVeh
+            ? 'Gecombineerd systeemvermogen van 141 pk (104 kW) met een soepele 6-traps automaat.'
+            : rdw.nettomaximumvermogen
             ? `Vermogen van ${Math.round(Number(rdw.nettomaximumvermogen))} kW (${Math.round(Number(rdw.nettomaximumvermogen) * 1.35962)} pk).`
             : 'Prettig, zuinig en betrouwbaar rijgedrag.',
         },
@@ -436,6 +460,36 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
     } catch {
       highlights = [];
     }
+
+    const isNiroCompiled = (vehicle.model || '').toLowerCase().includes('niro') || (vehicle.name || '').toLowerCase().includes('niro');
+    const isHybridCompiled = isNiroCompiled
+      || (vehicle.fuel_type || '').toLowerCase().includes('hybride')
+      || (vehicle.fuel_type || '').toLowerCase().includes('phev')
+      || (rdw.brandstof_omschrijving || '').toLowerCase().includes('hybride');
+    const isElectricCompiled = (vehicle.fuel_type || '').toLowerCase().includes('elektr')
+      || (rdw.brandstof_omschrijving || '').toLowerCase().includes('elektr');
+
+    highlights = highlights.map((hl) => {
+      if (hl.id === 'hl-tech' || hl.title?.toLowerCase().includes('aandrijflijn')) {
+        if (isHybridCompiled && (hl.title.includes('Benzine') || hl.title.includes('Moderne'))) {
+          return {
+            ...hl,
+            title: 'Hybride Aandrijflijn',
+            description: isNiroCompiled
+              ? 'Gecombineerd systeemvermogen van 141 pk (104 kW) met een soepele 6-traps automaat.'
+              : hl.description || 'Prettig, zuinig en betrouwbaar hybride rijgedrag.',
+          };
+        }
+        if (isElectricCompiled && (hl.title.includes('Benzine') || hl.title.includes('Moderne'))) {
+          return {
+            ...hl,
+            title: 'Elektrische Aandrijflijn',
+            description: hl.description || '100% elektrisch, stil en emissievrij rijgedrag.',
+          };
+        }
+      }
+      return hl;
+    });
 
     let optionsList: ShowcaseOptionGroup[] = [];
     try {
