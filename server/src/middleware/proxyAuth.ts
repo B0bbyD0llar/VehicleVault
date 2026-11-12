@@ -38,10 +38,11 @@ export function isTrustedProxy(req: Request): boolean {
     if (dbTrusted?.value === '*') return true;
   } catch {}
 
-  const rawSocket = req.socket?.remoteAddress || '';
-  const rawIp = req.ip || '';
+  // Security: Only check the direct TCP connection peer (cleanSocket).
+  // NEVER trust req.ip or cleanIp here because Express populates req.ip from
+  // untrusted X-Forwarded-For headers which any public caller can spoof.
+  const rawSocket = req.socket?.remoteAddress || (req as any).connection?.remoteAddress || '';
   const cleanSocket = rawSocket.replace(/^::ffff:/i, '').trim().toLowerCase();
-  const cleanIp = rawIp.replace(/^::ffff:/i, '').trim().toLowerCase();
 
   const isTrustedIpString = (ip: string): boolean => {
     if (!ip) return false;
@@ -68,7 +69,7 @@ export function isTrustedProxy(req: Request): boolean {
     return false;
   };
 
-  return isTrustedIpString(cleanSocket) || isTrustedIpString(cleanIp);
+  return isTrustedIpString(cleanSocket);
 }
 
 export function getProxyUser(req: Request): AuthenticatedUser | null {

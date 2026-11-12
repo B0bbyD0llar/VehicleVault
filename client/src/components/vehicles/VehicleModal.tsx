@@ -129,8 +129,9 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 text-slate-900 dark:text-slate-100 shadow-2xl my-8">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4">
+      <div className="min-h-full flex items-start sm:items-center justify-center py-4 sm:py-8">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-5 sm:p-6 text-slate-900 dark:text-slate-100 shadow-2xl">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
           <h3 className="text-base font-bold">
             {editingVehicle ? t('editVehicle') : t('addVehicle')}
@@ -238,5 +239,6 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
         </form>
       </div>
     </div>
+  </div>
   );
 };

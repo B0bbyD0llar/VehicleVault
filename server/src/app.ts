@@ -100,7 +100,7 @@ export function createApp(): express.Application {
         database: dbCheck?.healthy === 1 ? 'connected' : 'unhealthy',
         uptime: process.uptime(),
         timestamp: new Date().toISOString(),
-        version: '3.0.0',
+        version: '3.7.0',
       });
     } catch (err: any) {
       res.status(503).json({

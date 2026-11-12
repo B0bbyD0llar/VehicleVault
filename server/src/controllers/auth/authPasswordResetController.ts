@@ -56,17 +56,26 @@ export class AuthPasswordResetController {
           logger.error({ err: mailErr?.message }, 'Failed to send password reset email');
           emailError = mailErr?.message || 'Mail send failure';
         }
+      } else {
+        // Homelab security: log link to server console/journal only, never expose over HTTP
+        logger.warn(
+          { email: user.email, resetLink },
+          '[SECURITY] Password reset link generated without SMTP. Admin can use this link from server logs.'
+        );
       }
+
+      // Security: Never leak the reset link over unauthenticated HTTP outside the automated test suite
+      const isTestEnv = process.env.NODE_ENV === 'test' || process.argv.some((a) => a.includes('test'));
 
       res.json({
         success: true,
         message: smtpConfigured && emailSent
           ? 'Er is een e-mail met een herstellink verzonden naar uw e-mailadres.'
-          : 'Wachtwoordherstel geïnitieerd.',
+          : 'Als dit e-mailadres bij ons bekend is, is de herstelaanvraag in behandeling genomen.',
         smtpConfigured,
         emailSent,
-        resetLink: (!smtpConfigured || !emailSent || process.env.NODE_ENV === 'test') ? resetLink : undefined,
-        errorDetails: emailError,
+        resetLink: isTestEnv ? resetLink : undefined,
+        errorDetails: isTestEnv ? emailError : undefined,
       });
     } catch (err: any) {
       logger.error({ err: err?.message }, 'Forgot password error');

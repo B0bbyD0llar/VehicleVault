@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, Loader2, CheckCircle2, AlertCircle, KeyRound, ExternalLink } from 'lucide-react';
+import { Mail, ArrowLeft, Loader2, CheckCircle2, AlertCircle, KeyRound } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext.js';
 
 export const ForgotPassword: React.FC = () => {
@@ -81,24 +81,16 @@ export const ForgotPassword: React.FC = () => {
               </p>
             </div>
 
-            {/* Fallback direct reset link for homelab setups without SMTP */}
-            {result.resetLink && (
-              <div className="p-4 bg-amber-950/50 border border-amber-500/30 rounded-2xl space-y-2">
-                <span className="text-[11px] font-bold text-amber-200 block">
-                  ⚙️ {lang === 'nl' ? 'Directe Herstellink (Homelab)' : 'Direct Reset Link (Homelab)'}
+            {!result.smtpConfigured && (
+              <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-2xl text-[11px] text-slate-400 space-y-1">
+                <span className="font-bold text-slate-300 block">
+                  ℹ️ {lang === 'nl' ? 'Homelab / Geen SMTP' : 'Homelab / No SMTP'}
                 </span>
-                <p className="text-[10px] text-amber-300/80">
+                <p>
                   {lang === 'nl'
-                    ? 'Omdat SMTP e-mail nog niet is geconfigureerd, kun je direct deze link gebruiken:'
-                    : 'Since SMTP is not configured, you can use this generated link directly:'}
+                    ? 'Als SMTP niet is geconfigureerd, kan de systeembeheerder een herstellink genereren via Instellingen > Gebruikersbeheer of de serverlogboeken raadplegen.'
+                    : 'If SMTP is not configured, the system administrator can generate a reset link via Settings > User Management or inspect server logs.'}
                 </p>
-                <a
-                  href={result.resetLink}
-                  className="px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 transition break-all shadow-md"
-                >
-                  <span>{lang === 'nl' ? 'Wachtwoord nu herstellen' : 'Reset password now'}</span>
-                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                </a>
               </div>
             )}
 

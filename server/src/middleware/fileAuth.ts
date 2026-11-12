@@ -150,7 +150,7 @@ export function requireFileAuth(folder: ProtectedFolder) {
 
       // Check if user has permission to access the vehicle
       const access = getVehicleAccess(vehicleId, user.id);
-      if (!access.hasAccess && user.role !== 'driver') {
+      if (!access.hasAccess) {
         res.status(403).json({ error: 'Toegang geweigerd: Je hebt geen toegang tot dit document.' });
         return;
       }

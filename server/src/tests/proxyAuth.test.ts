@@ -132,5 +132,23 @@ describe('Reverse Proxy Authentication & SSO Hardening', () => {
       db.run('DELETE FROM users WHERE id = ?', [userId]);
     }
   });
+
+  it('rejects X-Forwarded-For IP spoofing from an untrusted peer socket', () => {
+    process.env.TRUST_PROXY_HEADERS = 'true';
+    // Untrusted public peer socket pretending to be 127.0.0.1 via X-Forwarded-For
+    const spoofedReq = mockReq({
+      socket: { remoteAddress: '198.51.100.23' },
+      ip: '127.0.0.1', // Express populated from X-Forwarded-For
+      headers: {
+        'x-forwarded-for': '127.0.0.1',
+        'remote-user': 'admin',
+      },
+    });
+
+    assert.equal(isTrustedProxy(spoofedReq), false, 'Must reject spoofed X-Forwarded-For IP');
+    const user = getProxyUser(spoofedReq);
+    assert.equal(user, null, 'Must not authenticate spoofed proxy headers');
+    delete process.env.TRUST_PROXY_HEADERS;
+  });
 });
 

@@ -153,15 +153,18 @@ export class ShowcaseService {
       }
     }
 
-    // Determine current odometer from latest fuel entry, trip, service, or initial
+    // Determine current odometer from latest fuel entry, trip, service, Home Assistant telematics/odometer_logs, or initial
     const latestFuel = db.get<any>('SELECT MAX(odometer) as max_odo FROM fuel_entries WHERE vehicle_id = ?', [vehicleId]);
     const latestTrip = db.get<any>('SELECT MAX(end_odometer) as max_odo FROM trips WHERE vehicle_id = ?', [vehicleId]);
     const latestService = db.get<any>('SELECT MAX(odometer) as max_odo FROM service_records WHERE vehicle_id = ?', [vehicleId]);
+    const latestOdoLog = db.get<any>('SELECT MAX(odometer) as max_odo FROM odometer_logs WHERE vehicle_id = ?', [vehicleId]);
     const currentOdometer = Math.max(
       vehicle.initial_odometer || 0,
+      vehicle.telematics_last_odometer || 0,
       latestFuel?.max_odo || 0,
       latestTrip?.max_odo || 0,
-      latestService?.max_odo || 0
+      latestService?.max_odo || 0,
+      latestOdoLog?.max_odo || 0
     );
 
     // Determine import & NAP assessment
@@ -325,11 +328,14 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
     const latestFuel = db.get<any>('SELECT MAX(odometer) as max_odo FROM fuel_entries WHERE vehicle_id = ?', [vehicle.id]);
     const latestTrip = db.get<any>('SELECT MAX(end_odometer) as max_odo FROM trips WHERE vehicle_id = ?', [vehicle.id]);
     const latestService = db.get<any>('SELECT MAX(odometer) as max_odo FROM service_records WHERE vehicle_id = ?', [vehicle.id]);
+    const latestOdoLog = db.get<any>('SELECT MAX(odometer) as max_odo FROM odometer_logs WHERE vehicle_id = ?', [vehicle.id]);
     const currentOdometer = Math.max(
       vehicle.initial_odometer || 0,
+      vehicle.telematics_last_odometer || 0,
       latestFuel?.max_odo || 0,
       latestTrip?.max_odo || 0,
-      latestService?.max_odo || 0
+      latestService?.max_odo || 0,
+      latestOdoLog?.max_odo || 0
     );
 
     return this.buildCompiledShowcase(vehicle, showcase, rdw, currentOdometer);

@@ -5,7 +5,6 @@ import {
   MapPin,
   FileText,
   Image,
-  Sparkles,
   Camera,
   Pencil,
   Trash2,
@@ -15,6 +14,7 @@ import {
 import { FuelEntry } from '../../types/index.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { formatDisplayDate } from '../../utils/format.js';
+import { calculateFuelAverages, computeEconomyText } from './fuelHistoryUtils.js';
 
 interface FuelHistoryTableProps {
   entries: FuelEntry[];
@@ -37,34 +37,7 @@ export const FuelHistoryTable: React.FC<FuelHistoryTableProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
 
-  // Split consumption calculations (Solo vs. Towing)
-  const soloPairs: { km: number; liters: number }[] = [];
-  const towingPairs: { km: number; liters: number }[] = [];
-
-  for (let i = 0; i < entries.length - 1; i++) {
-    const curr = entries[i];
-    const prev = entries[i + 1];
-    if (curr.is_full_tank && !curr.missed_previous && prev.is_full_tank) {
-      const deltaKm = curr.odometer - prev.odometer;
-      if (deltaKm > 0 && curr.liters > 0) {
-        if (curr.is_towing) {
-          towingPairs.push({ km: deltaKm, liters: curr.liters });
-        } else {
-          soloPairs.push({ km: deltaKm, liters: curr.liters });
-        }
-      }
-    }
-  }
-
-  const soloKmTotal = soloPairs.reduce((a, b) => a + b.km, 0);
-  const soloLitersTotal = soloPairs.reduce((a, b) => a + b.liters, 0);
-  const soloAvgKmL = soloLitersTotal > 0 ? soloKmTotal / soloLitersTotal : null;
-  const soloAvgL100 = soloKmTotal > 0 ? (soloLitersTotal / soloKmTotal) * 100 : null;
-
-  const towingKmTotal = towingPairs.reduce((a, b) => a + b.km, 0);
-  const towingLitersTotal = towingPairs.reduce((a, b) => a + b.liters, 0);
-  const towingAvgKmL = towingLitersTotal > 0 ? towingKmTotal / towingLitersTotal : null;
-  const towingAvgL100 = towingKmTotal > 0 ? (towingLitersTotal / towingKmTotal) * 100 : null;
+  const { soloAvgKmL, soloAvgL100, towingAvgKmL, towingAvgL100 } = calculateFuelAverages(entries);
 
   const filteredEntries = entries.filter((e) => {
     if (towingFilter === 'solo') return !e.is_towing;
@@ -103,40 +76,27 @@ export const FuelHistoryTable: React.FC<FuelHistoryTableProps> = ({
 
           {/* Towing Filter Switcher */}
           <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl text-[11px] font-bold border border-slate-200/70 dark:border-slate-700">
-            <button
-              type="button"
-              onClick={() => setTowingFilter('all')}
-              className={`px-2 py-0.5 rounded-lg transition ${
-                towingFilter === 'all'
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
-              }`}
-            >
-              {lang === 'nl' ? 'Alles' : 'All'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setTowingFilter('solo')}
-              className={`px-2 py-0.5 rounded-lg transition ${
-                towingFilter === 'solo'
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
-              }`}
-            >
-              Solo
-            </button>
-            <button
-              type="button"
-              onClick={() => setTowingFilter('towing')}
-              className={`px-2 py-0.5 rounded-lg transition flex items-center space-x-1 ${
-                towingFilter === 'towing'
-                  ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs'
-                  : 'text-slate-500 hover:text-amber-600 dark:hover:text-amber-400'
-              }`}
-            >
-              <span>🏕️</span>
-              <span>{lang === 'nl' ? 'Aanhanger' : 'Towing'}</span>
-            </button>
+            {(['all', 'solo', 'towing'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setTowingFilter(mode)}
+                className={`px-2 py-0.5 rounded-lg transition ${
+                  towingFilter === mode
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+              >
+                {mode === 'all' && (lang === 'nl' ? 'Alles' : 'All')}
+                {mode === 'solo' && 'Solo'}
+                {mode === 'towing' && (
+                  <span className="flex items-center space-x-1">
+                    <span>🏕️</span>
+                    <span>{lang === 'nl' ? 'Aanhanger' : 'Towing'}</span>
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -164,17 +124,7 @@ export const FuelHistoryTable: React.FC<FuelHistoryTableProps> = ({
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
               {displayedEntries.map((f) => {
                 const globalIdx = entries.findIndex((e) => e.id === f.id);
-                const prev = entries[globalIdx + 1];
-
-                let economyText: string | null = null;
-                if (f.is_full_tank && !f.missed_previous && prev && prev.is_full_tank) {
-                  const deltaKm = f.odometer - prev.odometer;
-                  if (deltaKm > 0 && f.liters > 0) {
-                    const kmPerLiter = deltaKm / f.liters;
-                    const litersPer100Km = (f.liters / deltaKm) * 100;
-                    economyText = `1 op ${kmPerLiter.toFixed(1)} (${litersPer100Km.toFixed(1)} L/100)`;
-                  }
-                }
+                const economyText = computeEconomyText(f, entries[globalIdx + 1]);
 
                 return (
                   <tr key={f.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition">
@@ -236,29 +186,19 @@ export const FuelHistoryTable: React.FC<FuelHistoryTableProps> = ({
                     </td>
                     <td className="py-3 px-4">
                       {f.receipt_path ? (
-                        <div className="flex items-center space-x-2">
-                          <a
-                            href={`/uploads/receipts/${f.receipt_path}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center space-x-1 font-semibold"
-                          >
-                            {f.receipt_path.toLowerCase().endsWith('.pdf') ? (
-                              <FileText className="w-3.5 h-3.5" />
-                            ) : (
-                              <Image className="w-3.5 h-3.5" />
-                            )}
-                            <span>{t('view')}</span>
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => onEditEntry(f, true)}
-                            className="p-1 rounded-md text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/60 border border-amber-200 dark:border-amber-800/50 transition inline-flex items-center shadow-xs"
-                            title={lang === 'nl' ? 'Bon opnieuw uitlezen met AI / OCR' : 'Rescan receipt with AI / OCR'}
-                          >
-                            <Sparkles className="w-3 h-3 text-amber-500" />
-                          </button>
-                        </div>
+                        <a
+                          href={`/uploads/receipts/${f.receipt_path}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center space-x-1 font-semibold"
+                        >
+                          {f.receipt_path.toLowerCase().endsWith('.pdf') ? (
+                            <FileText className="w-3.5 h-3.5" />
+                          ) : (
+                            <Image className="w-3.5 h-3.5" />
+                          )}
+                          <span>{t('view')}</span>
+                        </a>
                       ) : (
                         <button
                           type="button"
@@ -273,16 +213,6 @@ export const FuelHistoryTable: React.FC<FuelHistoryTableProps> = ({
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end space-x-1">
-                        {f.receipt_path && (
-                          <button
-                            type="button"
-                            onClick={() => onEditEntry(f, true)}
-                            className="text-slate-400 hover:text-amber-500 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                            title={lang === 'nl' ? 'Bon opnieuw uitlezen met AI / OCR' : 'Rescan receipt with AI / OCR'}
-                          >
-                            <Sparkles className="w-4 h-4 text-amber-500" />
-                          </button>
-                        )}
                         <button
                           type="button"
                           onClick={() => onEditEntry(f)}
@@ -309,7 +239,6 @@ export const FuelHistoryTable: React.FC<FuelHistoryTableProps> = ({
         </div>
       )}
 
-      {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="p-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
           <div>

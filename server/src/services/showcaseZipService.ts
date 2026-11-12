@@ -210,10 +210,11 @@ export class ShowcaseZipService {
               <img src="images/${p.file_path}" alt="${this.escapeHtml(p.title || 'Voertuigfoto')}" loading="lazy">
               <span class="gallery-badge category-${p.category}">${p.category}</span>
             </div>
+            ${(p.title && p.title !== 'Foto' && p.title !== 'Hoofdfoto') || p.description ? `
             <div class="gallery-caption">
-              <strong>${this.escapeHtml(p.title || 'Foto')}</strong>
+              <strong>${this.escapeHtml(p.title || '')}</strong>
               ${p.description ? `<p>${this.escapeHtml(p.description)}</p>` : ''}
-            </div>
+            </div>` : ''}
           </div>
           `).join('')}
         </div>
@@ -479,7 +480,7 @@ body { font-family: var(--font); background: var(--bg-main); color: var(--text-m
 .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
 .gallery-card { background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .gallery-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1); }
-.gallery-img-wrapper { position: relative; aspect-ratio: 16/10; overflow: hidden; background: #e2e8f0; }
+.gallery-img-wrapper { position: relative; aspect-ratio: 4/3; overflow: hidden; background: #0f172a; }
 .gallery-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
 .gallery-badge { position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; background: rgba(0,0,0,0.7); color: #fff; }
 .gallery-caption { padding: 1rem; }

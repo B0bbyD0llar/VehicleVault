@@ -24,26 +24,9 @@ interface NavbarProps {
 
 function getVehicleImageUrl(imagePath?: string | null): string | null {
   if (!imagePath) return null;
-  if (
-    imagePath.startsWith('http://') ||
-    imagePath.startsWith('https://') ||
-    imagePath.startsWith('data:')
-  ) {
-    return imagePath;
-  }
-  if (imagePath.startsWith('/uploads/vehicles/')) {
-    return imagePath;
-  }
-  if (imagePath.startsWith('/uploads/')) {
-    return imagePath.replace('/uploads/', '/uploads/vehicles/');
-  }
-  if (imagePath.startsWith('uploads/vehicles/')) {
-    return `/${imagePath}`;
-  }
-  if (imagePath.startsWith('uploads/')) {
-    return `/uploads/vehicles/${imagePath.replace('uploads/', '')}`;
-  }
-  return `/uploads/vehicles/${imagePath}`;
+  if (/^(https?:|data:)/.test(imagePath)) return imagePath;
+  const clean = imagePath.replace(/^\/?(uploads\/)?(vehicles\/)?/, '');
+  return `/uploads/vehicles/${clean}`;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -92,153 +75,129 @@ export const Navbar: React.FC<NavbarProps> = ({
         </NavLink>
       </div>
 
-      {/* Mobile Brand Column (only visible on mobile screens where sidebar is hidden) */}
-      <div className="md:hidden flex items-center px-3 shrink-0">
-        <NavLink to="/" className="flex items-center space-x-2">
-          <img src="/icon-192.png" alt="VehicleVault" className="w-7 h-7 rounded-lg" />
-          <span className="font-extrabold text-xs tracking-wider text-slate-900 dark:text-slate-100">
+      {/* Mobile Brand Column (only logo on narrow mobile to avoid squishing top controls) */}
+      <div className="md:hidden flex items-center pl-2.5 pr-1 sm:px-3 shrink-0">
+        <NavLink to="/" className="flex items-center space-x-1.5 sm:space-x-2">
+          <img src="/icon-192.png" alt="VehicleVault" className="w-7 h-7 rounded-lg shadow-2xs" />
+          <span className="font-extrabold text-xs tracking-wider text-slate-900 dark:text-slate-100 hidden sm:inline">
             VEHICLE<span className="text-accent-500">VAULT</span>
           </span>
         </NavLink>
       </div>
 
       {/* Main Header Area: Starts cleanly at the sidebar boundary */}
-      <div className="flex-1 h-full flex items-center justify-between px-3 md:px-5 min-w-0">
+      <div className="flex-1 h-full flex items-center justify-between px-2 sm:px-3 md:px-5 min-w-0">
         {/* Prominent Vehicle Selector */}
         {vehicles.length > 0 && activeVehicle ? (
-          <div className="flex items-center space-x-2.5 min-w-0">
+          <div className="flex items-center space-x-1.5 sm:space-x-2.5 min-w-0">
             <div className="relative" ref={dropdownRef}>
               <button
-              type="button"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`flex items-center space-x-2 sm:space-x-3 px-2.5 sm:px-3 py-1.5 rounded-xl border transition shadow-xs text-left group ${
-                isDropdownOpen
-                  ? 'bg-accent-50/80 border-accent-300 dark:bg-accent-950/40 dark:border-accent-700 ring-2 ring-accent-500/20'
-                  : 'bg-slate-50/90 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-              }`}
-              title={lang === 'nl' ? 'Wissel van actief voertuig' : 'Switch active vehicle'}
-            >
-              {/* Vehicle Icon Badge (crisp vector icon, avoiding micro-scaled blurry vehicle photos in header) */}
-              <div className="w-7 h-7 rounded-lg bg-accent-100/70 dark:bg-accent-950/70 text-accent-600 dark:text-accent-400 flex items-center justify-center shrink-0 border border-accent-200/80 dark:border-accent-800 shadow-2xs">
-                <Car className="w-4 h-4" />
-              </div>
-
-              {/* Vehicle Name & Dutch Plate Badge */}
-              <div className="flex items-center space-x-2 min-w-0">
-                <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white truncate max-w-[110px] sm:max-w-[220px]">
-                  {activeVehicle.name}
-                </span>
-
-                {activeVehicle.license_plate && (
-                  <LicensePlateBadge
-                    plate={activeVehicle.license_plate}
-                    country={activeVehicle.plate_country}
-                    size="xs"
-                    className="hidden xs:inline-flex shrink-0"
-                  />
-                )}
-              </div>
-
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform shrink-0 ${
-                  isDropdownOpen ? 'rotate-180' : ''
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className={`flex items-center space-x-1.5 sm:space-x-3 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border transition shadow-xs text-left group ${
+                  isDropdownOpen
+                    ? 'bg-accent-50/80 border-accent-300 dark:bg-accent-950/40 dark:border-accent-700 ring-2 ring-accent-500/20'
+                    : 'bg-slate-50/90 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/60'
                 }`}
-              />
-            </button>
+                title={lang === 'nl' ? 'Wissel van actief voertuig' : 'Switch active vehicle'}
+              >
+                {/* Vehicle Icon Badge */}
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-accent-100/70 dark:bg-accent-950/70 text-accent-600 dark:text-accent-400 flex items-center justify-center shrink-0 border border-accent-200/80 dark:border-accent-800 shadow-2xs">
+                  <Car className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
 
-            {/* Dropdown Menu */}
-            {isDropdownOpen && (
-              <div className="absolute left-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <span>{lang === 'nl' ? 'Actief Voertuig Kiezen' : 'Select Active Vehicle'}</span>
-                  <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
-                    {vehicles.length} {lang === 'nl' ? 'in garage' : 'in garage'}
+                {/* Vehicle Name & Dutch Plate Badge */}
+                <div className="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
+                  <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white truncate max-w-[75px] xs:max-w-[120px] sm:max-w-[220px]">
+                    {activeVehicle.name}
                   </span>
+
+                  {activeVehicle.license_plate && (
+                    <LicensePlateBadge
+                      plate={activeVehicle.license_plate}
+                      country={activeVehicle.plate_country}
+                      size="xs"
+                      className="hidden xs:inline-flex shrink-0"
+                    />
+                  )}
                 </div>
 
-                <div className="max-h-72 overflow-y-auto py-1 scrollbar-thin divide-y divide-slate-100 dark:divide-slate-800/60">
-                  {vehicles.map((v) => {
-                    const isSelected = v.id === activeVehicle.id;
-                    return (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => {
-                          onSelectVehicle(v.id);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group ${
-                          isSelected ? 'bg-accent-50/60 dark:bg-accent-950/30' : ''
-                        }`}
-                      >
-                        <div className="flex items-center space-x-3 min-w-0">
-                          {getVehicleImageUrl(v.image_path) && !failedImages[v.id] ? (
-                            <img
-                              src={getVehicleImageUrl(v.image_path)!}
-                              alt={v.name}
-                              onError={() => handleImageError(v.id)}
-                              className="w-12 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs"
-                            />
-                          ) : (
-                            <div className="w-12 h-8 rounded-lg bg-accent-50/60 dark:bg-accent-950/40 text-accent-600 dark:text-accent-400 flex items-center justify-center shrink-0 border border-accent-100 dark:border-accent-900/50">
-                              <Car className="w-4 h-4" />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 shrink-0 ${
+                    isDropdownOpen ? 'rotate-180 text-accent-500' : 'group-hover:text-slate-600'
+                  }`}
+                />
+              </button>
+
+              {/* Vehicle Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                  <div className="p-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <span>{lang === 'nl' ? 'Mijn Garage' : 'My Garage'}</span>
+                    <span className="text-accent-500 font-mono">{vehicles.length} {lang === 'nl' ? 'voertuigen' : 'vehicles'}</span>
+                  </div>
+
+                  <div className="max-h-72 overflow-y-auto p-1.5 space-y-1">
+                    {vehicles.map((v) => {
+                      const isSelected = v.id === activeVehicle.id;
+                      const hasImage = v.image_path && !failedImages[v.id];
+
+                      return (
+                        <button
+                          key={v.id}
+                          onClick={() => {
+                            onSelectVehicle(v.id);
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between p-2 rounded-xl text-left transition group ${
+                            isSelected
+                              ? 'bg-accent-50 dark:bg-accent-950/40 text-accent-700 dark:text-accent-300 font-bold'
+                              : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2.5 min-w-0">
+                            {hasImage ? (
+                              <img
+                                src={getVehicleImageUrl(v.image_path) || ''}
+                                alt={v.name}
+                                onError={() => handleImageError(v.id)}
+                                className="w-8 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center shrink-0">
+                                <Car className="w-4 h-4" />
+                              </div>
+                            )}
+
+                            <div className="min-w-0">
+                              <div className="text-xs font-bold truncate">{v.name}</div>
+                              <div className="text-[10px] text-slate-400 truncate flex items-center space-x-1.5">
+                                {v.license_plate && <span>{v.license_plate}</span>}
+                                {v.year && <span>• {v.year}</span>}
+                              </div>
                             </div>
+                          </div>
+
+                          {isSelected && (
+                            <Check className="w-4 h-4 text-accent-500 shrink-0 ml-2" />
                           )}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                          <div className="min-w-0">
-                            <div className="flex items-center space-x-2">
-                              <span
-                                className={`font-bold text-xs truncate ${
-                                  isSelected
-                                    ? 'text-accent-600 dark:text-accent-400 font-extrabold'
-                                    : 'text-slate-800 dark:text-slate-200'
-                                }`}
-                              >
-                                {v.name}
-                              </span>
-                              {v.license_plate && (
-                                <LicensePlateBadge
-                                  plate={v.license_plate}
-                                  country={v.plate_country}
-                                  size="xs"
-                                  className="shrink-0"
-                                />
-                              )}
-                            </div>
-                            <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                              {v.make && v.model ? `${v.make} ${v.model}` : 'Voertuig'}
-                              {v.year ? ` • ${v.year}` : ''}
-                              {v.fuel_type ? ` • ${v.fuel_type}` : ''}
-                            </div>
-                          </div>
-                        </div>
-
-                        {isSelected && (
-                          <div className="w-5 h-5 rounded-full bg-accent-600 text-white flex items-center justify-center shrink-0 shadow-xs ml-2">
-                            <Check className="w-3 h-3 stroke-[3]" />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
+                  <div className="p-1.5 border-t border-slate-100 dark:border-slate-800">
+                    <NavLink
+                      to="/vehicles"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="w-full px-3 py-2 text-xs font-bold text-accent-600 dark:text-accent-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl flex items-center space-x-2 transition"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{lang === 'nl' ? 'Voertuigen beheren in Mijn Garage' : 'Manage vehicles in garage'}</span>
+                    </NavLink>
+                  </div>
                 </div>
-
-                <div className="p-1.5 border-t border-slate-100 dark:border-slate-800">
-                  <NavLink
-                    to="/vehicles"
-                    onClick={() => setIsDropdownOpen(false)}
-                    className="w-full px-3 py-2 text-xs font-bold text-accent-600 dark:text-accent-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl flex items-center space-x-2 transition"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>
-                      {lang === 'nl'
-                        ? 'Voertuigen beheren in Mijn Garage'
-                        : 'Manage vehicles in garage'}
-                    </span>
-                  </NavLink>
-                </div>
-              </div>
-            )}
+              )}
             </div>
 
             {/* If the vehicle has an active public showcase, display live indicator */}
@@ -247,7 +206,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 href={`/showcase/${activeVehicle.showcase_slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shadow-2xs hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:scale-[1.02] transition group shrink-0"
+                className="inline-flex items-center space-x-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl text-xs font-black bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shadow-2xs hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition group shrink-0"
                 title="De openbare verkooppagina van dit voertuig staat LIVE. Klik om te bekijken."
               >
                 <span className="relative flex h-2 w-2">
@@ -267,33 +226,21 @@ export const Navbar: React.FC<NavbarProps> = ({
         )}
 
         {/* Right controls */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
           {/* Theme toggle button */}
           <button
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-2xs"
-            title={
-              isDark
-                ? lang === 'nl'
-                  ? 'Lichte modus'
-                  : 'Light mode'
-                : lang === 'nl'
-                ? 'Donkere modus'
-                : 'Dark mode'
-            }
+            className="p-1.5 sm:p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-2xs"
+            title={isDark ? (lang === 'nl' ? 'Lichte modus' : 'Light mode') : (lang === 'nl' ? 'Donkere modus' : 'Dark mode')}
           >
-            {isDark ? (
-              <Sun className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Moon className="w-4 h-4 text-slate-700" />
-            )}
+            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
           </button>
 
           {/* User & Logout */}
-          <div className="flex items-center space-x-1.5 pl-2 border-l border-slate-200 dark:border-slate-800 text-xs">
+          <div className="flex items-center space-x-1 sm:space-x-1.5 pl-1.5 sm:pl-2 border-l border-slate-200 dark:border-slate-800 text-xs">
             <NavLink
               to="/profile"
-              className="flex items-center space-x-1.5 px-2 py-1 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition group"
+              className="flex items-center space-x-1 sm:space-x-1.5 px-1.5 sm:px-2 py-1 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition group"
               title={lang === 'nl' ? 'Mijn Profiel & Beveiliging openen' : 'Open My Profile & Security'}
             >
               <span className="truncate max-w-[150px] font-medium hidden md:inline group-hover:text-accent-600 dark:group-hover:text-accent-400">
@@ -313,7 +260,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             ) : (
               <button
                 onClick={logout}
-                className="p-2 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                className="p-1.5 sm:p-2 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 title={t('logout')}
               >
                 <LogOut className="w-4 h-4" />

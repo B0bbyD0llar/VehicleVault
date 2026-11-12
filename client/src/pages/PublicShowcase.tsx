@@ -21,6 +21,7 @@ import {
 import { LicensePlateBadge } from '../components/LicensePlateBadge.js';
 import { formatLicensePlate } from '../utils/licensePlate.js';
 import { getInspectionTerm } from '../utils/inspectionTerms.js';
+import { ShowcaseGallery } from '../components/showcase/ShowcaseGallery.js';
 
 interface CompiledShowcase {
   id: string;
@@ -109,7 +110,6 @@ export const PublicShowcase: React.FC = () => {
 
   // Gallery filters & Lightbox
   const lang = localStorage.getItem('vv_lang') || 'nl';
-  const [activeCategory, setActiveCategory] = useState<'all' | 'exterieur' | 'interieur' | 'details' | 'gebruikssporen'>('all');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -186,9 +186,6 @@ export const PublicShowcase: React.FC = () => {
   }
 
   const v = showcase.vehicle;
-  const filteredPhotos = activeCategory === 'all'
-    ? showcase.photos
-    : showcase.photos.filter((p) => p.category === activeCategory);
 
   const priceFormatted = showcase.asking_price
     ? new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(showcase.asking_price)
@@ -425,112 +422,23 @@ export const PublicShowcase: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="mb-6">
             <span className="text-xs font-black uppercase tracking-widest text-blue-600 block mb-1">
-              Fotoreportage
+              {lang === 'nl' ? 'Fotoreportage' : 'Photo Gallery'}
             </span>
             <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Foto's & Details ({showcase.photos.length})
+              {lang === 'nl' ? `Foto's & Details (${showcase.photos.length})` : `Photos & Details (${showcase.photos.length})`}
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Klik op een foto voor hoge resolutie schermweergave. Gebruik de filters om snel specifieke onderdelen te bekijken.
+              {lang === 'nl'
+                ? 'Schakel tussen de grote showroom-weergave of het overzichtsraster. Klik op een foto voor ware grootte.'
+                : 'Switch between the large showroom stage or grid overview. Click any photo for full resolution.'}
             </p>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2 mb-8">
-            <button
-              onClick={() => setActiveCategory('all')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition shadow-xs ${
-                activeCategory === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-              }`}
-            >
-              Alle foto's ({showcase.photos.length})
-            </button>
-            <button
-              onClick={() => setActiveCategory('exterieur')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition shadow-xs ${
-                activeCategory === 'exterieur'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-              }`}
-            >
-              Exterieur ({showcase.photos.filter((p) => p.category === 'exterieur').length})
-            </button>
-            <button
-              onClick={() => setActiveCategory('interieur')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition shadow-xs ${
-                activeCategory === 'interieur'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-              }`}
-            >
-              Interieur ({showcase.photos.filter((p) => p.category === 'interieur').length})
-            </button>
-            <button
-              onClick={() => setActiveCategory('details')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition shadow-xs ${
-                activeCategory === 'details'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-              }`}
-            >
-              Details & Opties ({showcase.photos.filter((p) => p.category === 'details').length})
-            </button>
-            <button
-              onClick={() => setActiveCategory('gebruikssporen')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition shadow-xs ${
-                activeCategory === 'gebruikssporen'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200'
-              }`}
-            >
-              Gebruikssporen ({showcase.photos.filter((p) => p.category === 'gebruikssporen').length})
-            </button>
-          </div>
-
-          {/* Photo Grid */}
-          {filteredPhotos.length === 0 ? (
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-12 text-center text-xs text-slate-400">
-              Geen foto's in deze categorie.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredPhotos.map((photo) => {
-                const globalIndex = showcase.photos.findIndex((p) => p.id === photo.id);
-                return (
-                  <div
-                    key={photo.id}
-                    onClick={() => setLightboxIndex(globalIndex)}
-                    className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden group cursor-pointer shadow-xs hover:shadow-lg transition-all"
-                  >
-                    <div className="aspect-[16/10] bg-slate-100 overflow-hidden relative">
-                      <img
-                        src={`/uploads/vehicles/${photo.file_path}`}
-                        alt={photo.title || 'Foto'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                      />
-                      <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-black/60 backdrop-blur-xs text-white">
-                        {photo.category}
-                      </span>
-                    </div>
-
-                    <div className="p-3.5">
-                      <strong className="text-xs sm:text-sm font-bold text-slate-900 block truncate">
-                        {photo.title || 'Foto'}
-                      </strong>
-                      {photo.description && (
-                        <p className="text-[11px] text-slate-500 font-medium mt-0.5 line-clamp-2">
-                          {photo.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <ShowcaseGallery
+            photos={showcase.photos}
+            lang={lang}
+            onOpenLightbox={(idx) => setLightboxIndex(idx)}
+          />
         </div>
       </section>
 

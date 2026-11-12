@@ -68,7 +68,7 @@ export const VehiclePurchaseAndApkFields: React.FC<VehiclePurchaseAndApkFieldsPr
           </div>
           <div>
             <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
-              {t('purchasePrice')} (€)
+              {t('purchasePrice')}
             </label>
             <input
               type="number"
