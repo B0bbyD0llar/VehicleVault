@@ -19,6 +19,7 @@ export function useVehicleForm(refreshVehicles: () => void) {
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
   const [fuelType, setFuelType] = useState('Benzine');
+  const [transmission, setTransmission] = useState('automatic');
   const [purchaseDate, setPurchaseDate] = useState('');
   const [purchasePrice, setPurchasePrice] = useState<string>('0');
   const [initialOdometer, setInitialOdometer] = useState<string>('0');
@@ -51,6 +52,7 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setMake('');
     setModel('');
     setFuelType(lang === 'nl' ? 'Benzine' : 'Petrol');
+    setTransmission('automatic');
     setPurchaseDate('');
     setPurchasePrice('0');
     setInitialOdometer('0');
@@ -90,6 +92,7 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setMake(v.make || '');
     setModel(v.model || '');
     setFuelType(v.fuel_type || 'Benzine');
+    setTransmission(v.transmission || (((v.fuel_type || '').toLowerCase().includes('hybride') || (v.fuel_type || '').toLowerCase().includes('elektr')) ? 'automatic' : 'automatic'));
     setPurchaseDate(v.purchase_date ? v.purchase_date.slice(0, 10) : '');
     setPurchasePrice(String(v.purchase_price || 0));
     setInitialOdometer(String(v.initial_odometer || 0));
@@ -159,6 +162,7 @@ export function useVehicleForm(refreshVehicles: () => void) {
       make: make || null,
       model: model || null,
       fuel_type: fuelType || null,
+      transmission: transmission || 'automatic',
       purchase_date: purchaseDate || null,
       purchase_price: parseFloat(purchasePrice) || 0,
       initial_odometer: parseFloat(initialOdometer) || 0,
@@ -231,6 +235,8 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setModel,
     fuelType,
     setFuelType,
+    transmission,
+    setTransmission,
     purchaseDate,
     setPurchaseDate,
     purchasePrice,

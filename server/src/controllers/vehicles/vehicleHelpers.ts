@@ -28,6 +28,7 @@ export const vehicleSchema = z.object({
   telematics_enabled: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).optional(),
   telematics_provider: z.string().default('home_assistant'),
   telematics_ha_entity_id: z.string().optional().nullable(),
+  transmission: z.string().optional().nullable(),
 });
 
 export function enrichVehicle(v: any) {

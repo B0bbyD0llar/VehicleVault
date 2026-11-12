@@ -31,6 +31,8 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
   setModel,
   fuelType,
   setFuelType,
+  transmission,
+  setTransmission,
   purchaseDate,
   setPurchaseDate,
   purchasePrice,
@@ -183,6 +185,8 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
                 setYear={setYear}
                 fuelType={fuelType}
                 setFuelType={setFuelType}
+                transmission={transmission}
+                setTransmission={setTransmission}
                 vin={vin}
                 setVin={setVin}
               />

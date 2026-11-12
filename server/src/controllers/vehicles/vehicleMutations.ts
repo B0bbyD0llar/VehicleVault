@@ -30,6 +30,12 @@ export async function executeVehicleCreate(userId: string | undefined, data: any
   const telematicsEnabled = data.telematics_enabled ? 1 : 0;
   const telematicsProvider = data.telematics_provider || 'home_assistant';
   const telematicsHaEntityId = data.telematics_ha_entity_id ? data.telematics_ha_entity_id.trim() : null;
+  const transmission = data.transmission || (
+    (data.fuel_type || '').toLowerCase().includes('hybride') ||
+    (data.fuel_type || '').toLowerCase().includes('elektr')
+      ? 'automatic'
+      : 'automatic'
+  );
 
   db.run(
     `INSERT INTO vehicles (
@@ -38,9 +44,9 @@ export async function executeVehicleCreate(userId: string | undefined, data: any
       notes, status, rdw_data, apk_expiration_date, plate_country, image_path,
       notifications_enabled, maintenance_notifications_enabled, apk_notifications_enabled,
       tire_swap_notifications_enabled, tire_tread_notifications_enabled,
-      telematics_enabled, telematics_provider, telematics_ha_entity_id,
+      telematics_enabled, telematics_provider, telematics_ha_entity_id, transmission,
       created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id, userId, data.name, data.type,
       data.license_plate ? (plateCountry === 'NL' ? RdwService.normalizePlate(data.license_plate) : data.license_plate.trim().toUpperCase()) : null,
@@ -49,7 +55,7 @@ export async function executeVehicleCreate(userId: string | undefined, data: any
       data.notes || null, data.status, rdwData ? JSON.stringify(rdwData) : null, apkDate || null,
       plateCountry, data.image_path || null, notificationsEnabled, maintenanceNotificationsEnabled,
       apkNotificationsEnabled, tireSwapNotificationsEnabled, tireTreadNotificationsEnabled,
-      telematicsEnabled, telematicsProvider, telematicsHaEntityId, now, now,
+      telematicsEnabled, telematicsProvider, telematicsHaEntityId, transmission, now, now,
     ]
   );
 
@@ -85,6 +91,7 @@ export function executeVehicleUpdate(id: string, existing: any, data: any): void
   const telematics_enabled = data.telematics_enabled !== undefined ? (data.telematics_enabled ? 1 : 0) : (existing.telematics_enabled ?? 0);
   const telematics_provider = data.telematics_provider || existing.telematics_provider || 'home_assistant';
   const telematics_ha_entity_id = data.telematics_ha_entity_id !== undefined ? (data.telematics_ha_entity_id ? data.telematics_ha_entity_id.trim() : null) : (existing.telematics_ha_entity_id ?? null);
+  const transmission = data.transmission !== undefined ? data.transmission : (existing.transmission || null);
 
   db.run(
     `UPDATE vehicles SET
@@ -94,14 +101,15 @@ export function executeVehicleUpdate(id: string, existing: any, data: any): void
       notifications_enabled = ?, maintenance_notifications_enabled = ?, apk_notifications_enabled = ?,
       tire_swap_notifications_enabled = ?, tire_tread_notifications_enabled = ?,
       telematics_enabled = ?, telematics_provider = ?, telematics_ha_entity_id = ?,
-      updated_at = ?
+      transmission = ?, updated_at = ?
      WHERE id = ?`,
     [
       name, type, license_plate, vin, year, make, model, fuel_type, purchase_date,
       purchase_price, initial_odometer, notes, status, apk_expiration_date,
       plate_country, image_path, notifications_enabled, maintenance_notifications_enabled,
       apk_notifications_enabled, tire_swap_notifications_enabled, tire_tread_notifications_enabled,
-      telematics_enabled, telematics_provider, telematics_ha_entity_id, now, id,
+      telematics_enabled, telematics_provider, telematics_ha_entity_id,
+      transmission, now, id,
     ]
   );
 }

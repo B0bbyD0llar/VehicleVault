@@ -317,8 +317,12 @@ export const PublicShowcase: React.FC = () => {
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
                 {lang === 'nl' ? 'Kilometerstand' : 'Odometer'}
               </span>
-              <span className="text-lg sm:text-xl font-black text-slate-900 mt-0.5 block font-mono">
-                {v.current_odometer.toLocaleString(lang === 'nl' ? 'nl-NL' : 'en-US')} km*
+              <span
+                className="text-lg sm:text-xl font-black text-slate-900 mt-0.5 block font-mono"
+                title={lang === 'nl' ? 'Actuele tellerstand (loopt licht op door dagelijks gebruik)' : 'Current odometer (may increase slightly due to occasional driving)'}
+              >
+                {v.current_odometer.toLocaleString(lang === 'nl' ? 'nl-NL' : 'en-US')} km
+                <span className="text-amber-500 font-bold ml-0.5 cursor-help" title={lang === 'nl' ? '* Loopt licht op door dagelijks gebruik' : '* May increase slightly with use'}>*</span>
               </span>
               <span className="text-[11px] text-slate-500 font-medium">
                 {showcase.stats.nap_oordeel &&
@@ -375,6 +379,16 @@ export const PublicShowcase: React.FC = () => {
                 {lang === 'nl' ? 'Gekeurd & veilig' : 'Inspected & valid'}
               </span>
             </div>
+          </div>
+
+          {/* Asterisk explanation note */}
+          <div className="mt-2 text-[11px] text-slate-400 flex items-center space-x-1.5 italic">
+            <span className="text-amber-500 font-bold not-italic">*</span>
+            <span>
+              {lang === 'nl'
+                ? 'Actuele tellerstand; kan door incidenteel of dagelijks gebruik van het voertuig licht oplopen.'
+                : 'Current odometer reading; may increase slightly due to occasional or daily vehicle use.'}
+            </span>
           </div>
         </div>
       </section>

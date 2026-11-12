@@ -44,6 +44,7 @@ export interface CompiledShowcase {
     make: string | null;
     model: string | null;
     fuel_type: string | null;
+    transmission?: string | null;
     current_odometer: number;
     apk_expiration_date: string | null;
     apk_status?: string;
@@ -461,12 +462,29 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
 
     const motorKw = rdw.nettomaximumvermogen ? Math.round(Number(rdw.nettomaximumvermogen)) : null;
     const motorPk = motorKw ? Math.round(motorKw * 1.35962) : null;
+
+    const vTrans = (vehicle.transmission || '').toLowerCase();
+    const isAuto = vTrans === 'automatic' || vTrans === 'automaat'
+      ? true
+      : vTrans === 'manual' || vTrans === 'handgeschakeld'
+      ? false
+      : (
+          rdw.inrichting?.toLowerCase().includes('automaat') ||
+          (vehicle.fuel_type || '').toLowerCase().includes('hybride') ||
+          (vehicle.fuel_type || '').toLowerCase().includes('elektr') ||
+          (vehicle.fuel_type || '').toLowerCase().includes('phev') ||
+          (vehicle.name || '').toLowerCase().includes('automaat') ||
+          (vehicle.name || '').toLowerCase().includes('dct') ||
+          (vehicle.name || '').toLowerCase().includes('dsg')
+        );
+    const transmissieLabel = isAuto ? 'Automaat' : 'Handgeschakeld';
+
     const motorSpecs: { label: string; value: string }[] = [
       { label: 'Brandstof', value: vehicle.fuel_type || rdw.brandstof_omschrijving || 'Benzine' },
       { label: 'Cilinderinhoud', value: rdw.cilinderinhoud ? `${Number(rdw.cilinderinhoud).toLocaleString('nl-NL')} cc` : 'N.v.t.' },
       { label: 'Aantal cilinders', value: rdw.aantal_cilinders ? String(rdw.aantal_cilinders) : '4' },
-      { label: 'Vermogen', value: motorKw ? `${motorPk} pk (${motorKw} kW)` : 'N.v.t.' },
-      { label: 'Transmissie', value: rdw.inrichting?.toLowerCase().includes('automaat') ? 'Automaat' : (vehicle.fuel_type?.toLowerCase().includes('hybride') || vehicle.fuel_type?.toLowerCase().includes('elektr') ? 'Automaat' : 'Handgeschakeld') },
+      { label: 'Vermogen', value: motorKw ? `${motorPk} pk (${motorKw} kW)` : 'Fabrieksopgave' },
+      { label: 'Transmissie', value: transmissieLabel },
       { label: 'Topsnelheid', value: rdw.maximum_snelheid ? `${rdw.maximum_snelheid} km/u` : 'Fabrieksopgave' },
     ];
 
@@ -515,6 +533,7 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
         make: vehicle.make,
         model: vehicle.model,
         fuel_type: vehicle.fuel_type,
+        transmission: vehicle.transmission || transmissieLabel,
         current_odometer: currentOdometer,
         apk_expiration_date: vehicle.apk_expiration_date,
         apk_status: apkEval.isOverdue ? 'overdue' : apkEval.isDueSoon ? 'due_soon' : apkEval.daysRemaining !== null ? 'valid' : 'unknown',
@@ -523,8 +542,8 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
         bouwjaar: vehicle.year ? String(vehicle.year) : (rdw.datum_eerste_toelating ? rdw.datum_eerste_toelating.substring(0, 4) : '—'),
         herkomst: isImport ? 'Import (in NL geregistreerd)' : 'Origineel Nederlands',
         kilometerstand: `${currentOdometer.toLocaleString('nl-NL')} km* (per ${todayDateDutch}, loopt licht op)`,
-        brandstof_transmissie: `${vehicle.fuel_type || 'Benzine'} ${motorSpecs.find(m => m.label === 'Transmissie')?.value || ''}`,
-        vermogen: motorPk ? `${motorPk} pk (${motorKw} kW)` : (vehicle.fuel_type || '—'),
+        brandstof_transmissie: `${(vehicle.fuel_type || 'Benzine').replace(/\s*\(.*?\)/g, '').trim()} • ${transmissieLabel}`,
+        vermogen: motorPk ? `${motorPk} pk (${motorKw} kW)` : 'Fabrieksopgave',
         apk_vervaldatum: this.formatDutchDate(vehicle.apk_expiration_date || rdw.vervaldatum_apk),
         apk_status: apkEval.isOverdue ? 'Verlopen' : apkEval.isDueSoon ? `Vervalt binnen ${apkEval.daysRemaining} dagen` : `Geldig (${apkEval.daysRemaining} dagen)`,
         energielabel: rdw.zuinigheidslabel || 'A',

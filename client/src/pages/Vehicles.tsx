@@ -211,6 +211,8 @@ export const Vehicles: React.FC = () => {
         setModel={form.setModel}
         fuelType={form.fuelType}
         setFuelType={form.setFuelType}
+        transmission={form.transmission}
+        setTransmission={form.setTransmission}
         purchaseDate={form.purchaseDate}
         setPurchaseDate={form.setPurchaseDate}
         purchasePrice={form.purchasePrice}

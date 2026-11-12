@@ -24,6 +24,8 @@ export interface VehicleModalProps {
   setModel: (v: string) => void;
   fuelType: string;
   setFuelType: (v: string) => void;
+  transmission: string;
+  setTransmission: (v: string) => void;
   purchaseDate: string;
   setPurchaseDate: (v: string) => void;
   purchasePrice: string;

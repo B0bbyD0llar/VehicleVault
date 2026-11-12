@@ -17,6 +17,7 @@ export interface Vehicle {
   make?: string | null;
   model?: string | null;
   fuel_type?: string | null;
+  transmission?: string | null;
   purchase_date?: string | null;
   purchase_price: number;
   initial_odometer: number;

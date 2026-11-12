@@ -105,6 +105,7 @@ export function initializeDatabase(): void {
       telematics_last_sync_at TEXT,
       telematics_last_status TEXT,
       telematics_last_odometer REAL,
+      transmission TEXT DEFAULT 'automatic',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -157,6 +158,9 @@ export function initializeDatabase(): void {
   }
   if (!columnExists('vehicles', 'telematics_last_odometer')) {
     db.exec("ALTER TABLE vehicles ADD COLUMN telematics_last_odometer REAL;");
+  }
+  if (!columnExists('vehicles', 'transmission')) {
+    db.exec("ALTER TABLE vehicles ADD COLUMN transmission TEXT DEFAULT 'automatic';");
   }
 
   // 4b. Multi-User Vehicle Sharing

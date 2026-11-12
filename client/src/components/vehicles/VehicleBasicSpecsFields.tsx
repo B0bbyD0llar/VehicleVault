@@ -14,20 +14,14 @@ interface VehicleBasicSpecsFieldsProps {
   onRdwLookup: () => void;
   rdwLoading: boolean;
   rdwSuccess: boolean;
-  name: string;
-  setName: (v: string) => void;
-  type: VehicleType;
-  setType: (v: VehicleType) => void;
-  make: string;
-  setMake: (v: string) => void;
-  model: string;
-  setModel: (v: string) => void;
-  year: string;
-  setYear: (v: string) => void;
-  fuelType: string;
-  setFuelType: (v: string) => void;
-  vin: string;
-  setVin: (v: string) => void;
+  name: string; setName: (v: string) => void;
+  type: VehicleType; setType: (v: VehicleType) => void;
+  make: string; setMake: (v: string) => void;
+  model: string; setModel: (v: string) => void;
+  year: string; setYear: (v: string) => void;
+  fuelType: string; setFuelType: (v: string) => void;
+  transmission: string; setTransmission: (v: string) => void;
+  vin: string; setVin: (v: string) => void;
 }
 
 export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = ({
@@ -53,6 +47,8 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
   setYear,
   fuelType,
   setFuelType,
+  transmission,
+  setTransmission,
   vin,
   setVin,
 }) => {
@@ -177,7 +173,7 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
         ) : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             {t('vehicleName')} *
@@ -241,7 +237,7 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             {t('fuelType')}
@@ -269,6 +265,20 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
             ].includes(fuelType) && (
               <option value={fuelType}>{fuelType}</option>
             )}
+          </select>
+        </div>
+        <div>
+          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+            {lang === 'nl' ? 'Transmissie' : 'Transmission'}
+          </label>
+          <select
+            value={transmission || 'automatic'}
+            onChange={(e) => setTransmission(e.target.value)}
+            className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm font-medium"
+          >
+            <option value="automatic">{lang === 'nl' ? '⚡ Automaat' : '⚡ Automatic'}</option>
+            <option value="manual">{lang === 'nl' ? '🕹️ Handgeschakeld' : '🕹️ Manual'}</option>
+            <option value="semi_automatic">{lang === 'nl' ? '⚙️ Semi-automaat / DCT' : '⚙️ Semi-auto / DCT'}</option>
           </select>
         </div>
         <div>
