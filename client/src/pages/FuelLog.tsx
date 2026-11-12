@@ -12,7 +12,6 @@ import { useLanguage } from '../context/LanguageContext.js';
 import { FuelEntryForm } from '../components/fuel/FuelEntryForm.js';
 import { FuelHistoryTable } from '../components/fuel/FuelHistoryTable.js';
 import { FuelEditModal } from '../components/fuel/FuelEditModal.js';
-import { FuelExportImportDropdown } from '../components/fuel/FuelExportImportDropdown.js';
 
 interface ContextType {
   vehicles: Vehicle[];
@@ -118,8 +117,6 @@ export const FuelLog: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <FuelExportImportDropdown selectedVehicle={selectedVehicle} />
-
           <button
             onClick={() => setIsOcrOpen(true)}
             className="px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold inline-flex items-center space-x-2 transition shadow-sm"

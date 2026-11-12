@@ -173,5 +173,26 @@ describe('Home Assistant Telematics & Odometer Sync', () => {
     assert.equal(res2.statusCode, 200);
     assert.equal(res2.body.success, true);
     assert.equal(res2.body.odometer, 52600);
+
+    // 3. getLogs
+    const req3 = mockReq({ params: { vehicleId: testVehicleId }, user: { userId: adminUserId, role: 'admin' } });
+    const res3 = mockRes();
+    TelematicsController.getLogs(req3, res3);
+    assert.equal(res3.statusCode, 200);
+    assert.ok(Array.isArray(res3.body.logs));
+    assert.ok(res3.body.logs.length >= 1);
+    assert.equal(res3.body.logs[0].status, 'success');
+    assert.equal(res3.body.logs[0].odometer, 52600);
+
+    // 4. clearLogs
+    const req4 = mockReq({ params: { vehicleId: testVehicleId }, user: { userId: adminUserId, role: 'admin' } });
+    const res4 = mockRes();
+    TelematicsController.clearLogs(req4, res4);
+    assert.equal(res4.statusCode, 200);
+    assert.equal(res4.body.success, true);
+
+    const res5 = mockRes();
+    TelematicsController.getLogs(req3, res5);
+    assert.equal(res5.body.logs.length, 0);
   });
 });

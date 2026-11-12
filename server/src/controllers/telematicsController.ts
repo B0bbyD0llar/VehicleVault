@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { TelematicsService } from '../services/telematicsService.js';
+import { TelematicsLogService } from '../services/telematicsLogService.js';
 import { db } from '../db/database.js';
 
 export class TelematicsController {
@@ -87,6 +88,53 @@ export class TelematicsController {
       res.json(result);
     } catch (err: any) {
       res.status(500).json({ error: 'Batch synchronisatie mislukt' });
+    }
+  }
+
+  public static getLogs(req: Request, res: Response): void {
+    try {
+      const { vehicleId } = req.params;
+      const userId = req.user?.userId;
+      const vehicle = userId
+        ? db.get<any>(
+            `SELECT * FROM vehicles WHERE id = ? AND (user_id = ? OR id IN (SELECT vehicle_id FROM vehicle_shares WHERE user_id = ?))`,
+            [vehicleId, userId, userId]
+          )
+        : db.get<any>('SELECT * FROM vehicles WHERE id = ?', [vehicleId]);
+
+      if (!vehicle && req.user?.role !== 'admin') {
+        res.status(404).json({ error: 'Voertuig niet gevonden' });
+        return;
+      }
+
+      const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 50;
+      const logs = TelematicsLogService.getLogs(vehicleId, limit);
+      res.json({ logs });
+    } catch (err: any) {
+      res.status(500).json({ error: 'Kon telematica-logboeken niet ophalen' });
+    }
+  }
+
+  public static clearLogs(req: Request, res: Response): void {
+    try {
+      const { vehicleId } = req.params;
+      const userId = req.user?.userId;
+      const vehicle = userId
+        ? db.get<any>(
+            `SELECT * FROM vehicles WHERE id = ? AND (user_id = ? OR id IN (SELECT vehicle_id FROM vehicle_shares WHERE user_id = ? AND role = 'editor'))`,
+            [vehicleId, userId, userId]
+          )
+        : db.get<any>('SELECT * FROM vehicles WHERE id = ?', [vehicleId]);
+
+      if (!vehicle && req.user?.role !== 'admin') {
+        res.status(404).json({ error: 'Voertuig niet gevonden' });
+        return;
+      }
+
+      TelematicsLogService.clearLogs(vehicleId);
+      res.json({ success: true, message: 'Sync logs gewist' });
+    } catch (err: any) {
+      res.status(500).json({ error: 'Kon telematica-logboeken niet wissen' });
     }
   }
 }

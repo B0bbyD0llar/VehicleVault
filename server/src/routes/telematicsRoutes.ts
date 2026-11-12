@@ -10,6 +10,8 @@ router.post('/test', requireAuth, TelematicsController.testConnection);
 router.get('/sensors', requireAuth, TelematicsController.listSensors);
 router.post('/sync/:vehicleId', requireAuth, TelematicsController.syncVehicle);
 router.post('/sync-all', requireAuth, TelematicsController.syncAll);
+router.get('/logs/:vehicleId', requireAuth, TelematicsController.getLogs);
+router.delete('/logs/:vehicleId', requireAuth, TelematicsController.clearLogs);
 
 export default router;
 

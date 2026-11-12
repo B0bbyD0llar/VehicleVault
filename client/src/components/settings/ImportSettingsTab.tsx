@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { apiFetch } from '../../api/client.js';
 import { Vehicle } from '../../types/index.js';
+import { FuelDataExportCard } from './FuelDataExportCard.js';
 
 export const ImportSettingsTab: React.FC = () => {
   const outlet = useOutletContext<{ vehicles?: Vehicle[]; selectedVehicle?: Vehicle | null }>();
@@ -131,6 +132,8 @@ export const ImportSettingsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <FuelDataExportCard vehicles={vehicles} selectedVehicleId={targetVehicleId} />
+
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-5">
         <div>
           <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">

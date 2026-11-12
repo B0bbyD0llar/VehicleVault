@@ -13,6 +13,8 @@ import {
   ArrowRight,
   Car,
   Sparkles,
+  Radio,
+  History,
 } from 'lucide-react';
 import { Vehicle, MaintenanceInterval, FuelEntry } from '../types/index.js';
 import { apiFetch } from '../api/client.js';
@@ -20,6 +22,7 @@ import { StatusBadge } from '../components/StatusBadge.js';
 import { IntervalProgressBar } from '../components/IntervalProgressBar.js';
 import { PdfExportModal } from '../components/PdfExportModal.js';
 import { ShowcaseManagerModal } from '../components/ShowcaseManagerModal.js';
+import { TelematicsSyncLogModal } from '../components/telematics/TelematicsSyncLogModal.js';
 import { LicensePlateBadge } from '../components/LicensePlateBadge.js';
 import { getInspectionTerm } from '../utils/inspectionTerms.js';
 import { useLanguage } from '../context/LanguageContext.js';
@@ -42,6 +45,9 @@ export const Dashboard: React.FC = () => {
   const [syncingApk, setSyncingApk] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isShowcaseModalOpen, setIsShowcaseModalOpen] = useState(false);
+  const [isHaLogModalOpen, setIsHaLogModalOpen] = useState(false);
+  const [syncingHa, setSyncingHa] = useState(false);
+  const [haSyncMessage, setHaSyncMessage] = useState<string | null>(null);
 
   const vehicleFuelType = (selectedVehicle?.fuel_type || '').toLowerCase();
   const isPhev = vehicleFuelType.includes('plug-in') || vehicleFuelType.includes('phev');
@@ -96,6 +102,30 @@ export const Dashboard: React.FC = () => {
       // ignore
     } finally {
       setSyncingApk(false);
+    }
+  };
+
+  const handleQuickHaSync = async () => {
+    if (!selectedVehicle?.id) return;
+    setSyncingHa(true);
+    setHaSyncMessage(null);
+    try {
+      const res = await apiFetch<{ success: boolean; odometer?: number; error?: string }>(
+        `/api/telematics/sync/${selectedVehicle.id}`,
+        { method: 'POST' }
+      );
+      if (res.success && res.odometer !== undefined) {
+        setHaSyncMessage(`${res.odometer.toLocaleString()} km`);
+        refreshVehicles();
+        loadVehicleData(selectedVehicle.id);
+      } else {
+        setHaSyncMessage(res.error || (lang === 'nl' ? 'Sync fout' : 'Sync error'));
+      }
+    } catch (err: any) {
+      setHaSyncMessage(err?.message || (lang === 'nl' ? 'Sync fout' : 'Sync error'));
+    } finally {
+      setSyncingHa(false);
+      setTimeout(() => setHaSyncMessage(null), 4000);
     }
   };
 
@@ -355,6 +385,39 @@ export const Dashboard: React.FC = () => {
               {(selectedVehicle?.initial_odometer || 0).toLocaleString()} km
             </span>
           </div>
+
+          {selectedVehicle?.telematics_enabled && (
+            <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-slate-800/80 mt-1.5 text-[11px]">
+              <div className="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400 font-semibold truncate mr-1">
+                <Radio className="w-3 h-3 shrink-0 animate-pulse" />
+                <span className="truncate">
+                  {haSyncMessage || (selectedVehicle.telematics_last_sync_at
+                    ? `HA: ${new Date(selectedVehicle.telematics_last_sync_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                    : 'Home Assistant')}
+                </span>
+              </div>
+              <div className="flex items-center space-x-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleQuickHaSync}
+                  disabled={syncingHa}
+                  className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold transition flex items-center space-x-1 border border-emerald-200 dark:border-emerald-800/50 shadow-2xs"
+                  title={lang === 'nl' ? 'Direct synchroniseren met Home Assistant' : 'Sync with Home Assistant now'}
+                >
+                  <RefreshCw className={`w-3 h-3 ${syncingHa ? 'animate-spin' : ''}`} />
+                  <span>Sync</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsHaLogModalOpen(true)}
+                  className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  title={lang === 'nl' ? 'Bekijk sync logboek' : 'View sync log'}
+                >
+                  <History className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Inspection Status */}
@@ -575,6 +638,20 @@ export const Dashboard: React.FC = () => {
           vehicleId={selectedVehicle.id}
           vehicleName={selectedVehicle.name}
           onVehicleUpdated={() => refreshVehicles()}
+        />
+      )}
+
+      {/* Home Assistant Telematics Sync Log Modal */}
+      {selectedVehicle && (
+        <TelematicsSyncLogModal
+          isOpen={isHaLogModalOpen}
+          onClose={() => setIsHaLogModalOpen(false)}
+          vehicleId={selectedVehicle.id}
+          vehicleName={selectedVehicle.name}
+          onSyncCompleted={() => {
+            refreshVehicles();
+            if (selectedVehicle?.id) loadVehicleData(selectedVehicle.id);
+          }}
         />
       )}
     </div>

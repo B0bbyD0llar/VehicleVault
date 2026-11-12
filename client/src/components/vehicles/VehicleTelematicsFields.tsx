@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Radio, RefreshCw, Check, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { Radio, RefreshCw, Check, AlertCircle, Loader2, Sparkles, History } from 'lucide-react';
 import { apiFetch } from '../../api/client.js';
 import { useLanguage } from '../../context/LanguageContext.js';
+import { TelematicsSyncLogModal } from '../telematics/TelematicsSyncLogModal.js';
 
 interface VehicleTelematicsFieldsProps {
   vehicleId?: string;
@@ -31,6 +32,7 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
   const [loadingSensors, setLoadingSensors] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   const fetchSensors = async () => {
     setLoadingSensors(true);
@@ -169,15 +171,26 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
                 )}
               </div>
 
-              <button
-                type="button"
-                onClick={handleSyncNow}
-                disabled={syncing || !telematicsHaEntityId.trim()}
-                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center space-x-1.5 self-start sm:self-auto disabled:opacity-50 shadow-2xs"
-              >
-                {syncing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                <span>{syncing ? (lang === 'nl' ? 'Ophalen...' : 'Syncing...') : (lang === 'nl' ? 'Nu Syncen' : 'Sync Now')}</span>
-              </button>
+              <div className="flex items-center space-x-2 self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setIsLogModalOpen(true)}
+                  className="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5"
+                >
+                  <History className="w-3 h-3" />
+                  <span>{lang === 'nl' ? 'Sync Log' : 'Sync Log'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSyncNow}
+                  disabled={syncing || !telematicsHaEntityId.trim()}
+                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center space-x-1.5 disabled:opacity-50 shadow-2xs"
+                >
+                  {syncing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                  <span>{syncing ? (lang === 'nl' ? 'Ophalen...' : 'Syncing...') : (lang === 'nl' ? 'Nu Syncen' : 'Sync Now')}</span>
+                </button>
+              </div>
             </div>
           )}
 
@@ -192,6 +205,18 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
               {syncResult.success ? <Check className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
               <span>{syncResult.message}</span>
             </div>
+          )}
+
+          {vehicleId && (
+            <TelematicsSyncLogModal
+              isOpen={isLogModalOpen}
+              onClose={() => setIsLogModalOpen(false)}
+              vehicleId={vehicleId}
+              vehicleName="Home Assistant Sync"
+              onSyncCompleted={(newOdo) => {
+                if (newOdo && onOdometerUpdated) onOdometerUpdated(newOdo);
+              }}
+            />
           )}
         </div>
       )}

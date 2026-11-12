@@ -43,7 +43,7 @@ export class SchedulerService {
       async () => {
         try {
           logger.info('Scheduler: Running daily telematics odometer sync...');
-          const result = await TelematicsService.syncAllVehicles();
+          const result = await TelematicsService.syncAllVehicles(undefined, 'scheduler');
           logger.info(result, 'Scheduler: Telematics sync completed');
         } catch (err: any) {
           logger.error({ err: err?.message }, 'Scheduler: Error in telematics sync');

@@ -57,8 +57,8 @@ export const Settings: React.FC = () => {
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           {lang === 'nl'
-            ? 'Configureer systeemparameters, AI-bonherkenning, gebruikers, meldingen, integraties en gegevensimport.'
-            : 'Configure system settings, AI receipt scanner, users, notifications, integrations, and data imports.'}
+            ? 'Configureer systeemparameters, AI-bonherkenning, gebruikers, meldingen, integraties en gegevens import/export.'
+            : 'Configure system settings, AI receipt scanner, users, notifications, integrations, and data import/export.'}
         </p>
       </div>
 
@@ -149,7 +149,7 @@ export const Settings: React.FC = () => {
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span>{lang === 'nl' ? 'Gegevens Importeren' : 'Import Data'}</span>
+          <span>{lang === 'nl' ? 'Import & Export' : 'Import & Export'}</span>
         </button>
       </div>
 

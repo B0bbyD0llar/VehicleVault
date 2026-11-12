@@ -424,6 +424,21 @@ export function initializeDatabase(): void {
       FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
     );
     CREATE INDEX IF NOT EXISTS idx_odometer_logs_vehicle ON odometer_logs (vehicle_id);
+
+    CREATE TABLE IF NOT EXISTS telematics_sync_logs (
+      id TEXT PRIMARY KEY,
+      vehicle_id TEXT NOT NULL,
+      entity_id TEXT,
+      status TEXT NOT NULL,
+      odometer REAL,
+      previous_odometer REAL,
+      odometer_changed INTEGER NOT NULL DEFAULT 0,
+      message TEXT,
+      trigger_source TEXT NOT NULL DEFAULT 'manual',
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_telematics_sync_logs_vehicle ON telematics_sync_logs (vehicle_id, created_at DESC);
   `);
 
   // 10. System settings (AI providers, API keys, global configurations)

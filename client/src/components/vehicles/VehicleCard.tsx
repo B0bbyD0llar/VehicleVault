@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Sparkles,
@@ -9,6 +9,7 @@ import {
   Landmark,
   BellOff,
   Radio,
+  History,
 } from 'lucide-react';
 import { Vehicle, VehicleType } from '../../types/index.js';
 import { StatusBadge } from '../StatusBadge.js';
@@ -16,6 +17,7 @@ import { LicensePlateBadge } from '../LicensePlateBadge.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { formatDisplayDate } from '../../utils/format.js';
 import { getInspectionTerm } from '../../utils/inspectionTerms.js';
+import { TelematicsSyncLogModal } from '../telematics/TelematicsSyncLogModal.js';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -35,6 +37,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   onOpenShowcase,
 }) => {
   const { t, lang } = useLanguage();
+  const [isLogOpen, setIsLogOpen] = useState(false);
 
   const getVehicleTypeName = (vType: VehicleType) => {
     switch (vType) {
@@ -175,15 +178,30 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
               </span>
             </div>
           )}
-          {v.telematics_enabled && v.telematics_last_sync_at && (
-            <div className="flex justify-between border-t border-slate-200 dark:border-slate-800/80 pt-1.5 text-[11px]">
+          {v.telematics_enabled && (
+            <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800/80 pt-1.5 text-[11px]">
               <span className="text-slate-500 flex items-center space-x-1">
-                <Radio className="w-3 h-3 text-emerald-500" />
-                <span>{lang === 'nl' ? 'Telematica sync' : 'Telematics sync'}</span>
+                <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
+                <span>{lang === 'nl' ? 'Telematica' : 'Telematics'}</span>
               </span>
-              <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
-                {new Date(v.telematics_last_sync_at).toLocaleDateString(lang === 'nl' ? 'nl-NL' : 'en-US')}
-              </span>
+              <div className="flex items-center space-x-1.5">
+                {v.telematics_last_sync_at && (
+                  <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                    {new Date(v.telematics_last_sync_at).toLocaleDateString(lang === 'nl' ? 'nl-NL' : 'en-US')}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsLogOpen(true);
+                  }}
+                  className="p-1 rounded text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition"
+                  title={lang === 'nl' ? 'Sync log & direct syncen' : 'Sync log & sync now'}
+                >
+                  <History className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -258,6 +276,13 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
           </Link>
         </div>
       </div>
+
+      <TelematicsSyncLogModal
+        isOpen={isLogOpen}
+        onClose={() => setIsLogOpen(false)}
+        vehicleId={v.id}
+        vehicleName={v.name}
+      />
     </div>
   );
 };

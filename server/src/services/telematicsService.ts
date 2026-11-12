@@ -4,6 +4,7 @@ import { logger } from '../utils/logger.js';
 import { MaintenanceService } from './maintenanceService.js';
 
 import { HaSensorItem, fetchHaSensorsList } from './telematicsSensorHelper.js';
+import { TelematicsLogService } from './telematicsLogService.js';
 export { HaSensorItem } from './telematicsSensorHelper.js';
 
 export class TelematicsService {
@@ -108,7 +109,10 @@ export class TelematicsService {
     return fetchHaSensorsList(baseUrl, token);
   }
 
-  public static async syncVehicleOdometer(vehicleId: string): Promise<{
+  public static async syncVehicleOdometer(
+    vehicleId: string,
+    triggerSource: 'manual' | 'scheduler' = 'manual'
+  ): Promise<{
     success: boolean;
     odometer?: number;
     updated?: boolean;
@@ -116,22 +120,18 @@ export class TelematicsService {
     error?: string;
   }> {
     const vehicle = db.get<any>('SELECT * FROM vehicles WHERE id = ?', [vehicleId]);
-    if (!vehicle) {
-      return { success: false, error: 'Voertuig niet gevonden' };
-    }
-
+    if (!vehicle) return { success: false, error: 'Voertuig niet gevonden' };
     if (!vehicle.telematics_ha_entity_id) {
-      return { success: false, error: 'Geen Home Assistant sensor-entiteit geconfigureerd voor dit voertuig' };
+      const err = 'Geen Home Assistant sensor-entiteit geconfigureerd voor dit voertuig';
+      TelematicsLogService.recordLog({ vehicleId, status: 'error', message: err, triggerSource });
+      return { success: false, error: err };
     }
 
     const { baseUrl, token } = this.getHaConfig(vehicle.user_id);
     if (!baseUrl || !token) {
       const msg = 'Home Assistant URL of Access Token ontbreekt in instellingen';
-      db.run('UPDATE vehicles SET telematics_last_status = ?, updated_at = ? WHERE id = ?', [
-        `error: ${msg}`,
-        new Date().toISOString(),
-        vehicleId,
-      ]);
+      db.run('UPDATE vehicles SET telematics_last_status = ?, updated_at = ? WHERE id = ?', [`error: ${msg}`, new Date().toISOString(), vehicleId]);
+      TelematicsLogService.recordLog({ vehicleId, entityId: vehicle.telematics_ha_entity_id, status: 'error', message: msg, triggerSource });
       return { success: false, error: msg };
     }
 
@@ -141,115 +141,86 @@ export class TelematicsService {
     try {
       const url = `${baseUrl}/api/states/${encodeURIComponent(vehicle.telematics_ha_entity_id.trim())}`;
       const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         signal: AbortSignal.timeout(8000),
       });
 
       if (!res.ok) {
         const errorMsg = `Home Assistant HTTP ${res.status}: Entiteit ${vehicle.telematics_ha_entity_id} niet gevonden of ontoegankelijk`;
-        db.run('UPDATE vehicles SET telematics_last_status = ?, telematics_last_sync_at = ? WHERE id = ?', [
-          `error: ${errorMsg}`,
-          now,
-          vehicleId,
-        ]);
+        db.run('UPDATE vehicles SET telematics_last_status = ?, telematics_last_sync_at = ? WHERE id = ?', [`error: ${errorMsg}`, now, vehicleId]);
+        TelematicsLogService.recordLog({ vehicleId, entityId: vehicle.telematics_ha_entity_id, status: 'error', message: errorMsg, triggerSource });
         return { success: false, error: errorMsg };
       }
 
       const stateData: any = await res.json();
       const rawState = String(stateData?.state ?? '').trim();
-
       if (!rawState || rawState === 'unavailable' || rawState === 'unknown') {
         const errorMsg = `Sensorwaarde is momenteel niet beschikbaar (${rawState})`;
-        db.run('UPDATE vehicles SET telematics_last_status = ?, telematics_last_sync_at = ? WHERE id = ?', [
-          `warning: ${errorMsg}`,
-          now,
-          vehicleId,
-        ]);
+        db.run('UPDATE vehicles SET telematics_last_status = ?, telematics_last_sync_at = ? WHERE id = ?', [`warning: ${errorMsg}`, now, vehicleId]);
+        TelematicsLogService.recordLog({ vehicleId, entityId: vehicle.telematics_ha_entity_id, status: 'warning', message: errorMsg, triggerSource });
         return { success: false, error: errorMsg };
       }
 
-      // Parse numeric value (handles formats like "45,123", "45123 km", etc.)
-      const cleaned = rawState.replace(/[^0-9.,]/g, '').replace(',', '.');
-      const odoVal = parseFloat(cleaned);
-
+      const odoVal = parseFloat(rawState.replace(/[^0-9.,]/g, '').replace(',', '.'));
       if (isNaN(odoVal) || odoVal <= 0) {
         const errorMsg = `Ongeldige numerieke kilometerstand ontvangen: "${rawState}"`;
-        db.run('UPDATE vehicles SET telematics_last_status = ?, telematics_last_sync_at = ? WHERE id = ?', [
-          `error: ${errorMsg}`,
-          now,
-          vehicleId,
-        ]);
+        db.run('UPDATE vehicles SET telematics_last_status = ?, telematics_last_sync_at = ? WHERE id = ?', [`error: ${errorMsg}`, now, vehicleId]);
+        TelematicsLogService.recordLog({ vehicleId, entityId: vehicle.telematics_ha_entity_id, status: 'error', message: errorMsg, triggerSource });
         return { success: false, error: errorMsg };
       }
 
-      // Determine current highest known odometer
       const maxRow = db.get<{ max_val: number }>(
         `SELECT MAX(val) as max_val FROM (
           SELECT MAX(odometer) as val FROM fuel_entries WHERE vehicle_id = ?
-          UNION ALL
-          SELECT MAX(odometer) as val FROM service_records WHERE vehicle_id = ?
-          UNION ALL
-          SELECT MAX(odometer) as val FROM odometer_logs WHERE vehicle_id = ?
-          UNION ALL
-          SELECT MAX(end_odometer) as val FROM trips WHERE vehicle_id = ?
-          UNION ALL
-          SELECT initial_odometer as val FROM vehicles WHERE id = ?
-        )`,
-        [vehicleId, vehicleId, vehicleId, vehicleId, vehicleId]
+          UNION ALL SELECT MAX(odometer) as val FROM service_records WHERE vehicle_id = ?
+          UNION ALL SELECT MAX(odometer) as val FROM odometer_logs WHERE vehicle_id = ?
+          UNION ALL SELECT MAX(end_odometer) as val FROM trips WHERE vehicle_id = ?
+          UNION ALL SELECT initial_odometer as val FROM vehicles WHERE id = ?
+        )`, [vehicleId, vehicleId, vehicleId, vehicleId, vehicleId]
       );
 
       const prevOdo = maxRow?.max_val ?? vehicle.initial_odometer ?? 0;
       let isUpdated = false;
 
-      // If the telematics reading is higher than existing, record in odometer_logs
       if (odoVal > prevOdo) {
-        const logId = crypto.randomUUID();
         db.run(
-          `INSERT INTO odometer_logs (id, vehicle_id, odometer, source, date, created_at)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [logId, vehicleId, odoVal, 'ha_telematics', today, now]
+          `INSERT INTO odometer_logs (id, vehicle_id, odometer, source, date, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+          [crypto.randomUUID(), vehicleId, odoVal, 'ha_telematics', today, now]
         );
         isUpdated = true;
-
-        // Check maintenance dual-trigger alerts
         MaintenanceService.getVehicleMaintenanceStatus(vehicleId);
       }
 
-      // Update vehicle telematics status
       db.run(
-        `UPDATE vehicles SET
-          telematics_last_sync_at = ?,
-          telematics_last_status = 'ok',
-          telematics_last_odometer = ?,
-          updated_at = ?
-         WHERE id = ?`,
+        `UPDATE vehicles SET telematics_last_sync_at = ?, telematics_last_status = 'ok', telematics_last_odometer = ?, updated_at = ? WHERE id = ?`,
         [now, odoVal, now, vehicleId]
       );
 
-      logger.info({ vehicleId, odoVal, prevOdo, isUpdated }, 'Telematics: Synced odometer successfully');
+      const logMsg = isUpdated
+        ? `Kilometerstand bijgewerkt: ${odoVal.toLocaleString()} km (+${Math.round(odoVal - prevOdo)} km)`
+        : `Kilometerstand uitgelezen: ${odoVal.toLocaleString()} km (ongewijzigd)`;
 
-      return {
-        success: true,
+      TelematicsLogService.recordLog({
+        vehicleId,
+        entityId: vehicle.telematics_ha_entity_id,
+        status: 'success',
         odometer: odoVal,
-        updated: isUpdated,
         previousOdometer: prevOdo,
-      };
+        odometerChanged: isUpdated,
+        message: logMsg,
+        triggerSource,
+      });
+
+      return { success: true, odometer: odoVal, updated: isUpdated, previousOdometer: prevOdo };
     } catch (err: any) {
       const errorMsg = err?.message || 'Onbekende fout tijdens ophalen sensor';
-      logger.error({ err: errorMsg, vehicleId }, 'Telematics: syncVehicleOdometer failed');
-      db.run('UPDATE vehicles SET telematics_last_status = ?, telematics_last_sync_at = ? WHERE id = ?', [
-        `error: ${errorMsg}`,
-        now,
-        vehicleId,
-      ]);
+      db.run('UPDATE vehicles SET telematics_last_status = ?, telematics_last_sync_at = ? WHERE id = ?', [`error: ${errorMsg}`, now, vehicleId]);
+      TelematicsLogService.recordLog({ vehicleId, entityId: vehicle?.telematics_ha_entity_id, status: 'error', message: errorMsg, triggerSource });
       return { success: false, error: errorMsg };
     }
   }
 
-  public static async syncAllVehicles(forUserId?: string): Promise<{ total: number; synced: number; errors: number }> {
+  public static async syncAllVehicles(forUserId?: string, triggerSource: 'manual' | 'scheduler' = 'manual'): Promise<{ total: number; synced: number; errors: number }> {
     const whereUser = forUserId ? 'AND user_id = ?' : '';
     const params = forUserId ? [forUserId] : [];
 
@@ -269,7 +240,7 @@ export class TelematicsService {
 
     for (const v of vehicles) {
       try {
-        const res = await this.syncVehicleOdometer(v.id);
+        const res = await this.syncVehicleOdometer(v.id, triggerSource);
         if (res.success) synced++;
         else errors++;
       } catch {
