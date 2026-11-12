@@ -85,11 +85,19 @@ export function createApp(): express.Application {
     next();
   });
 
+  // Static file serving options for uploaded user content: enforce sandbox CSP and nosniff
+  const staticUploadOptions = {
+    setHeaders: (res: Response) => {
+      res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'");
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+    },
+  };
+
   // Serve persistent uploads: public vehicle photos for showcases, protected for confidential documents
-  app.use('/uploads/vehicles', express.static(DATA_PATHS.vehicles));
-  app.use('/uploads/receipts', requireFileAuth('receipts'), express.static(DATA_PATHS.receipts));
-  app.use('/uploads/invoices', requireFileAuth('invoices'), express.static(DATA_PATHS.invoices));
-  app.use('/uploads/documents', requireFileAuth('documents'), express.static(DATA_PATHS.documents));
+  app.use('/uploads/vehicles', express.static(DATA_PATHS.vehicles, staticUploadOptions));
+  app.use('/uploads/receipts', requireFileAuth('receipts'), express.static(DATA_PATHS.receipts, staticUploadOptions));
+  app.use('/uploads/invoices', requireFileAuth('invoices'), express.static(DATA_PATHS.invoices, staticUploadOptions));
+  app.use('/uploads/documents', requireFileAuth('documents'), express.static(DATA_PATHS.documents, staticUploadOptions));
 
   // Health check endpoint (Phase 4 requirement)
   app.get('/healthz', (_req: Request, res: Response) => {
@@ -211,7 +219,8 @@ export function createApp(): express.Application {
   // Global Error Handler
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     console.error(`[${new Date().toISOString()}] ❌ Unhandled error on ${req.method} ${req.originalUrl}:`, err);
-    res.status(err.status || 500).json({
+    const status = err.status || err.statusCode || (err.name === 'MulterError' ? 400 : 500);
+    res.status(status).json({
       error: err.message || 'Internal Server Error',
     });
   });

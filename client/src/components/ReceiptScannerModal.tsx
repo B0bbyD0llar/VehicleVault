@@ -18,6 +18,7 @@ import {
   Crop,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext.js';
+import { getAuthToken } from '../api/client.js';
 import { compressImage } from '../utils/imageCompressor.js';
 import { formatDisplayDate } from '../utils/format.js';
 import {
@@ -79,7 +80,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
   // Fetch AI engine settings
   useEffect(() => {
     if (isOpen) {
-      const token = localStorage.getItem('vv_token');
+      const token = getAuthToken();
       fetch('/api/settings/ai', {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
@@ -483,7 +484,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
     formData.append('receipt', file);
 
     try {
-      const token = localStorage.getItem('vv_token');
+      const token = getAuthToken();
       const res = await fetch('/api/fuel/ocr', {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},

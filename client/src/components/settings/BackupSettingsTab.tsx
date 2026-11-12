@@ -9,7 +9,7 @@ import {
   Coffee,
   ExternalLink,
 } from 'lucide-react';
-import { apiFetch } from '../../api/client.js';
+import { apiFetch, getAuthToken } from '../../api/client.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 
 export const BackupSettingsTab: React.FC = () => {
@@ -37,7 +37,7 @@ export const BackupSettingsTab: React.FC = () => {
 
   const handleDownloadBackup = async () => {
     try {
-      const token = localStorage.getItem('vv_token');
+      const token = getAuthToken();
       const res = await fetch('/api/backup/export', {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -72,7 +72,7 @@ export const BackupSettingsTab: React.FC = () => {
     formData.append('backup', file);
 
     try {
-      const token = localStorage.getItem('vv_token');
+      const token = getAuthToken();
       const res = await fetch('/api/backup/import', {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},

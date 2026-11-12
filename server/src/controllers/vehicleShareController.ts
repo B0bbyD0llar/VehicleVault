@@ -3,6 +3,17 @@ import { Request, Response } from 'express';
 import { db } from '../db/database.js';
 import { getVehicleAccess } from '../utils/vehicleAccess.js';
 
+function isGuestUser(userId: string | undefined, userRole?: string): boolean {
+  if (!userId) return true;
+  if (userRole === 'guest') return true;
+  const user = db.get<{ is_guest: number; email: string }>(
+    'SELECT is_guest, email FROM users WHERE id = ?',
+    [userId]
+  );
+  if (!user) return false;
+  return user.is_guest === 1 || Boolean(user.email && user.email.endsWith('@proef.local'));
+}
+
 export class VehicleShareController {
   public static async getShares(req: Request, res: Response): Promise<void> {
     try {
@@ -35,6 +46,12 @@ export class VehicleShareController {
     try {
       const { id } = req.params;
       const currentUserId = req.user?.userId;
+
+      if (isGuestUser(currentUserId, req.user?.role)) {
+        res.status(403).json({ error: 'Proefaccounts kunnen geen voertuigen delen met andere gebruikers.' });
+        return;
+      }
+
       const access = getVehicleAccess(id, currentUserId, req.user?.role);
 
       if (!access.isOwner && req.user?.role !== 'admin') {
@@ -130,6 +147,12 @@ export class VehicleShareController {
     try {
       const { id } = req.params;
       const currentUserId = req.user?.userId;
+
+      if (isGuestUser(currentUserId, req.user?.role)) {
+        res.status(403).json({ error: 'Proefaccounts kunnen geen eigendom van voertuigen overdragen aan andere gebruikers.' });
+        return;
+      }
+
       const access = getVehicleAccess(id, currentUserId, req.user?.role);
 
       if (!access.isOwner && req.user?.role !== 'admin') {

@@ -1,12 +1,15 @@
-let token: string | null = localStorage.getItem('vv_token');
+// In-memory access token storage only. Tokens are never stored in localStorage to prevent token exfiltration via XSS.
+let token: string | null = null;
+
+try {
+  // Purge any legacy token from localStorage to eliminate stored-token exfiltration risk
+  localStorage.removeItem('vv_token');
+} catch {
+  // Ignore environments without localStorage access
+}
 
 export function setAuthToken(newToken: string | null) {
   token = newToken;
-  if (newToken) {
-    localStorage.setItem('vv_token', newToken);
-  } else {
-    localStorage.removeItem('vv_token');
-  }
 }
 
 export function getAuthToken(): string | null {
