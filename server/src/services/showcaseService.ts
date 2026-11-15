@@ -472,7 +472,28 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
     const isElectricCompiled = (vehicle.fuel_type || '').toLowerCase().includes('elektr')
       || (rdw.brandstof_omschrijving || '').toLowerCase().includes('elektr');
 
+    const effectiveImport =
+      showcase.herkomst_override === 'import' ? true :
+      showcase.herkomst_override === 'nl' ? false :
+      isImport;
+
     highlights = highlights.map((hl) => {
+      if (effectiveImport && (hl.id === 'hl-nap' || hl.title === 'Origineel NL & NAP Logisch')) {
+        return {
+          ...hl,
+          title: 'Geïmporteerd & RDW Geregistreerd',
+          description: 'Officieel geïmporteerd voertuig met volledige Nederlandse RDW-registratie en bekende historie.',
+        };
+      }
+      if (!effectiveImport && hl.title === 'Geïmporteerd & RDW Geregistreerd') {
+        return {
+          ...hl,
+          title: isNapLogisch ? 'Origineel NL & NAP Logisch' : 'Transparante Historie',
+          description: isNapLogisch
+            ? 'Nederlands kenteken met een betrouwbare, sluitende kilometerstandgeschiedenis (NAP).'
+            : 'Zorgvuldig gedocumenteerd voertuig met transparante herkomst en onderhoudsverleden.',
+        };
+      }
       if (hl.id === 'hl-tech' || hl.title?.toLowerCase().includes('aandrijflijn')) {
         if (isHybridCompiled && (hl.title.includes('Benzine') || hl.title.includes('Moderne'))) {
           return {

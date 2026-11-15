@@ -432,7 +432,15 @@ export const PublicShowcase: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div
+              className={`grid gap-4 ${
+                (showcase.warranty_enabled && showcase.warranty_text ? 1 : 0) + showcase.highlights.length === 5
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-5'
+                  : (showcase.warranty_enabled && showcase.warranty_text ? 1 : 0) + showcase.highlights.length === 3
+                  ? 'grid-cols-1 sm:grid-cols-3'
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+              }`}
+            >
               {showcase.warranty_enabled && showcase.warranty_text && (
                 <div className="bg-teal-50/70 border border-teal-200 rounded-2xl p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
                   <div>
