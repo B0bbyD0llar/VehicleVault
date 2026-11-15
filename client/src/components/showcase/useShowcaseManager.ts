@@ -28,6 +28,8 @@ export function useShowcaseManager({ vehicleId, isOpen, onVehicleUpdated }: UseS
   const [contactLocation, setContactLocation] = useState('');
   const [transparencyNotes, setTransparencyNotes] = useState('');
   const [herkomstOverride, setHerkomstOverride] = useState('');
+  const [warrantyEnabled, setWarrantyEnabled] = useState(false);
+  const [warrantyText, setWarrantyText] = useState('');
   const [optionsList, setOptionsList] = useState<ShowcaseOptionGroup[]>([]);
 
   // Photos state
@@ -64,6 +66,8 @@ export function useShowcaseManager({ vehicleId, isOpen, onVehicleUpdated }: UseS
       setContactLocation(sc.contact_location || '');
       setTransparencyNotes(sc.transparency_notes || '');
       setHerkomstOverride(sc.herkomst_override || '');
+      setWarrantyEnabled(Boolean(sc.warranty_enabled));
+      setWarrantyText(sc.warranty_text || '');
       setOptionsList(Array.isArray(sc.options_list) ? sc.options_list : []);
       setPhotos(photosRes.photos || []);
     } catch (err: any) {
@@ -91,6 +95,8 @@ export function useShowcaseManager({ vehicleId, isOpen, onVehicleUpdated }: UseS
         contact_location: contactLocation,
         transparency_notes: transparencyNotes,
         herkomst_override: herkomstOverride || null,
+        warranty_enabled: warrantyEnabled,
+        warranty_text: warrantyText,
         options_list: optionsList,
       };
 
@@ -230,6 +236,10 @@ export function useShowcaseManager({ vehicleId, isOpen, onVehicleUpdated }: UseS
     setTransparencyNotes,
     herkomstOverride,
     setHerkomstOverride,
+    warrantyEnabled,
+    setWarrantyEnabled,
+    warrantyText,
+    setWarrantyText,
     optionsList,
     setOptionsList,
     photos,

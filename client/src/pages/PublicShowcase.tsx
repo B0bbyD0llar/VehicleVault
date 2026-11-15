@@ -42,6 +42,8 @@ interface CompiledShowcase {
   show_maintenance_history: boolean;
   show_tire_status: boolean;
   show_rdw_specs: boolean;
+  warranty_enabled?: boolean;
+  warranty_text?: string;
   vehicle: {
     id: string;
     name: string;
@@ -299,6 +301,13 @@ export const PublicShowcase: React.FC = () => {
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-800 border border-purple-200">
               ⚡ {lang === 'nl' ? `Energielabel ${showcase.stats.energielabel}` : `Energy Rating ${showcase.stats.energielabel}`}
             </span>
+
+            {showcase.warranty_enabled && showcase.warranty_text && (
+              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 shadow-2xs">
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                <span>{showcase.warranty_text}</span>
+              </span>
+            )}
           </div>
 
           {/* Title & Subtitle */}
@@ -406,7 +415,7 @@ export const PublicShowcase: React.FC = () => {
       </section>
 
       {/* Highlights / Pluspunten */}
-      {showcase.highlights.length > 0 && (
+      {(showcase.highlights.length > 0 || (showcase.warranty_enabled && showcase.warranty_text)) && (
         <section id="highlights" className="py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="mb-8">
@@ -424,6 +433,19 @@ export const PublicShowcase: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {showcase.warranty_enabled && showcase.warranty_text && (
+                <div className="bg-teal-50/70 border border-teal-200 rounded-2xl p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold mb-3.5">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <h4 className="text-base font-extrabold text-slate-900 mb-1">
+                      {lang === 'nl' ? 'Garantie' : 'Warranty'}
+                    </h4>
+                    <p className="text-xs text-slate-700 leading-relaxed font-medium">{showcase.warranty_text}</p>
+                  </div>
+                </div>
+              )}
               {showcase.highlights.map((h, idx) => (
                 <div
                   key={idx}

@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+/*  */import fs from 'node:fs';
 import path from 'node:path';
 import PDFDocument from 'pdfkit';
 import sharp from 'sharp';
@@ -186,14 +186,18 @@ export class ShowcasePdfService {
 
     const s = showcase.stats;
     drawSectionHeader(doc, 'Overzicht & Kerngegevens');
-    drawKeyValueGrid(doc, [
+    const overviewItems = [
       { label: 'Bouwjaar', value: s.bouwjaar },
       { label: 'Kilometerstand', value: s.kilometerstand },
       { label: 'Aandrijving', value: s.brandstof_transmissie },
       { label: 'Vermogen', value: s.vermogen },
       { label: 'APK Vervaldatum', value: s.apk_vervaldatum },
       { label: 'NAP Oordeel', value: s.nap_oordeel || 'Geen oordeel' },
-    ]);
+    ];
+    if (showcase.warranty_enabled && showcase.warranty_text) {
+      overviewItems.push({ label: 'Garantie', value: showcase.warranty_text });
+    }
+    drawKeyValueGrid(doc, overviewItems);
   }
 
   private static renderDetails(doc: PDFKit.PDFDocument, showcase: CompiledShowcase): void {

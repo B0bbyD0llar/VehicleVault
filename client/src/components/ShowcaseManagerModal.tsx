@@ -225,6 +225,34 @@ export const ShowcaseManagerModal: React.FC<ShowcaseManagerModalProps> = ({
                 </select>
               </div>
 
+              <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 space-y-2.5">
+                <label className="flex items-center justify-between cursor-pointer">
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">
+                      Fabrieks- / Verlengde Garantie tonen
+                    </span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Toont een opvallende garantiebadge bovenaan de verkooppagina en in de PDF
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={mgr.warrantyEnabled}
+                    onChange={(e) => mgr.setWarrantyEnabled(e.target.checked)}
+                    className="w-4 h-4 rounded accent-emerald-600 cursor-pointer"
+                  />
+                </label>
+                {mgr.warrantyEnabled && (
+                  <input
+                    type="text"
+                    value={mgr.warrantyText}
+                    onChange={(e) => mgr.setWarrantyText(e.target.value)}
+                    placeholder="bijv. Verlengde Kia fabrieksgarantie t/m 2030"
+                    className="w-full h-10 bg-white dark:bg-slate-800/90 border border-emerald-300 dark:border-emerald-800 rounded-xl px-3.5 text-xs text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"
+                  />
+                )}
+              </div>
+
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
                   Korte Samenvatting / Subtitel

@@ -614,6 +614,8 @@ export function initializeDatabase(): void {
       show_tire_status INTEGER NOT NULL DEFAULT 1,
       show_rdw_specs INTEGER NOT NULL DEFAULT 1,
       herkomst_override TEXT,
+      warranty_enabled INTEGER NOT NULL DEFAULT 0,
+      warranty_text TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
@@ -621,6 +623,8 @@ export function initializeDatabase(): void {
     CREATE INDEX IF NOT EXISTS idx_vehicle_showcases_slug ON vehicle_showcases (public_slug);
   `);
   try { db.exec('ALTER TABLE vehicle_showcases ADD COLUMN herkomst_override TEXT'); } catch {}
+  try { db.exec('ALTER TABLE vehicle_showcases ADD COLUMN warranty_enabled INTEGER NOT NULL DEFAULT 0'); } catch {}
+  try { db.exec('ALTER TABLE vehicle_showcases ADD COLUMN warranty_text TEXT'); } catch {}
 
   // 15b. Vehicle toll vignettes & environmental badges
   db.exec(`

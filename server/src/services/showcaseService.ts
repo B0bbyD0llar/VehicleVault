@@ -35,6 +35,8 @@ export interface CompiledShowcase {
   show_tire_status: boolean;
   show_rdw_specs: boolean;
   herkomst_override?: string | null;
+  warranty_enabled?: boolean;
+  warranty_text?: string;
   vehicle: {
     id: string;
     name: string;
@@ -588,6 +590,8 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
       show_tire_status: showcase.show_tire_status === 1,
       show_rdw_specs: showcase.show_rdw_specs === 1,
       herkomst_override: showcase.herkomst_override || null,
+      warranty_enabled: showcase.warranty_enabled === 1,
+      warranty_text: showcase.warranty_text || '',
       vehicle: {
         id: vehicle.id,
         name: vehicle.name,
@@ -672,6 +676,8 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
            show_tire_status = COALESCE(?, show_tire_status),
            show_rdw_specs = COALESCE(?, show_rdw_specs),
            herkomst_override = ?,
+           warranty_enabled = COALESCE(?, warranty_enabled),
+           warranty_text = COALESCE(?, warranty_text),
            updated_at = ?
        WHERE vehicle_id = ?`,
       [
@@ -692,6 +698,8 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
         data.show_tire_status !== undefined ? (data.show_tire_status ? 1 : 0) : null,
         data.show_rdw_specs !== undefined ? (data.show_rdw_specs ? 1 : 0) : null,
         data.herkomst_override !== undefined ? (data.herkomst_override === 'import' || data.herkomst_override === 'nl' ? data.herkomst_override : null) : (existing?.herkomst_override ?? null),
+        data.warranty_enabled !== undefined ? (data.warranty_enabled ? 1 : 0) : null,
+        data.warranty_text ?? null,
         now,
         vehicleId,
       ]
