@@ -240,15 +240,31 @@ export class ShowcasePdfService {
 
     if (showcase.options_list.length > 0) {
       drawSectionHeader(doc, 'Opties & Accessoires');
+      const colW = (doc.page.width - 96) / 2;
       for (const group of showcase.options_list) {
         if (!group.items.length) continue;
-        const text = cleanText(group.items.join('  •  '));
-        doc.font('Helvetica').fontSize(8.2);
-        const h = doc.heightOfString(text, { width: doc.page.width - 88 });
-        ensureSpace(doc, h + 22);
-        doc.fillColor(C_BLUE).font('Helvetica-Bold').fontSize(9).text(cleanText(group.category), 44, doc.y);
-        doc.fillColor(C_SLATE).font('Helvetica').fontSize(8.2).text(text, 44, doc.y + 1, { width: doc.page.width - 88 });
-        doc.moveDown(0.3);
+        ensureSpace(doc, 30);
+        doc.fillColor(C_BLUE).font('Helvetica-Bold').fontSize(9.2).text(cleanText(group.category), 44, doc.y);
+        doc.y += 3;
+        for (let i = 0; i < group.items.length; i += 2) {
+          const left = cleanText(group.items[i]);
+          const right = group.items[i + 1] ? cleanText(group.items[i + 1]) : '';
+          doc.font('Helvetica').fontSize(8.2);
+          const hLeft = doc.heightOfString(left, { width: colW - 12 });
+          const hRight = right ? doc.heightOfString(right, { width: colW - 12 }) : 0;
+          const rowH = Math.max(12, Math.ceil(Math.max(hLeft, hRight)) + 2);
+          ensureSpace(doc, rowH + 4);
+          const y = doc.y;
+          doc.circle(48, y + 4.2, 1.7).fill(C_BLUE);
+          doc.fillColor(C_SLATE).font('Helvetica').fontSize(8.2).text(left, 55, y, { width: colW - 12 });
+          if (right) {
+            const rx = 44 + colW + 12;
+            doc.circle(rx + 4, y + 4.2, 1.7).fill(C_BLUE);
+            doc.fillColor(C_SLATE).font('Helvetica').fontSize(8.2).text(right, rx + 11, y, { width: colW - 12 });
+          }
+          doc.y = y + rowH;
+        }
+        doc.moveDown(0.35);
       }
     }
 
