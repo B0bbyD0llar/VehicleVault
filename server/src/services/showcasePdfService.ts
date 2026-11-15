@@ -16,9 +16,10 @@ const C_BG = '#f8fafc';
 function cleanText(text?: string | null): string {
   if (!text) return '';
   return String(text)
+    .replace(/\r\n/g, '\n')
     .replace(/€/g, 'EUR ')
     .replace(/[—–]/g, '-')
-    .replace(/[^\x20-\x7E\xA0-\xFF]/g, '')
+    .replace(/[^\n\x20-\x7E\xA0-\xFF]/g, '')
     .trim();
 }
 

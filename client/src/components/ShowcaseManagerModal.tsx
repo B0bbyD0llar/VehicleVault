@@ -212,6 +212,21 @@ export const ShowcaseManagerModal: React.FC<ShowcaseManagerModalProps> = ({
 
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Herkomst (Registratie)
+                </label>
+                <select
+                  value={mgr.herkomstOverride}
+                  onChange={(e) => mgr.setHerkomstOverride(e.target.value)}
+                  className="w-full h-10 bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition"
+                >
+                  <option value="">Automatisch bepalen (via RDW)</option>
+                  <option value="nl">Origineel Nederlands</option>
+                  <option value="import">Geïmporteerd (in NL geregistreerd)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
                   Korte Samenvatting / Subtitel
                 </label>
                 <textarea

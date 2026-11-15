@@ -34,6 +34,7 @@ export interface CompiledShowcase {
   show_maintenance_history: boolean;
   show_tire_status: boolean;
   show_rdw_specs: boolean;
+  herkomst_override?: string | null;
   vehicle: {
     id: string;
     name: string;
@@ -91,6 +92,14 @@ export interface CompiledShowcase {
 }
 
 export class ShowcaseService {
+  private static detectImport(rdw: any): boolean {
+    const firstWorld = String(rdw?.datum_eerste_toelating || '').replace(/-/g, '').trim();
+    const firstNl = String(
+      rdw?.datum_eerste_tenaamstelling_in_nederland || rdw?.datum_eerste_afgifte_nederland || ''
+    ).replace(/-/g, '').trim();
+    return Boolean(firstWorld && firstNl && firstWorld !== firstNl);
+  }
+
   /**
    * Generates a clean URL slug from vehicle name and license plate.
    */
@@ -177,11 +186,7 @@ export class ShowcaseService {
     );
 
     // Determine import & NAP assessment
-    const isImport = Boolean(
-      rdw.datum_eerste_toelating &&
-      rdw.datum_eerste_afgifte_nederland &&
-      rdw.datum_eerste_toelating !== rdw.datum_eerste_afgifte_nederland
-    );
+    const isImport = this.detectImport(rdw);
     const isNapLogisch = Boolean(
       rdw.tellerstandoordeel &&
       rdw.tellerstandoordeel.toLowerCase().includes('logisch') &&
@@ -373,11 +378,7 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
     const vehicleId = vehicle.id;
 
     // Determine import & NAP status
-    const isImport = Boolean(
-      rdw.datum_eerste_toelating &&
-      rdw.datum_eerste_afgifte_nederland &&
-      rdw.datum_eerste_toelating !== rdw.datum_eerste_afgifte_nederland
-    );
+    const isImport = this.detectImport(rdw);
     const isNapLogisch = Boolean(
       rdw.tellerstandoordeel &&
       rdw.tellerstandoordeel.toLowerCase().includes('logisch') &&
@@ -586,6 +587,7 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
       show_maintenance_history: showcase.show_maintenance_history === 1,
       show_tire_status: showcase.show_tire_status === 1,
       show_rdw_specs: showcase.show_rdw_specs === 1,
+      herkomst_override: showcase.herkomst_override || null,
       vehicle: {
         id: vehicle.id,
         name: vehicle.name,
@@ -603,7 +605,11 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
       },
       stats: {
         bouwjaar: vehicle.year ? String(vehicle.year) : (rdw.datum_eerste_toelating ? rdw.datum_eerste_toelating.substring(0, 4) : '—'),
-        herkomst: isImport ? 'Import (in NL geregistreerd)' : 'Origineel Nederlands',
+        herkomst: (
+          showcase.herkomst_override === 'import' ? true :
+          showcase.herkomst_override === 'nl' ? false :
+          isImport
+        ) ? 'Geïmporteerd (in NL geregistreerd)' : 'Origineel Nederlands',
         kilometerstand: `${currentOdometer.toLocaleString('nl-NL')} km* (per ${todayDateDutch}, loopt licht op)`,
         brandstof_transmissie: `${(vehicle.fuel_type || 'Benzine').replace(/\s*\(.*?\)/g, '').trim()} • ${transmissieLabel}`,
         vermogen: motorPk ? `${motorPk} pk (${motorKw} kW)` : 'Fabrieksopgave',
@@ -665,6 +671,7 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
            show_maintenance_history = COALESCE(?, show_maintenance_history),
            show_tire_status = COALESCE(?, show_tire_status),
            show_rdw_specs = COALESCE(?, show_rdw_specs),
+           herkomst_override = ?,
            updated_at = ?
        WHERE vehicle_id = ?`,
       [
@@ -684,6 +691,7 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
         data.show_maintenance_history !== undefined ? (data.show_maintenance_history ? 1 : 0) : null,
         data.show_tire_status !== undefined ? (data.show_tire_status ? 1 : 0) : null,
         data.show_rdw_specs !== undefined ? (data.show_rdw_specs ? 1 : 0) : null,
+        data.herkomst_override !== undefined ? (data.herkomst_override === 'import' || data.herkomst_override === 'nl' ? data.herkomst_override : null) : (existing?.herkomst_override ?? null),
         now,
         vehicleId,
       ]

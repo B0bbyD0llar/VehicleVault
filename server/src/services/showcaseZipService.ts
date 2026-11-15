@@ -126,7 +126,7 @@ export class ShowcaseZipService {
 
         <div class="hero-title-group">
           <h2>${this.escapeHtml(showcase.title)}</h2>
-          <p class="hero-subtitle">
+          <p class="hero-subtitle" style="white-space: pre-line;">
             ${this.escapeHtml(showcase.subtitle)}
           </p>
         </div>

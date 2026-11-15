@@ -27,6 +27,7 @@ export function useShowcaseManager({ vehicleId, isOpen, onVehicleUpdated }: UseS
   const [contactEmail, setContactEmail] = useState('');
   const [contactLocation, setContactLocation] = useState('');
   const [transparencyNotes, setTransparencyNotes] = useState('');
+  const [herkomstOverride, setHerkomstOverride] = useState('');
   const [optionsList, setOptionsList] = useState<ShowcaseOptionGroup[]>([]);
 
   // Photos state
@@ -62,6 +63,7 @@ export function useShowcaseManager({ vehicleId, isOpen, onVehicleUpdated }: UseS
       setContactEmail(sc.contact_email || '');
       setContactLocation(sc.contact_location || '');
       setTransparencyNotes(sc.transparency_notes || '');
+      setHerkomstOverride(sc.herkomst_override || '');
       setOptionsList(Array.isArray(sc.options_list) ? sc.options_list : []);
       setPhotos(photosRes.photos || []);
     } catch (err: any) {
@@ -88,6 +90,7 @@ export function useShowcaseManager({ vehicleId, isOpen, onVehicleUpdated }: UseS
         contact_email: contactEmail,
         contact_location: contactLocation,
         transparency_notes: transparencyNotes,
+        herkomst_override: herkomstOverride || null,
         options_list: optionsList,
       };
 
@@ -225,6 +228,8 @@ export function useShowcaseManager({ vehicleId, isOpen, onVehicleUpdated }: UseS
     setContactLocation,
     transparencyNotes,
     setTransparencyNotes,
+    herkomstOverride,
+    setHerkomstOverride,
     optionsList,
     setOptionsList,
     photos,

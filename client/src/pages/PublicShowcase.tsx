@@ -306,7 +306,7 @@ export const PublicShowcase: React.FC = () => {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
               {showcase.title}
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed whitespace-pre-line">
               {showcase.subtitle}
             </p>
           </div>
@@ -319,7 +319,9 @@ export const PublicShowcase: React.FC = () => {
               </span>
               <span className="text-lg sm:text-xl font-black text-slate-900 mt-0.5 block">{showcase.stats.bouwjaar}</span>
               <span className="text-[11px] text-slate-500 font-medium">
-                {lang === 'nl' ? (showcase.stats.herkomst || 'Origineel Nederlands') : 'Original NL Market'}
+                {lang === 'nl'
+                  ? (showcase.stats.herkomst || 'Origineel Nederlands')
+                  : (showcase.stats.herkomst?.toLowerCase().includes('import') ? 'Imported (NL Registered)' : 'Original NL Market')}
               </span>
             </div>
 
@@ -396,8 +398,8 @@ export const PublicShowcase: React.FC = () => {
             <span className="text-amber-500 font-bold not-italic">*</span>
             <span>
               {lang === 'nl'
-                ? 'Actuele tellerstand; kan door incidenteel of dagelijks gebruik van het voertuig licht oplopen.'
-                : 'Current odometer reading; may increase slightly due to occasional or daily vehicle use.'}
+                ? 'Actuele tellerstand; Loopt door dagelijks gebruik van het voertuig nog op.'
+                : 'Current odometer reading; increases due to daily vehicle use.'}
             </span>
           </div>
         </div>
