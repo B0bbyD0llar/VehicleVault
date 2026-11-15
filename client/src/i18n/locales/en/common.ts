@@ -61,4 +61,9 @@ export const common: Record<keyof typeof nl, string> = {
   status: 'Status',
   today: 'Today',
   yesterday: 'Yesterday',
+  selectVehicleFirst: 'Please select a vehicle first.',
+  deleteFailed: 'Delete failed',
+  addressPlaceholder: 'Street, number and city',
+  examplePlaceholder: 'e.g. {value}',
+  pageOf: 'Page {current} of {total}',
 };

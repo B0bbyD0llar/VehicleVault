@@ -59,7 +59,6 @@ export const maintenance: Record<keyof typeof nl, string> = {
   totalDiySaved: 'Gesamte DIY-Ersparnis',
 
   // Maintenance page
-  selectVehicleFirst: 'Bitte wähle zuerst ein Fahrzeug aus.',
   logServiceScanInvoice: 'Wartung erfassen / Rechnung scannen',
   recordsCount: '{count} Einträge',
   recordsOwnAndPreOwnership: '{own} eigene • {pre} aus Vorbesitz (ohne TCO)',
@@ -67,7 +66,6 @@ export const maintenance: Record<keyof typeof nl, string> = {
   garageWorkshopLabor: 'Werkstatt- & Arbeitskosten',
   diyServicesCountOne: '{count} Wartung selbst durchgeführt',
   diyServicesCount: '{count} Wartungen selbst durchgeführt',
-  deleteFailed: 'Löschen fehlgeschlagen',
   invoiceUploadFailed: 'Hochladen der Rechnung fehlgeschlagen',
 
   // Service records (table, mobile card, details)
@@ -107,7 +105,6 @@ export const maintenance: Record<keyof typeof nl, string> = {
   garageNameLabel: 'Name der Werkstatt / des Händlers',
   garageNamePlaceholder: 'Name der Werkstatt oder des Händlers',
   garageAddressLabel: 'Adresse der Werkstatt',
-  garageAddressPlaceholder: 'Straße, Hausnummer und Ort',
   resetIntervalsSelected: 'Wartungsintervalle zurücksetzen ({count} ausgewählt)',
   autoDetectIntervals: 'Automatisch erkennen',
   clearSelection: 'Auswahl aufheben',

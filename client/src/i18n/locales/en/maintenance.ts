@@ -59,7 +59,6 @@ export const maintenance: Record<keyof typeof nl, string> = {
   totalDiySaved: 'Total DIY Labor Saved',
 
   // Maintenance page
-  selectVehicleFirst: 'Please select a vehicle first.',
   logServiceScanInvoice: 'Log Service / Scan Invoice',
   recordsCount: '{count} records',
   recordsOwnAndPreOwnership: '{own} own • {pre} pre-ownership (excl. TCO)',
@@ -67,7 +66,6 @@ export const maintenance: Record<keyof typeof nl, string> = {
   garageWorkshopLabor: 'Garage & workshop labor',
   diyServicesCountOne: '{count} service self-performed',
   diyServicesCount: '{count} services self-performed',
-  deleteFailed: 'Delete failed',
   invoiceUploadFailed: 'Invoice upload failed',
 
   // Service records (table, mobile card, details)
@@ -107,7 +105,6 @@ export const maintenance: Record<keyof typeof nl, string> = {
   garageNameLabel: 'Garage / Dealer Name',
   garageNamePlaceholder: 'Name of garage or dealer',
   garageAddressLabel: 'Garage Address',
-  garageAddressPlaceholder: 'Street, number and city',
   resetIntervalsSelected: 'Reset Maintenance Intervals ({count} selected)',
   autoDetectIntervals: 'Auto-detect',
   clearSelection: 'Clear',

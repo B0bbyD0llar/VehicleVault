@@ -43,7 +43,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
   onEntryAdded,
   formPrefill,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const isPhev = selectedVehicle.fuel_type?.toLowerCase().includes('phev') ||
     selectedVehicle.fuel_type?.toLowerCase().includes('plug-in');
 
@@ -168,9 +168,10 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
       const highestOdo = Math.max(...entries.map((e) => e.odometer));
       if (valNum < highestOdo) {
         setWarningMessage(
-          lang === 'nl'
-            ? `Let op: Ingevoerde kilometerstand (${valNum.toLocaleString()} km) is lager dan de hoogste stand (${highestOdo.toLocaleString()} km).`
-            : `Warning: Entered odometer (${valNum.toLocaleString()} km) is lower than the highest recorded (${highestOdo.toLocaleString()} km).`
+          t('odometerLowerWarning', {
+            entered: valNum.toLocaleString(),
+            highest: highestOdo.toLocaleString(),
+          })
         );
       } else {
         setWarningMessage(null);
@@ -184,7 +185,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
     setShowLocationSection(true);
 
     if (!navigator.geolocation) {
-      setGpsError(lang === 'nl' ? 'GPS wordt niet ondersteund door je browser.' : 'GPS is not supported by your browser.');
+      setGpsError(t('gpsNotSupported'));
       setLoadingGps(false);
       return;
     }
@@ -207,13 +208,13 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
             if (res.stations[0].address) setStationAddress(res.stations[0].address);
           }
         } catch {
-          setGpsError(lang === 'nl' ? 'Kon nabijgelegen tankstations niet ophalen.' : 'Could not fetch nearby stations.');
+          setGpsError(t('gpsStationsFetchFailed'));
         } finally {
           setLoadingGps(false);
         }
       },
       () => {
-        setGpsError(lang === 'nl' ? 'Toegang tot locatie geweigerd of mislukt.' : 'Location access denied or failed.');
+        setGpsError(t('gpsLocationFailed'));
         setLoadingGps(false);
       },
       { timeout: 10000, enableHighAccuracy: true }
@@ -266,7 +267,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
         });
         finalReceiptPath = uploadRes.filePath || uploadRes.fileName || null;
       } catch {
-        alert(lang === 'nl' ? 'Uploaden van de bon is mislukt' : 'Receipt upload failed');
+        alert(t('receiptUploadFailed'));
         setUploadingReceipt(false);
         setSubmitting(false);
         return;
@@ -322,7 +323,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
           latitude: latitude ?? null,
           longitude: longitude ?? null,
         });
-        alert(lang === 'nl' ? 'Offline: Opgeslagen om te synchroniseren zodra er weer internet is.' : 'Offline: Saved to sync when online.');
+        alert(t('offlineSavedAlert'));
       } else {
         await apiFetch('/api/fuel', {
           method: 'POST',
@@ -349,7 +350,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
 
       await onEntryAdded();
     } catch (err: any) {
-      alert(err?.message || 'Fout bij opslaan van tankbeurt');
+      alert(err?.message || t('fuelSaveFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -369,7 +370,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
             }`}
           >
             <Fuel className="w-3.5 h-3.5 text-amber-500" />
-            <span>{lang === 'nl' ? 'Brandstof (Liters)' : 'Fuel (Liters)'}</span>
+            <span>{t('energyTypeFuelLiters')}</span>
           </button>
           <button
             type="button"
@@ -381,7 +382,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
             }`}
           >
             <Zap className="w-3.5 h-3.5 text-cyan-500" />
-            <span>{lang === 'nl' ? 'Laadbeurt (kWh)' : 'Charging (kWh)'}</span>
+            <span>{t('energyTypeCharging')}</span>
           </button>
         </div>
       )}
@@ -412,7 +413,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
               required
               value={odometer}
               onChange={(e) => handleOdometerChange(e.target.value)}
-              placeholder={lang === 'nl' ? 'bijv. 58240' : 'e.g. 58240'}
+              placeholder={t('examplePlaceholder', { value: '58240' })}
               className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-sky-500 shadow-sm"
             />
           </div>
@@ -429,7 +430,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
                   required
                   value={liters}
                   onChange={(e) => handleLitersChange(e.target.value)}
-                  placeholder={lang === 'nl' ? 'bijv. 45.20' : 'e.g. 45.20'}
+                  placeholder={t('examplePlaceholder', { value: '45.20' })}
                   className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
                 />
               </div>
@@ -443,7 +444,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
                   required
                   value={pricePerLiter}
                   onChange={(e) => handlePriceChange(e.target.value)}
-                  placeholder={lang === 'nl' ? 'bijv. 1.949' : 'e.g. 1.949'}
+                  placeholder={t('examplePlaceholder', { value: '1.949' })}
                   className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
                 />
               </div>
@@ -452,7 +453,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
             <>
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
-                  {lang === 'nl' ? 'Stroom geladen (kWh) *' : 'Energy charged (kWh) *'}
+                  {t('energyCharged')} *
                 </label>
                 <input
                   type="number"
@@ -460,13 +461,13 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
                   required
                   value={kwh}
                   onChange={(e) => handleKwhChange(e.target.value)}
-                  placeholder={lang === 'nl' ? 'bijv. 38.50' : 'e.g. 38.50'}
+                  placeholder={t('examplePlaceholder', { value: '38.50' })}
                   className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 shadow-sm"
                 />
               </div>
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
-                  {lang === 'nl' ? 'Tarief (€/kWh) *' : 'Rate (€/kWh) *'}
+                  {t('ratePerKwh')} *
                 </label>
                 <input
                   type="number"
@@ -474,7 +475,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
                   required
                   value={pricePerKwh}
                   onChange={(e) => handlePricePerKwhChange(e.target.value)}
-                  placeholder={lang === 'nl' ? 'bijv. 0.350' : 'e.g. 0.350'}
+                  placeholder={t('examplePlaceholder', { value: '0.350' })}
                   className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 shadow-sm"
                 />
               </div>
@@ -493,7 +494,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
               required
               value={totalCost}
               onChange={(e) => handleTotalChange(e.target.value)}
-              placeholder={lang === 'nl' ? 'Berekend of handmatig' : 'Calculated or manual'}
+              placeholder={t('totalCostPlaceholder')}
               className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
             />
           </div>
@@ -506,7 +507,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder={lang === 'nl' ? 'bijv. Euro 95 E10, bandenspanning gecheckt' : 'e.g. Euro 95 E10, tire pressure checked'}
+              placeholder={t('fuelNotesPlaceholder')}
               className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
             />
           </div>
@@ -541,7 +542,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
               />
               <span className="text-amber-700 dark:text-amber-400 font-bold flex items-center space-x-1">
                 <span>🏕️</span>
-                <span>{lang === 'nl' ? 'Met caravan / aanhanger' : 'Towing caravan / trailer'}</span>
+                <span>{t('towingCaravanTrailer')}</span>
               </span>
             </label>
           </div>
@@ -645,7 +646,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
                     type="text"
                     value={stationName}
                     onChange={(e) => setStationName(e.target.value)}
-                    placeholder={lang === 'nl' ? 'Naam van het tankstation' : 'Name of gas station'}
+                    placeholder={t('stationNamePlaceholder')}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
                   />
                 </div>
@@ -670,7 +671,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
                     type="text"
                     value={stationAddress}
                     onChange={(e) => setStationAddress(e.target.value)}
-                    placeholder={lang === 'nl' ? 'Straat, huisnummer en woonplaats' : 'Street, number and city'}
+                    placeholder={t('addressPlaceholder')}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
                   />
                 </div>
@@ -686,7 +687,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
               <div className="inline-flex items-center space-x-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl text-emerald-800 dark:text-emerald-300 text-xs shadow-sm">
                 <Paperclip className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span className="font-semibold max-w-[220px] truncate">
-                  {receiptFile ? receiptFile.name : (lang === 'nl' ? 'Kassabon gekoppeld' : 'Receipt attached')}
+                  {receiptFile ? receiptFile.name : t('receiptAttached')}
                 </span>
                 {receiptPath && (
                   <a
@@ -695,7 +696,7 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
                     rel="noreferrer"
                     className="text-sky-600 dark:text-sky-400 underline font-semibold hover:text-sky-700 ml-1 text-[11px]"
                   >
-                    {lang === 'nl' ? 'Bekijken' : 'View'}
+                    {t('view')}
                   </a>
                 )}
                 <button
@@ -732,14 +733,10 @@ export const FuelEntryForm: React.FC<FuelEntryFormProps> = ({
           <div className="text-[11px] text-slate-400">
             {entries.length > 0 ? (
               <span>
-                {lang === 'nl'
-                  ? `Vorige stand: ${Math.max(...entries.map((e) => e.odometer)).toLocaleString()} km`
-                  : `Previous: ${Math.max(...entries.map((e) => e.odometer)).toLocaleString()} km`}
+                {t('previousOdometer', { km: Math.max(...entries.map((e) => e.odometer)).toLocaleString() })}
               </span>
             ) : (
-              lang === 'nl'
-                ? 'Tip: Gebruik de OCR scanner om snel je tankbon over te nemen.'
-                : 'Tip: Use the OCR scanner to quickly capture your fuel receipt.'
+              t('ocrScannerTip')
             )}
           </div>
 
