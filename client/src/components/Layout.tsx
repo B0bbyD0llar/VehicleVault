@@ -10,6 +10,7 @@ import {
   Landmark,
   Fuel,
   Wrench,
+  Disc,
   FolderLock,
   Ticket,
   LineChart,
@@ -137,6 +138,20 @@ export const Layout: React.FC = () => {
           >
             <Wrench className="w-4 h-4 mb-0.5" />
             <span>{lang === 'nl' ? 'Beurten' : 'Service'}</span>
+          </NavLink>
+        )}
+
+        {!isDriver && isModuleEnabled('tires') && (
+          <NavLink
+            to="/tires"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center text-[10px] shrink-0 min-w-[54px] px-1 py-1 transition ${
+                isActive ? 'text-accent-600 dark:text-accent-400 font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`
+            }
+          >
+            <Disc className="w-4 h-4 mb-0.5" />
+            <span>{lang === 'nl' ? 'Banden' : 'Tires'}</span>
           </NavLink>
         )}
 
