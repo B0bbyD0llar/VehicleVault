@@ -34,7 +34,7 @@ export const ServiceRecordTableRow: React.FC<ServiceRecordTableRowProps> = ({
   onPreviewInvoice,
   onFileChange,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   let lineItems: InvoiceLineItem[] = [];
   if (r.line_items) {
@@ -63,9 +63,7 @@ export const ServiceRecordTableRow: React.FC<ServiceRecordTableRowProps> = ({
             >
               <Languages className="w-3.5 h-3.5 text-sky-500" />
               <span>
-                {lang === 'nl'
-                  ? `Bekijk ${lineItems.length} uitgelezen & vertaalde onderdelen`
-                  : `View ${lineItems.length} extracted & translated items`}
+                {t('viewExtractedTranslatedItems', { count: lineItems.length })}
               </span>
             </button>
           </div>
@@ -104,7 +102,7 @@ export const ServiceRecordTableRow: React.FC<ServiceRecordTableRowProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-start gap-1 text-[10px] text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 transition max-w-[220px]"
-              title={lang === 'nl' ? 'Open garage-adres in Google Maps' : 'Open garage address in Google Maps'}
+              title={t('openGarageInMaps')}
             >
               <MapPin className="w-3 h-3 text-rose-500 shrink-0 mt-0.5" />
               <span className="underline decoration-dotted">{r.garage_address}</span>
@@ -133,13 +131,9 @@ export const ServiceRecordTableRow: React.FC<ServiceRecordTableRowProps> = ({
           {isPreOwnership && (
             <span
               className="px-1.5 py-0.5 rounded text-[9px] font-sans font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60"
-              title={
-                lang === 'nl'
-                  ? 'Historische onderhoudsbeurt van vóór aankoop — telt niet mee in jouw eigen TCO-kosten'
-                  : 'Pre-ownership maintenance record — excluded from your TCO costs'
-              }
+              title={t('preOwnershipTooltip')}
             >
-              {lang === 'nl' ? 'Vorige eigenaar' : 'Pre-ownership'}
+              {t('preOwnership')}
             </span>
           )}
         </div>
@@ -157,17 +151,17 @@ export const ServiceRecordTableRow: React.FC<ServiceRecordTableRowProps> = ({
             type="button"
             onClick={() =>
               onPreviewInvoice({
-                title: `${r.service_item} — ${r.garage_name || (lang === 'nl' ? 'Factuur' : 'Invoice')}`,
+                title: `${r.service_item} — ${r.garage_name || t('invoice')}`,
                 url: `/uploads/invoices/${r.invoice_path}`,
                 date: formatDisplayDate(r.date),
                 notes: r.notes || undefined,
               })
             }
             className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/50 hover:bg-sky-100 dark:hover:bg-sky-900/50 font-bold text-xs transition shadow-2xs group"
-            title={lang === 'nl' ? 'Bekijk factuur direct in-app' : 'View invoice in-app'}
+            title={t('viewInvoiceInApp')}
           >
             <FileText className="w-3.5 h-3.5 text-rose-500 group-hover:scale-110 transition-transform" />
-            <span>{lang === 'nl' ? 'Factuur bekijken' : 'View invoice'}</span>
+            <span>{t('viewInvoice')}</span>
           </button>
         ) : (
           <label
@@ -177,9 +171,7 @@ export const ServiceRecordTableRow: React.FC<ServiceRecordTableRowProps> = ({
           >
             <Paperclip className="w-3 h-3" />
             <span>
-              {attachingId === r.id
-                ? (lang === 'nl' ? 'Uploaden...' : 'Uploading...')
-                : (lang === 'nl' ? '+ Factuur koppelen' : '+ Attach invoice')}
+              {attachingId === r.id ? t('invoiceUploading') : t('attachInvoice')}
             </span>
             <input
               type="file"
@@ -198,7 +190,7 @@ export const ServiceRecordTableRow: React.FC<ServiceRecordTableRowProps> = ({
           <button
             onClick={() => onEditRecord(r)}
             className="text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 p-1 rounded transition"
-            title={lang === 'nl' ? 'Bewerken' : 'Edit'}
+            title={t('edit')}
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>

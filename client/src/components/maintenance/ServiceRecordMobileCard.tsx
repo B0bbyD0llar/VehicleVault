@@ -34,7 +34,7 @@ export const ServiceRecordMobileCard: React.FC<ServiceRecordMobileCardProps> = (
   onPreviewInvoice,
   onFileChange,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   let lineItems: InvoiceLineItem[] = [];
   if (r.line_items) {
@@ -62,7 +62,7 @@ export const ServiceRecordMobileCard: React.FC<ServiceRecordMobileCardProps> = (
           </span>
           {isPreOwnership && (
             <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60">
-              {lang === 'nl' ? 'Vorige eigenaar' : 'Pre-ownership'}
+              {t('preOwnership')}
             </span>
           )}
         </div>
@@ -83,9 +83,7 @@ export const ServiceRecordMobileCard: React.FC<ServiceRecordMobileCardProps> = (
             >
               <Languages className="w-3 h-3 text-sky-500" />
               <span>
-                {lang === 'nl'
-                  ? `Bekijk ${lineItems.length} vertaalde onderdelen`
-                  : `View ${lineItems.length} translated items`}
+                {t('viewTranslatedItems', { count: lineItems.length })}
               </span>
             </button>
           </div>
@@ -147,7 +145,7 @@ export const ServiceRecordMobileCard: React.FC<ServiceRecordMobileCardProps> = (
               type="button"
               onClick={() =>
                 onPreviewInvoice({
-                  title: `${r.service_item} — ${r.garage_name || (lang === 'nl' ? 'Factuur' : 'Invoice')}`,
+                  title: `${r.service_item} — ${r.garage_name || t('invoice')}`,
                   url: `/uploads/invoices/${r.invoice_path}`,
                   date: formatDisplayDate(r.date),
                   notes: r.notes || undefined,
@@ -156,7 +154,7 @@ export const ServiceRecordMobileCard: React.FC<ServiceRecordMobileCardProps> = (
               className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/50 hover:bg-sky-100 dark:hover:bg-sky-900/50 font-bold text-[11px] transition shadow-2xs"
             >
               <FileText className="w-3.5 h-3.5 text-rose-500" />
-              <span>{lang === 'nl' ? 'Factuur bekijken' : 'View invoice'}</span>
+              <span>{t('viewInvoice')}</span>
             </button>
           ) : (
             <label
@@ -166,9 +164,7 @@ export const ServiceRecordMobileCard: React.FC<ServiceRecordMobileCardProps> = (
             >
               <Paperclip className="w-3 h-3" />
               <span>
-                {attachingId === r.id
-                  ? (lang === 'nl' ? 'Uploaden...' : 'Uploading...')
-                  : (lang === 'nl' ? '+ Factuur koppelen' : '+ Attach invoice')}
+                {attachingId === r.id ? t('invoiceUploading') : t('attachInvoice')}
               </span>
               <input
                 type="file"
@@ -187,7 +183,7 @@ export const ServiceRecordMobileCard: React.FC<ServiceRecordMobileCardProps> = (
           <button
             onClick={() => onEditRecord(r)}
             className="text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            title={lang === 'nl' ? 'Bewerken' : 'Edit'}
+            title={t('edit')}
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>

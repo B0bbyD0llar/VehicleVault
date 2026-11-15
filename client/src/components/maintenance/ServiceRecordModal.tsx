@@ -38,7 +38,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
   editingRecord,
   intervals,
 }) => {
-  const { t, translateCategory, lang } = useLanguage();
+  const { t, translateCategory } = useLanguage();
 
   const [serviceItem, setServiceItem] = useState('');
   const [serviceDate, setServiceDate] = useState(new Date().toISOString().split('T')[0]);
@@ -183,7 +183,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
         setPerformingParty('garage');
       }
     } catch (err: any) {
-      setScanWarning(err?.message || 'Fout bij het analyseren van de factuur');
+      setScanWarning(err?.message || t('invoiceScanFailed'));
     } finally {
       setScanningInvoice(false);
     }
@@ -272,7 +272,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
       await onSaved();
       onClose();
     } catch (err: any) {
-      alert(err?.message || 'Fout bij opslaan onderhoudsbeurt');
+      alert(err?.message || t('serviceSaveFailed'));
     } finally {
       setSubmittingService(false);
     }
@@ -286,7 +286,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
             <Wrench className="w-4 h-4 text-sky-500" />
             <span>
               {editingRecord
-                ? (lang === 'nl' ? 'Onderhoudsbeurt Bewerken' : 'Edit Service Record')
+                ? t('editServiceRecord')
                 : t('logService')}
             </span>
           </h3>
@@ -309,18 +309,14 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                 <div>
                   <h4 className="font-bold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
                     <span>
-                      {lang === 'nl'
-                        ? 'Slimme Factuur Scanner & AI Vertaler'
-                        : 'Smart Invoice Scanner & AI Translator'}
+                      {t('invoiceScannerTitle')}
                     </span>
                     <span className="px-2 py-0.2 rounded-full text-[10px] font-extrabold bg-sky-500 text-white">
                       AI
                     </span>
                   </h4>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {lang === 'nl'
-                      ? 'Upload een (Duitse/buitenlandse) factuur. AI leest onderdelen, prijzen & garage-adres uit en vertaalt alles naar het Nederlands.'
-                      : 'Upload any foreign or local garage invoice. AI extracts parts, prices & garage address and translates everything automatically.'}
+                    {t('invoiceScannerSubtitle')}
                   </p>
                 </div>
               </div>
@@ -347,9 +343,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                 <div className="py-2 flex flex-col items-center space-y-2">
                   <Sparkles className="w-7 h-7 text-sky-500 animate-spin" />
                   <span className="font-bold text-sky-600 dark:text-sky-400 animate-pulse">
-                    {lang === 'nl'
-                      ? 'Factuur lezen, onderdelen herkennen & vertalen met AI...'
-                      : 'Reading invoice, extracting parts & translating with AI...'}
+                    {t('invoiceScanning')}
                   </span>
                 </div>
               ) : (
@@ -361,17 +355,15 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                   />
                   <span className="font-bold text-slate-800 dark:text-slate-200">
                     {isDraggingInvoice
-                      ? (lang === 'nl' ? 'Laat factuur los om direct te scannen & vertalen' : 'Drop invoice to scan & translate')
+                      ? t('invoiceDropToScan')
                       : invoiceFile
                         ? invoiceFile.name
                         : uploadedInvoiceFileName
-                          ? (lang === 'nl' ? `Gekoppeld bestand: ${uploadedInvoiceFileName} (klik of sleep om te vervangen)` : `Attached: ${uploadedInvoiceFileName}`)
-                          : (lang === 'nl' ? 'Sleep je garagefactuur (PDF of foto) hierheen of klik om te kiezen' : 'Drag your garage invoice (PDF or photo) here or click to browse')}
+                          ? t('invoiceAttachedFile', { name: uploadedInvoiceFileName })
+                          : t('invoiceDropHint')}
                   </span>
                   <span className="text-[10px] text-slate-400 mt-0.5">
-                    {lang === 'nl'
-                      ? 'Ondersteunt PDF, JPG, PNG & WebP'
-                      : 'Supports PDF, JPG, PNG & WebP'}
+                    {t('invoiceSupportedFormats')}
                   </span>
                 </>
               )}
@@ -392,14 +384,12 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   <div>
                     <span className="font-bold">
-                      {lang === 'nl'
-                        ? `Factuur succesvol uitgelezen${scanExtraction.detectedLanguage ? ` & vertaald uit ${scanExtraction.detectedLanguage}` : ''}!`
-                        : `Invoice extracted${scanExtraction.detectedLanguage ? ` & translated from ${scanExtraction.detectedLanguage}` : ''}!`}
+                      {scanExtraction.detectedLanguage
+                        ? t('invoiceExtractedTranslated', { language: scanExtraction.detectedLanguage })
+                        : t('invoiceExtracted')}
                     </span>
                     <span className="block text-[10px] text-emerald-600 dark:text-emerald-400">
-                      {lang === 'nl'
-                        ? 'Alle velden, prijzen en het garage-adres zijn hieronder voor je ingevuld.'
-                        : 'All fields, prices, and garage address have been pre-filled below.'}
+                      {t('invoicePrefilled')}
                     </span>
                   </div>
                 </div>
@@ -425,7 +415,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
               required
               value={serviceItem}
               onChange={(e) => setServiceItem(e.target.value)}
-              placeholder={lang === 'nl' ? 'bijv. Grote Onderhoudsbeurt & Oliefilter' : 'e.g. Major Service & Oil Filter'}
+              placeholder={t('serviceItemPlaceholder')}
               className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-sky-500 shadow-sm"
             />
           </div>
@@ -469,14 +459,10 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
             />
             <div className="text-[11px] leading-relaxed">
               <span className="font-bold block">
-                {lang === 'nl'
-                  ? 'Historische beurt / Vorige eigenaar (buiten eigen TCO houden)'
-                  : 'Pre-ownership service / Previous owner (exclude from my TCO)'}
+                {t('preOwnershipToggle')}
               </span>
               <span className="text-[10px] opacity-80">
-                {lang === 'nl'
-                  ? 'Zichtbaar in het onderhoudspaspoort, maar niet meegenomen in jouw eigen TCO-kosten.'
-                  : 'Kept in service passport, excluded from your TCO costs.'}
+                {t('preOwnershipToggleHint')}
               </span>
             </div>
           </label>
@@ -520,26 +506,26 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1 flex items-center gap-1">
                   <Building2 className="w-3.5 h-3.5 text-sky-500" />
-                  <span>{lang === 'nl' ? 'Naam Garage / Dealer' : 'Garage / Dealer Name'}</span>
+                  <span>{t('garageNameLabel')}</span>
                 </label>
                 <input
                   type="text"
                   value={garageName}
                   onChange={(e) => setGarageName(e.target.value)}
-                  placeholder={lang === 'nl' ? 'Naam van de garage of dealer' : 'Name of garage or dealer'}
+                  placeholder={t('garageNamePlaceholder')}
                   className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
                 />
               </div>
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1 flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-rose-500" />
-                  <span>{lang === 'nl' ? 'Adres van de Garage' : 'Garage Address'}</span>
+                  <span>{t('garageAddressLabel')}</span>
                 </label>
                 <input
                   type="text"
                   value={garageAddress}
                   onChange={(e) => setGarageAddress(e.target.value)}
-                  placeholder={lang === 'nl' ? 'Straat, huisnummer en woonplaats' : 'Street, number and city'}
+                  placeholder={t('garageAddressPlaceholder')}
                   className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
                 />
               </div>
@@ -586,9 +572,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
               <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                 <Languages className="w-4 h-4 text-sky-500" />
                 <span>
-                  {lang === 'nl'
-                    ? `Uitgelezen & Vertaalde Factuurregels (${extractedLineItems.length})`
-                    : `Extracted & Translated Invoice Items (${extractedLineItems.length})`}
+                  {t('extractedInvoiceItems', { count: extractedLineItems.length })}
                 </span>
               </span>
               <div className="divide-y divide-slate-200/60 dark:divide-slate-800 max-h-48 overflow-y-auto pr-1">
@@ -603,9 +587,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                               : 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300'
                           }`}
                         >
-                          {item.category === 'labor'
-                            ? (lang === 'nl' ? 'Arbeid' : 'Labor')
-                            : (lang === 'nl' ? 'Onderdeel' : 'Part')}
+                          {item.category === 'labor' ? t('lineItemLabor') : t('lineItemPart')}
                         </span>
                         <span>{item.translatedDescription}</span>
                       </div>
@@ -638,9 +620,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <label className="block text-slate-800 dark:text-slate-200 font-bold text-xs">
-                    {lang === 'nl'
-                      ? `Onderhoudsintervallen bijwerken (${matchedIntervalIds.length} geselecteerd)`
-                      : `Reset Maintenance Intervals (${matchedIntervalIds.length} selected)`}
+                    {t('resetIntervalsSelected', { count: matchedIntervalIds.length })}
                   </label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -659,7 +639,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                       className="inline-flex items-center space-x-1 px-2 py-1 rounded-lg bg-sky-100/80 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 text-[10px] font-bold hover:bg-sky-200/70 transition"
                     >
                       <Sparkles className="w-3 h-3 text-sky-500" />
-                      <span>{lang === 'nl' ? 'Auto-herken uit factuur' : 'Auto-detect'}</span>
+                      <span>{t('autoDetectIntervals')}</span>
                     </button>
                   )}
                   {matchedIntervalIds.length > 0 && (
@@ -668,7 +648,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                       onClick={() => setMatchedIntervalIds([])}
                       className="text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-semibold"
                     >
-                      {lang === 'nl' ? 'Wis selectie' : 'Clear'}
+                      {t('clearSelection')}
                     </button>
                   )}
                 </div>
@@ -710,7 +690,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
               rows={3}
               value={serviceNotes}
               onChange={(e) => setServiceNotes(e.target.value)}
-              placeholder={lang === 'nl' ? 'Optionele toelichting over de uitgevoerde werkzaamheden...' : 'Optional notes about the performed work...'}
+              placeholder={t('serviceNotesPlaceholder')}
               className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
             />
           </div>

@@ -30,7 +30,7 @@ interface ContextType {
 
 export const Maintenance: React.FC = () => {
   const { selectedVehicle } = useOutletContext<ContextType>();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const [intervals, setIntervals] = useState<MaintenanceInterval[]>([]);
   const [records, setRecords] = useState<ServiceRecord[]>([]);
@@ -76,7 +76,7 @@ export const Maintenance: React.FC = () => {
   if (!selectedVehicle) {
     return (
       <div className="p-8 text-center text-slate-500">
-        {lang === 'nl' ? 'Selecteer eerst een voertuig.' : 'Please select a vehicle first.'}
+        {t('selectVehicleFirst')}
       </div>
     );
   }
@@ -108,21 +108,18 @@ export const Maintenance: React.FC = () => {
         await apiFetch(`/api/maintenance/intervals/${id}`, { method: 'DELETE' });
         await loadData(selectedVehicle.id);
       } catch (err: any) {
-        alert(err?.message || 'Delete failed');
+        alert(err?.message || t('deleteFailed'));
       }
     }
   };
 
   const handleDeleteRecord = async (id: string) => {
-    const confirmMsg = lang === 'nl'
-      ? 'Weet je zeker dat je deze onderhoudsbeurt wilt verwijderen?'
-      : 'Are you sure you want to delete this service record?';
-    if (confirm(confirmMsg)) {
+    if (confirm(t('confirmDeleteRecord'))) {
       try {
         await apiFetch(`/api/maintenance/records/${id}`, { method: 'DELETE' });
         await loadData(selectedVehicle.id);
       } catch (err: any) {
-        alert(err?.message || 'Delete failed');
+        alert(err?.message || t('deleteFailed'));
       }
     }
   };
@@ -140,7 +137,7 @@ export const Maintenance: React.FC = () => {
       });
       await loadData(selectedVehicle.id);
     } catch (err: any) {
-      alert(err?.message || 'Uploaden van factuur mislukt');
+      alert(err?.message || t('invoiceUploadFailed'));
     }
   };
 
@@ -177,7 +174,7 @@ export const Maintenance: React.FC = () => {
             className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 transition shadow-sm hover:scale-[1.02]"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-            <span>{lang === 'nl' ? 'Onderhoud / Factuur Scannen' : 'Log Service / Scan Invoice'}</span>
+            <span>{t('logServiceScanInvoice')}</span>
           </button>
         </div>
       </div>
@@ -194,10 +191,8 @@ export const Maintenance: React.FC = () => {
           </div>
           <span className="text-[10px] text-slate-400">
             {preOwnershipCount > 0
-              ? lang === 'nl'
-                ? `${ownRecords.length} eigen • ${preOwnershipCount} historie (buiten TCO)`
-                : `${ownRecords.length} own • ${preOwnershipCount} pre-ownership (excl. TCO)`
-              : `${ownRecords.length} records`}
+              ? t('recordsOwnAndPreOwnership', { own: ownRecords.length, pre: preOwnershipCount })
+              : t('recordsCount', { count: ownRecords.length })}
           </span>
         </div>
 
@@ -209,7 +204,7 @@ export const Maintenance: React.FC = () => {
           <div className="text-lg font-bold text-slate-900 dark:text-white font-mono">
             € {totalParts.toFixed(2)}
           </div>
-          <span className="text-[10px] text-slate-400">{lang === 'nl' ? 'Onderdelen & filters' : 'Parts & consumables'}</span>
+          <span className="text-[10px] text-slate-400">{t('partsConsumables')}</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 shadow-sm">
@@ -220,7 +215,7 @@ export const Maintenance: React.FC = () => {
           <div className="text-lg font-bold text-slate-900 dark:text-white font-mono">
             € {totalLabor.toFixed(2)}
           </div>
-          <span className="text-[10px] text-slate-400">{lang === 'nl' ? 'Garage & werkplaatstarieven' : 'Garage & workshop labor'}</span>
+          <span className="text-[10px] text-slate-400">{t('garageWorkshopLabor')}</span>
         </div>
 
         <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/50 rounded-xl p-4 shadow-sm">
@@ -232,7 +227,7 @@ export const Maintenance: React.FC = () => {
             ~ € {totalDiySavings.toFixed(0)}
           </div>
           <span className="text-[10px] text-emerald-600/80 dark:text-emerald-500/80">
-            {diyRecords.length} {lang === 'nl' ? 'beurten zelf gesleuteld' : (diyRecords.length === 1 ? 'service self-performed' : 'services self-performed')}
+            {t(diyRecords.length === 1 ? 'diyServicesCountOne' : 'diyServicesCount', { count: diyRecords.length })}
           </span>
         </div>
       </div>
