@@ -53,12 +53,14 @@ function ensureSpace(doc: PDFKit.PDFDocument, needed: number): void {
 }
 
 function drawSectionHeader(doc: PDFKit.PDFDocument, title: string): void {
-  ensureSpace(doc, 36);
+  ensureSpace(doc, 42);
   doc.moveDown(0.35);
   const y = doc.y;
-  doc.roundedRect(40, y, 3.5, 13, 1.5).fill(C_BLUE);
-  doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(11).text(cleanText(title), 50, y + 0.5);
-  doc.y = y + 19;
+  const width = doc.page.width - 80;
+  doc.roundedRect(40, y, width, 22, 4).fillAndStroke('#eff6ff', '#dbeafe');
+  doc.roundedRect(40, y, 4, 22, 2).fill(C_BLUE);
+  doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(10.5).text(cleanText(title), 52, y + 6);
+  doc.y = y + 28;
 }
 
 function drawKeyValueGrid(
@@ -311,8 +313,10 @@ export class ShowcasePdfService {
 
     for (let i = 0; i < available.length; i += 2) {
       doc.addPage();
-      doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(12.5).text(`Fotogalerij (${available.length} foto's)`, 40, 36);
-      doc.moveTo(40, 53).lineTo(doc.page.width - 40, 53).strokeColor(C_BORDER).stroke();
+      const galW = doc.page.width - 80;
+      doc.roundedRect(40, 34, galW, 24, 4).fillAndStroke('#eff6ff', '#dbeafe');
+      doc.roundedRect(40, 34, 4, 24, 2).fill(C_BLUE);
+      doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(11.5).text(`Fotogalerij (${available.length} foto's)`, 52, 41);
 
       const slotPositions = [68, 422];
       for (let slot = 0; slot < 2; slot++) {
