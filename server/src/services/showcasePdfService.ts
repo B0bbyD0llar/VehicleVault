@@ -1,118 +1,24 @@
-/*  */import fs from 'node:fs';
-import path from 'node:path';
 import PDFDocument from 'pdfkit';
-import sharp from 'sharp';
 import { CompiledShowcase, ShowcaseService } from './showcaseService.js';
 import { RdwService } from './rdwService.js';
-import { DATA_PATHS } from '../config/env.js';
-
-const C_NAVY = '#0f172a';
-const C_BLUE = '#2563eb';
-const C_SLATE = '#334155';
-const C_MUTED = '#64748b';
-const C_BORDER = '#e2e8f0';
-const C_BG = '#f8fafc';
-
-function cleanText(text?: string | null): string {
-  if (!text) return '';
-  return String(text)
-    .replace(/\r\n/g, '\n')
-    .replace(/€/g, 'EUR ')
-    .replace(/[—–]/g, '-')
-    .replace(/[^\n\x20-\x7E\xA0-\xFF]/g, '')
-    .trim();
-}
-
-function formatDateNl(val?: string | null): string {
-  if (!val) return '-';
-  const s = String(val).trim();
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-    const [y, m, d] = s.slice(0, 10).split('-');
-    return `${d}-${m}-${y}`;
-  }
-  return s;
-}
-
-async function loadPhotoJpeg(filePath: string, maxW = 1200, maxH = 800): Promise<Buffer | null> {
-  const fullPath = path.join(DATA_PATHS.vehicles, filePath);
-  if (!fs.existsSync(fullPath)) return null;
-  try {
-    return await sharp(fullPath)
-      .rotate()
-      .resize(maxW, maxH, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 84 })
-      .toBuffer();
-  } catch {
-    return null;
-  }
-}
-
-function ensureSpace(doc: PDFKit.PDFDocument, needed: number): void {
-  if (doc.y + needed > doc.page.height - 52) {
-    doc.addPage();
-  }
-}
-
-function drawSectionHeader(doc: PDFKit.PDFDocument, title: string): void {
-  ensureSpace(doc, 42);
-  doc.moveDown(0.35);
-  const y = doc.y;
-  const width = doc.page.width - 80;
-  doc.roundedRect(40, y, width, 22, 4).fillAndStroke('#eff6ff', '#dbeafe');
-  doc.roundedRect(40, y, 4, 22, 2).fill(C_BLUE);
-  doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(10.5).text(cleanText(title), 52, y + 6);
-  doc.y = y + 28;
-}
-
-function drawKeyValueGrid(
-  doc: PDFKit.PDFDocument,
-  items: { label: string; value: string }[],
-  cols = 2
-): void {
-  if (items.length === 0) return;
-  const pageW = doc.page.width - 80;
-  const gap = 10;
-  const colW = (pageW - gap * (cols - 1)) / cols;
-  const labelW = colW * 0.44;
-  const valW = colW * 0.52;
-
-  for (let i = 0; i < items.length; i += cols) {
-    let rowH = 21;
-    for (let c = 0; c < cols; c++) {
-      const item = items[i + c];
-      if (!item) continue;
-      doc.font('Helvetica-Bold').fontSize(8.2);
-      const valH = doc.heightOfString(cleanText(item.value || '-'), { width: valW - 6 });
-      doc.font('Helvetica').fontSize(8);
-      const lblH = doc.heightOfString(cleanText(item.label), { width: labelW - 6 });
-      rowH = Math.max(rowH, Math.ceil(Math.max(valH, lblH)) + 10);
-    }
-
-    ensureSpace(doc, rowH + 4);
-    const y = doc.y;
-    for (let c = 0; c < cols; c++) {
-      const item = items[i + c];
-      if (!item) continue;
-      const x = 40 + c * (colW + gap);
-      doc.roundedRect(x, y, colW, rowH, 3).fillAndStroke(C_BG, C_BORDER);
-      doc.fillColor(C_MUTED).font('Helvetica').fontSize(8).text(cleanText(item.label), x + 8, y + 5.5, { width: labelW - 6 });
-      doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(8.2).text(cleanText(item.value || '-'), x + labelW + 4, y + 5.5, { width: valW - 6, align: 'right' });
-    }
-    doc.y = y + rowH + 3.5;
-  }
-}
+import {
+  C_NAVY, C_BLUE, C_TEAL, C_SLATE, C_MUTED, C_BORDER, C_BG,
+  cleanText, formatDateNl, loadPhotoJpeg, generateQrPng,
+  ensureSpace, drawSectionHeader, drawKeyValueGrid,
+} from './showcasePdfHelpers.js';
 
 export class ShowcasePdfService {
   /**
-   * Generates a complete A4 PDF vehicle presentation including specs, highlights,
-   * options, maintenance history, contact details, and all vehicle photos.
+   * Generates a polished A4 PDF vehicle presentation including hero framing,
+   * warranty spotlight, structured maintenance table, optional QR code, and all photos.
    */
-  public static async generatePdf(showcase: CompiledShowcase): Promise<Buffer> {
+  public static async generatePdf(showcase: CompiledShowcase, publicUrl?: string): Promise<Buffer> {
     const photoBuffers = new Map<string, Buffer>();
     for (const photo of showcase.photos) {
       const buf = await loadPhotoJpeg(photo.file_path);
       if (buf) photoBuffers.set(photo.id, buf);
     }
+    const qrBuf = await generateQrPng(publicUrl);
 
     const doc = new PDFDocument({ size: 'A4', margin: 40, bufferPages: true });
     const chunks: Buffer[] = [];
@@ -124,9 +30,11 @@ export class ShowcasePdfService {
     });
 
     this.renderHeaderAndHero(doc, showcase, photoBuffers);
-    this.renderDetails(doc, showcase);
+    this.renderHighlightsAndSpecs(doc, showcase);
+    this.renderOptionsAndMaintenance(doc, showcase);
+    this.renderFooterSections(doc, showcase, qrBuf, publicUrl);
     this.renderPhotoGallery(doc, showcase, photoBuffers);
-    this.renderFooters(doc, showcase);
+    this.renderPageFooters(doc, showcase);
 
     doc.end();
     return done;
@@ -149,58 +57,68 @@ export class ShowcasePdfService {
         ? `${showcase.price_label}: ${ShowcaseService.formatCurrency(showcase.asking_price)}`
         : 'Prijs op aanvraag';
 
-    const leftColW = doc.page.width - 230;
-    const subText = cleanText(showcase.subtitle);
-    doc.font('Helvetica').fontSize(9);
-    const subHeight = subText ? doc.heightOfString(subText, { width: leftColW }) : 0;
-    const bannerH = Math.max(82, 54 + subHeight + 14);
-
-    doc.rect(0, 0, doc.page.width, bannerH).fill(C_NAVY);
-    doc.fillColor('#93c5fd').font('Helvetica-Bold').fontSize(8).text('VEHICLEVAULT  •  VOERTUIGPRESENTATIE', 40, 16);
-    doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(17).text(cleanText(showcase.title), 40, 29, { width: leftColW, ellipsis: true });
-    if (subText) {
-      doc.fillColor('#cbd5e1').font('Helvetica').fontSize(9).text(subText, 40, 51, { width: leftColW });
-    }
+    // Sleek fixed-height header banner
+    doc.rect(0, 0, doc.page.width, 74).fill(C_NAVY);
+    doc.fillColor('#93c5fd').font('Helvetica-Bold').fontSize(8).text('VEHICLEVAULT  •  VOERTUIGPRESENTATIE', 40, 15);
+    doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(18).text(cleanText(showcase.title), 40, 30, { width: doc.page.width - 230, ellipsis: true });
 
     if (plate) {
-      doc.roundedRect(doc.page.width - 155, 20, 115, 24, 4).fill('#f59e0b');
-      doc.fillColor('#111827').font('Helvetica-Bold').fontSize(11).text(cleanText(plate), doc.page.width - 155, 26, { width: 115, align: 'center' });
+      doc.roundedRect(doc.page.width - 155, 14, 115, 22, 4).fill('#f59e0b');
+      doc.fillColor('#111827').font('Helvetica-Bold').fontSize(10.5).text(cleanText(plate), doc.page.width - 155, 19.5, { width: 115, align: 'center' });
     }
     if (hasPrice) {
-      doc.roundedRect(doc.page.width - 175, 50, 135, 22, 4).fill(C_BLUE);
-      doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(9).text(cleanText(priceStr), doc.page.width - 175, 56, { width: 135, align: 'center' });
+      doc.roundedRect(doc.page.width - 175, 42, 135, 20, 4).fill(C_BLUE);
+      doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(9).text(cleanText(priceStr), doc.page.width - 175, 47.5, { width: 135, align: 'center' });
     }
 
-    doc.y = bannerH + 14;
+    doc.y = 88;
 
+    // Framed hero photo
     const primary = showcase.photos.find((p) => p.is_primary === 1) || showcase.photos[0];
     const heroBuf = primary ? photoBuffers.get(primary.id) : undefined;
     if (heroBuf) {
+      doc.roundedRect(40, doc.y, doc.page.width - 80, 192, 6).fillAndStroke(C_BG, C_BORDER);
       try {
-        doc.image(heroBuf, 40, doc.y, { fit: [doc.page.width - 80, 195], align: 'center', valign: 'center' });
-        doc.y += 205;
-      } catch {
-        // skip invalid image
-      }
+        doc.image(heroBuf, 46, doc.y + 6, { fit: [doc.page.width - 92, 180], align: 'center', valign: 'center' });
+      } catch {}
+      doc.y += 202;
     }
 
+    // Warranty spotlight banner
+    if (showcase.warranty_enabled && showcase.warranty_text) {
+      ensureSpace(doc, 32);
+      const wy = doc.y;
+      doc.roundedRect(40, wy, doc.page.width - 80, 24, 4).fillAndStroke('#f0fdfa', '#99f6e4');
+      doc.roundedRect(40, wy, 4, 24, 2).fill(C_TEAL);
+      doc.fillColor('#115e59').font('Helvetica-Bold').fontSize(9).text(`GARANTIE: ${cleanText(showcase.warranty_text)}`, 52, wy + 7);
+      doc.y = wy + 31;
+    }
+
+    // Full multi-paragraph description on clean background
+    const subText = cleanText(showcase.subtitle);
+    if (subText) {
+      doc.font('Helvetica').fontSize(8.8);
+      const subH = doc.heightOfString(subText, { width: doc.page.width - 84 });
+      ensureSpace(doc, subH + 12);
+      doc.fillColor(C_SLATE).font('Helvetica').fontSize(8.8).text(subText, 42, doc.y, { width: doc.page.width - 84, lineGap: 2 });
+      doc.y += 8;
+    }
+
+    // Overview grid
     const s = showcase.stats;
     drawSectionHeader(doc, 'Overzicht & Kerngegevens');
-    const overviewItems = [
+    const isNap = s.nap_oordeel && s.nap_oordeel.toLowerCase().includes('logisch') && !s.nap_oordeel.toLowerCase().includes('onlogisch');
+    drawKeyValueGrid(doc, [
       { label: 'Bouwjaar', value: s.bouwjaar },
       { label: 'Kilometerstand', value: s.kilometerstand },
       { label: 'Aandrijving', value: s.brandstof_transmissie },
       { label: 'Vermogen', value: s.vermogen },
       { label: 'APK Vervaldatum', value: s.apk_vervaldatum },
-      { label: 'NAP Oordeel', value: s.nap_oordeel || 'Geen oordeel' },
-    ];
-    if (showcase.warranty_enabled && showcase.warranty_text) {
-      overviewItems.push({ label: 'Garantie', value: showcase.warranty_text });
-    }
-    drawKeyValueGrid(doc, overviewItems);
+      { label: isNap ? 'NAP Oordeel' : 'Herkomst', value: isNap ? s.nap_oordeel : (s.herkomst || 'Origineel Nederlands') },
+    ]);
   }
 
-  private static renderDetails(doc: PDFKit.PDFDocument, showcase: CompiledShowcase): void {
+  private static renderHighlightsAndSpecs(doc: PDFKit.PDFDocument, showcase: CompiledShowcase): void {
     if (showcase.highlights.length > 0) {
       drawSectionHeader(doc, 'Belangrijkste Pluspunten');
       const colW = (doc.page.width - 90) / 2;
@@ -210,7 +128,7 @@ export class ShowcasePdfService {
         for (const h of pair) {
           if (!h) continue;
           doc.font('Helvetica').fontSize(8);
-          const descH = h.description ? doc.heightOfString(cleanText(h.description), { width: colW - 16 }) : 0;
+          const descH = h.description ? doc.heightOfString(cleanText(h.description), { width: colW - 20 }) : 0;
           cardH = Math.max(cardH, 22 + descH + 8);
         }
         ensureSpace(doc, cardH + 6);
@@ -219,9 +137,10 @@ export class ShowcasePdfService {
           if (!h) return;
           const x = 40 + idx * (colW + 10);
           doc.roundedRect(x, y, colW, cardH, 4).fillAndStroke(C_BG, C_BORDER);
-          doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(8.8).text(cleanText(h.title), x + 8, y + 6, { width: colW - 16 });
+          doc.roundedRect(x, y, 3, cardH, 1.5).fill(C_BLUE);
+          doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(8.8).text(cleanText(h.title), x + 10, y + 6, { width: colW - 18 });
           if (h.description) {
-            doc.fillColor(C_SLATE).font('Helvetica').fontSize(8).text(cleanText(h.description), x + 8, y + 19, { width: colW - 16 });
+            doc.fillColor(C_SLATE).font('Helvetica').fontSize(8).text(cleanText(h.description), x + 10, y + 19, { width: colW - 18 });
           }
         });
         doc.y = y + cardH + 5;
@@ -242,7 +161,9 @@ export class ShowcasePdfService {
         drawKeyValueGrid(doc, showcase.specs.milieu);
       }
     }
+  }
 
+  private static renderOptionsAndMaintenance(doc: PDFKit.PDFDocument, showcase: CompiledShowcase): void {
     if (showcase.options_list.length > 0) {
       drawSectionHeader(doc, 'Opties & Accessoires');
       const colW = (doc.page.width - 96) / 2;
@@ -275,17 +196,40 @@ export class ShowcasePdfService {
 
     if (showcase.show_maintenance_history && showcase.maintenance_records.length > 0) {
       drawSectionHeader(doc, 'Onderhoudshistorie');
-      for (const rec of showcase.maintenance_records.slice(0, 20)) {
-        ensureSpace(doc, 22);
-        const line = `${formatDateNl(rec.date)}  |  ${rec.odometer.toLocaleString('nl-NL')} km  |  ${rec.category}${rec.has_invoice ? ' (Factuur aanwezig)' : ''}`;
-        doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(8.3).text(cleanText(line), 44, doc.y);
-        if (rec.description) {
-          doc.fillColor(C_SLATE).font('Helvetica').fontSize(7.8).text(cleanText(rec.description), 52, doc.y + 1, { width: doc.page.width - 96 });
-        }
-        doc.moveDown(0.2);
-      }
-    }
+      const tableW = doc.page.width - 80;
+      ensureSpace(doc, 24);
+      const hy = doc.y;
+      doc.roundedRect(40, hy, tableW, 18, 3).fill('#e2e8f0');
+      doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(7.8);
+      doc.text('Datum', 46, hy + 5, { width: 65 });
+      doc.text('Km-stand', 112, hy + 5, { width: 62 });
+      doc.text('Werkzaamheden / Omschrijving', 178, hy + 5, { width: 295 });
+      doc.text('Factuur', 475, hy + 5, { width: 70, align: 'right' });
+      doc.y = hy + 20;
 
+      showcase.maintenance_records.slice(0, 20).forEach((rec, idx) => {
+        const desc = cleanText([rec.category, rec.description].filter(Boolean).join(' - '));
+        doc.font('Helvetica').fontSize(7.8);
+        const rowH = Math.max(18, Math.ceil(doc.heightOfString(desc, { width: 295 })) + 8);
+        ensureSpace(doc, rowH + 2);
+        const ry = doc.y;
+        doc.rect(40, ry, tableW, rowH).fillAndStroke(idx % 2 === 0 ? C_BG : '#ffffff', C_BORDER);
+        doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(7.8).text(formatDateNl(rec.date), 46, ry + 5, { width: 65 });
+        doc.fillColor(C_SLATE).font('Helvetica').fontSize(7.8).text(`${rec.odometer.toLocaleString('nl-NL')} km`, 112, ry + 5, { width: 62 });
+        doc.text(desc, 178, ry + 5, { width: 295 });
+        doc.fillColor(rec.has_invoice ? C_TEAL : C_MUTED).font('Helvetica-Bold').text(rec.has_invoice ? 'Ja' : '-', 475, ry + 5, { width: 70, align: 'right' });
+        doc.y = ry + rowH;
+      });
+      doc.moveDown(0.35);
+    }
+  }
+
+  private static renderFooterSections(
+    doc: PDFKit.PDFDocument,
+    showcase: CompiledShowcase,
+    qrBuf: Buffer | null,
+    publicUrl?: string
+  ): void {
     if (showcase.show_tire_status && showcase.tires) {
       const t = showcase.tires;
       drawSectionHeader(doc, 'Bandenstatus');
@@ -299,9 +243,11 @@ export class ShowcasePdfService {
 
     if (showcase.transparency_notes) {
       drawSectionHeader(doc, 'Transparantie & Toelichting Verkoper');
-      ensureSpace(doc, 30);
-      doc.fillColor(C_SLATE).font('Helvetica').fontSize(8.5).text(cleanText(showcase.transparency_notes), 44, doc.y, { width: doc.page.width - 88 });
-      doc.moveDown(0.35);
+      const notes = cleanText(showcase.transparency_notes);
+      doc.font('Helvetica').fontSize(8.5);
+      ensureSpace(doc, doc.heightOfString(notes, { width: doc.page.width - 88 }) + 16);
+      doc.fillColor(C_SLATE).font('Helvetica').fontSize(8.5).text(notes, 44, doc.y, { width: doc.page.width - 88, lineGap: 1.5 });
+      doc.moveDown(0.4);
     }
 
     const contacts = [
@@ -311,59 +257,56 @@ export class ShowcasePdfService {
       showcase.contact_location ? { label: 'Locatie', value: showcase.contact_location } : null,
     ].filter((c): c is { label: string; value: string } => c !== null);
 
-    if (contacts.length > 0) {
-      drawSectionHeader(doc, 'Contact & Bezichtiging');
-      drawKeyValueGrid(doc, contacts);
+    if (contacts.length > 0 || qrBuf) {
+      drawSectionHeader(doc, 'Contact & Online Presentatie');
+      ensureSpace(doc, qrBuf ? 82 : 40);
+      const startY = doc.y;
+      if (contacts.length > 0) {
+        const contactW = qrBuf ? doc.page.width - 175 : doc.page.width - 80;
+        contacts.forEach((c, idx) => {
+          const cy = startY + idx * 22;
+          doc.roundedRect(40, cy, contactW, 19, 3).fillAndStroke(C_BG, C_BORDER);
+          doc.fillColor(C_MUTED).font('Helvetica').fontSize(8).text(c.label, 48, cy + 5.5);
+          doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(8.2).text(cleanText(c.value), 48, cy + 5.5, { width: contactW - 16, align: 'right' });
+        });
+      }
+      if (qrBuf && publicUrl) {
+        const qx = doc.page.width - 120;
+        doc.roundedRect(qx, startY, 80, 88, 4).fillAndStroke('#ffffff', C_BORDER);
+        doc.image(qrBuf, qx + 8, startY + 6, { width: 64, height: 64 });
+        doc.fillColor(C_MUTED).font('Helvetica').fontSize(6.5).text('Scan voor live pagina', qx, startY + 73, { width: 80, align: 'center' });
+      }
+      doc.y = Math.max(startY + contacts.length * 22, qrBuf ? startY + 92 : startY);
     }
   }
 
-  private static renderPhotoGallery(
-    doc: PDFKit.PDFDocument,
-    showcase: CompiledShowcase,
-    photoBuffers: Map<string, Buffer>
-  ): void {
+  private static renderPhotoGallery(doc: PDFKit.PDFDocument, showcase: CompiledShowcase, photoBuffers: Map<string, Buffer>): void {
     const available = showcase.photos.filter((p) => photoBuffers.has(p.id));
     if (available.length === 0) return;
-
-    const categoryLabels: Record<string, string> = {
-      exterieur: 'Exterieur',
-      interieur: 'Interieur',
-      details: 'Details',
-      gebruikssporen: 'Gebruikssporen',
-    };
+    const categoryLabels: Record<string, string> = { exterieur: 'Exterieur', interieur: 'Interieur', details: 'Details', gebruikssporen: 'Gebruikssporen' };
 
     for (let i = 0; i < available.length; i += 2) {
       doc.addPage();
-      const galW = doc.page.width - 80;
-      doc.roundedRect(40, 34, galW, 24, 4).fillAndStroke('#eff6ff', '#dbeafe');
+      doc.roundedRect(40, 34, doc.page.width - 80, 24, 4).fillAndStroke('#eff6ff', '#dbeafe');
       doc.roundedRect(40, 34, 4, 24, 2).fill(C_BLUE);
       doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(11.5).text(`Fotogalerij (${available.length} foto's)`, 52, 41);
 
-      const slotPositions = [68, 422];
-      for (let slot = 0; slot < 2; slot++) {
+      [68, 422].forEach((topY, slot) => {
         const photo = available[i + slot];
-        if (!photo) continue;
+        if (!photo) return;
         const buf = photoBuffers.get(photo.id)!;
-        const topY = slotPositions[slot];
-
         doc.roundedRect(40, topY, doc.page.width - 80, 336, 5).fillAndStroke(C_BG, C_BORDER);
-        try {
-          doc.image(buf, 50, topY + 10, { fit: [doc.page.width - 100, 272], align: 'center', valign: 'center' });
-        } catch {
-          // ignore invalid image
-        }
-
-        const badge = categoryLabels[photo.category] || photo.category;
-        const caption = [badge, photo.title].filter(Boolean).join(' - ');
+        try { doc.image(buf, 50, topY + 10, { fit: [doc.page.width - 100, 272], align: 'center', valign: 'center' }); } catch {}
+        const caption = [categoryLabels[photo.category] || photo.category, photo.title].filter(Boolean).join(' - ');
         doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(9.5).text(cleanText(`${i + slot + 1}. ${caption}`), 50, topY + 290, { width: doc.page.width - 100, ellipsis: true });
         if (photo.description) {
           doc.fillColor(C_MUTED).font('Helvetica').fontSize(8.2).text(cleanText(photo.description), 50, topY + 305, { width: doc.page.width - 100, ellipsis: true });
         }
-      }
+      });
     }
   }
 
-  private static renderFooters(doc: PDFKit.PDFDocument, showcase: CompiledShowcase): void {
+  private static renderPageFooters(doc: PDFKit.PDFDocument, showcase: CompiledShowcase): void {
     const range = doc.bufferedPageRange();
     for (let i = 0; i < range.count; i++) {
       doc.switchToPage(i);

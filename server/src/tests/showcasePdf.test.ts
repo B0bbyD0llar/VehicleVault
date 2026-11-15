@@ -132,7 +132,7 @@ describe('ShowcasePdfService', () => {
       },
     };
 
-    const pdfBuffer = await ShowcasePdfService.generatePdf(showcase);
+    const pdfBuffer = await ShowcasePdfService.generatePdf(showcase, 'https://example.com/showcase/nbl-41-k');
     assert.ok(Buffer.isBuffer(pdfBuffer));
     assert.equal(pdfBuffer.subarray(0, 5).toString('latin1'), '%PDF-');
 
@@ -141,6 +141,6 @@ describe('ShowcasePdfService', () => {
 
     const noPhotoBuffer = await ShowcasePdfService.generatePdf({ ...showcase, photos: [] });
     const parsedNoPhoto = await PdfLibDocument.load(noPhotoBuffer);
-    assert.equal(parsedNoPhoto.getPageCount(), 1, 'Expected 1 page without photos (zero phantom pages)');
+    assert.equal(parsedNoPhoto.getPageCount(), 2, 'Expected 2 detail pages without photos (zero phantom pages)');
   });
 });

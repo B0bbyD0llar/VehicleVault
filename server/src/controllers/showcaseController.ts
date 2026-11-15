@@ -113,7 +113,8 @@ export class ShowcaseController {
         return;
       }
 
-      const pdfBuffer = await ShowcasePdfService.generatePdf(showcase);
+      const publicUrl = showcase.is_active ? ShowcaseController.buildPublicUrl(req, showcase.public_slug) : undefined;
+      const pdfBuffer = await ShowcasePdfService.generatePdf(showcase, publicUrl);
       const safePlate = (showcase.vehicle.license_plate || showcase.public_slug || 'auto').replace(/[^a-zA-Z0-9-]/g, '');
 
       res.setHeader('Content-Type', 'application/pdf');
@@ -123,6 +124,14 @@ export class ShowcaseController {
       console.error('Error exporting showcase pdf:', err);
       res.status(500).json({ error: err?.message || 'Fout bij het genereren van PDF dossier' });
     }
+  }
+
+  private static buildPublicUrl(req: Request, slug?: string | null): string | undefined {
+    const host = req.get('host');
+    if (!host || !slug) return undefined;
+    const forwardedProto = req.headers['x-forwarded-proto'];
+    const proto = (Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto)?.split(',')[0]?.trim() || req.protocol || 'https';
+    return `${proto}://${host}/showcase/${encodeURIComponent(slug)}`;
   }
 
   /**
@@ -158,7 +167,8 @@ export class ShowcaseController {
         return;
       }
 
-      const pdfBuffer = await ShowcasePdfService.generatePdf(showcase);
+      const publicUrl = showcase.is_active ? ShowcaseController.buildPublicUrl(req, showcase.public_slug) : undefined;
+      const pdfBuffer = await ShowcasePdfService.generatePdf(showcase, publicUrl);
       const safePlate = (showcase.vehicle.license_plate || showcase.public_slug || 'auto').replace(/[^a-zA-Z0-9-]/g, '');
 
       res.setHeader('Content-Type', 'application/pdf');
