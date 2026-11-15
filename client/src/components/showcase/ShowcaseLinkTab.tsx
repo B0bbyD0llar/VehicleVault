@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, EyeOff, Copy, ExternalLink, Download, Check } from 'lucide-react';
+import { Eye, EyeOff, Copy, ExternalLink, Download, FileText, Check } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext.js';
 
 interface ShowcaseLinkTabProps {
@@ -13,6 +13,7 @@ interface ShowcaseLinkTabProps {
   copiedLink: boolean;
   handleCopyLink: () => void;
   handleDownloadZip: () => void;
+  handleDownloadPdf: () => void;
   priceLabel: string;
   setPriceLabel: (v: string) => void;
   askingPrice: string;
@@ -38,6 +39,7 @@ export const ShowcaseLinkTab: React.FC<ShowcaseLinkTabProps> = ({
   copiedLink,
   handleCopyLink,
   handleDownloadZip,
+  handleDownloadPdf,
   priceLabel,
   setPriceLabel,
   askingPrice,
@@ -165,27 +167,37 @@ export const ShowcaseLinkTab: React.FC<ShowcaseLinkTabProps> = ({
         </div>
       </div>
 
-      {/* 1-Click Standalone Website ZIP Download */}
-      <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* 1-Click Standalone Website ZIP & PDF Dossier Download */}
+      <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-2xl p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h4 className="text-sm font-bold text-blue-950 dark:text-blue-100 flex items-center space-x-2">
             <Download className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span>{lang === 'nl' ? 'Standalone Website Exporteren (ZIP)' : 'Export Standalone Website (ZIP)'}</span>
+            <span>{lang === 'nl' ? 'Verkoopdossier Exporteren (PDF & ZIP)' : 'Export Sales Dossier (PDF & ZIP)'}</span>
           </h4>
           <p className="text-xs text-blue-800/80 dark:text-blue-300 mt-1 max-w-xl leading-relaxed">
             {lang === 'nl'
-              ? "Download een kant-en-klaar HTML/CSS/JS pakket inclusief alle foto's. Direct geschikt om op een eigen domein, hosting of dealerportal te uploaden."
-              : "Download a static zero-dependency HTML/CSS/JS package including all photos. Ready to host on GitHub Pages or any web server."}
+              ? "Download een complete printklare PDF-brochure inclusief alle foto's, of een zelfstandig HTML/CSS/JS ZIP-pakket voor eigen hosting."
+              : "Download a print-ready PDF brochure including all photos, or a standalone HTML/CSS/JS ZIP package for custom hosting."}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleDownloadZip}
-          className="h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-2 transition shrink-0 shadow-xs hover:scale-[1.02]"
-        >
-          <Download className="w-4 h-4" />
-          <span>{lang === 'nl' ? 'Download ZIP Pakket' : 'Download Static Website (ZIP)'}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={handleDownloadPdf}
+            className="h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-2 transition shrink-0 shadow-xs hover:scale-[1.02]"
+          >
+            <FileText className="w-4 h-4" />
+            <span>{lang === 'nl' ? 'PDF Uitdraai' : 'Download PDF'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadZip}
+            className="h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-2 transition shrink-0 shadow-xs hover:scale-[1.02]"
+          >
+            <Download className="w-4 h-4" />
+            <span>{lang === 'nl' ? 'ZIP Pakket' : 'Static ZIP'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Pricing & Contact Form */}

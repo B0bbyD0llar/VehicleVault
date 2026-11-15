@@ -157,6 +157,7 @@ export const ShowcaseManagerModal: React.FC<ShowcaseManagerModalProps> = ({
               copiedLink={mgr.copiedLink}
               handleCopyLink={mgr.handleCopyLink}
               handleDownloadZip={mgr.handleDownloadZip}
+              handleDownloadPdf={mgr.handleDownloadPdf}
               priceLabel={mgr.priceLabel}
               setPriceLabel={mgr.setPriceLabel}
               askingPrice={mgr.askingPrice}

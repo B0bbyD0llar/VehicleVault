@@ -29,6 +29,7 @@ router.delete('/:id/photos/:photoId', PhotoController.delete);
 router.get('/:id/showcase', ShowcaseController.get);
 router.put('/:id/showcase', ShowcaseController.update);
 router.get('/:id/showcase/export-zip', ShowcaseController.exportZip);
+router.get('/:id/showcase/export-pdf', ShowcaseController.exportPdf);
 
 // Vehicle Sharing & Ownership Transfer
 router.get('/:id/shares', VehicleController.getShares);

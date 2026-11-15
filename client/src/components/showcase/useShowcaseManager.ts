@@ -183,6 +183,10 @@ export function useShowcaseManager({ vehicleId, isOpen, onVehicleUpdated }: UseS
     window.open(`/api/vehicles/${vehicleId}/showcase/export-zip`, '_blank');
   };
 
+  const handleDownloadPdf = () => {
+    window.open(`/api/vehicles/${vehicleId}/showcase/export-pdf`, '_blank');
+  };
+
   const publicUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/showcase/${publicSlug || showcase?.public_slug || ''}`
     : `/showcase/${publicSlug}`;
@@ -234,6 +238,7 @@ export function useShowcaseManager({ vehicleId, isOpen, onVehicleUpdated }: UseS
     handleSetPrimaryPhoto,
     handleDeletePhoto,
     handleDownloadZip,
+    handleDownloadPdf,
     publicUrl,
     handleCopyLink,
   };

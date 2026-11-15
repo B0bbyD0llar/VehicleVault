@@ -145,8 +145,9 @@ export function createApp(): express.Application {
   app.use('/api/vignettes', vignetteRoutes);
   app.use('/api/telematics', telematicsRoutes);
 
-  // Public Unauthenticated Showcase Endpoint
+  // Public Unauthenticated Showcase Endpoints
   app.get('/api/public/showcase/:slug', ShowcaseController.getPublic);
+  app.get('/api/public/showcase/:slug/export-pdf', ShowcaseController.exportPublicPdf);
 
   // Serve static client PWA in production or unified container
   const possiblePaths = [
