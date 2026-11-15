@@ -51,7 +51,7 @@ describe('ShowcasePdfService', () => {
       asking_price: 19950,
       price_label: 'Vraagprijs',
       title: 'Kia Niro 1.6 GDi Hybrid',
-      subtitle: 'Dealeronderhouden & volledige historie',
+      subtitle: 'Dealeronderhouden & volledige historie aanwezig. Auto wordt verkocht omdat we toch punten uit onze vorige auto missen. Garantie loopt nog bij Kia Nederland.',
       highlights: [
         { id: 'h1', icon: 'shield', title: 'NAP Logisch', description: 'Aantoonbare kilometerstand' },
       ],
@@ -137,6 +137,10 @@ describe('ShowcasePdfService', () => {
     assert.equal(pdfBuffer.subarray(0, 5).toString('latin1'), '%PDF-');
 
     const parsed = await PdfLibDocument.load(pdfBuffer);
-    assert.ok(parsed.getPageCount() >= 2, 'Expected at least 2 pages (details + photo gallery)');
+    assert.equal(parsed.getPageCount(), 3, 'Expected 3 pages (2 detail pages + 1 photo gallery page, zero phantom pages)');
+
+    const noPhotoBuffer = await ShowcasePdfService.generatePdf({ ...showcase, photos: [] });
+    const parsedNoPhoto = await PdfLibDocument.load(noPhotoBuffer);
+    assert.equal(parsedNoPhoto.getPageCount(), 1, 'Expected 1 page without photos (zero phantom pages)');
   });
 });

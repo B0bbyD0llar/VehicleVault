@@ -117,7 +117,7 @@ export class ShowcaseController {
       const safePlate = (showcase.vehicle.license_plate || showcase.public_slug || 'auto').replace(/[^a-zA-Z0-9-]/g, '');
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="verkoopdossier-${safePlate}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="voertuigpresentatie-${safePlate}.pdf"`);
       res.send(pdfBuffer);
     } catch (err: any) {
       console.error('Error exporting showcase pdf:', err);
@@ -162,7 +162,7 @@ export class ShowcaseController {
       const safePlate = (showcase.vehicle.license_plate || showcase.public_slug || 'auto').replace(/[^a-zA-Z0-9-]/g, '');
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="verkoopdossier-${safePlate}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="voertuigpresentatie-${safePlate}.pdf"`);
       res.send(pdfBuffer);
     } catch (err: any) {
       console.error('Error exporting public showcase pdf:', err);
