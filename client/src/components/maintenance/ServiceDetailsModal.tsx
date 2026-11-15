@@ -16,7 +16,7 @@ export const ServiceDetailsModal: React.FC<ServiceDetailsModalProps> = ({
   onEditRecord,
   onPreviewInvoice,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   if (!record) return null;
 
   let modalItems: InvoiceLineItem[] = [];
@@ -70,7 +70,7 @@ export const ServiceDetailsModal: React.FC<ServiceDetailsModalProps> = ({
         <div className="grid grid-cols-3 gap-3 my-4">
           <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800">
             <span className="text-[10px] text-slate-500 uppercase font-bold block">
-              {lang === 'nl' ? 'Totaalbedrag' : 'Total Cost'}
+              {t('totalCost')}
             </span>
             <span className="text-sm font-mono font-bold text-slate-900 dark:text-white">
               € {(record.cost || 0).toFixed(2)}
@@ -102,9 +102,7 @@ export const ServiceDetailsModal: React.FC<ServiceDetailsModalProps> = ({
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <Languages className="w-4 h-4 text-sky-500" />
                   <span>
-                    {lang === 'nl'
-                      ? `Uitgelezen & Vertaalde Factuurregels (${modalItems.length})`
-                      : `Extracted & Translated Invoice Items (${modalItems.length})`}
+                    {t('extractedInvoiceItems', { count: modalItems.length })}
                   </span>
                 </span>
               </div>
@@ -123,9 +121,7 @@ export const ServiceDetailsModal: React.FC<ServiceDetailsModalProps> = ({
                               : 'bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300'
                           }`}
                         >
-                          {item.category === 'labor'
-                            ? (lang === 'nl' ? 'Arbeid' : 'Labor')
-                            : (lang === 'nl' ? 'Onderdeel' : 'Part')}
+                          {item.category === 'labor' ? t('lineItemLabor') : t('lineItemPart')}
                         </span>
                         <span className="text-xs font-bold text-slate-900 dark:text-white">
                           {item.translatedDescription}
@@ -140,7 +136,7 @@ export const ServiceDetailsModal: React.FC<ServiceDetailsModalProps> = ({
                         item.originalDescription.toLowerCase() !==
                           item.translatedDescription.toLowerCase() && (
                           <div className="text-[11px] text-slate-400 italic mt-0.5">
-                            Origineel: "{item.originalDescription}"
+                            {t('originalDescription', { text: item.originalDescription })}
                           </div>
                         )}
                     </div>
@@ -175,7 +171,7 @@ export const ServiceDetailsModal: React.FC<ServiceDetailsModalProps> = ({
                 type="button"
                 onClick={() => {
                   onPreviewInvoice({
-                    title: `${record.service_item} — ${record.garage_name || (lang === 'nl' ? 'Factuur' : 'Invoice')}`,
+                    title: `${record.service_item} — ${record.garage_name || t('invoice')}`,
                     url: `/uploads/invoices/${record.invoice_path}`,
                     date: record.date,
                     notes: record.notes || undefined,
@@ -184,7 +180,7 @@ export const ServiceDetailsModal: React.FC<ServiceDetailsModalProps> = ({
                 className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60 hover:bg-sky-100 font-bold text-xs transition"
               >
                 <FileText className="w-3.5 h-3.5 text-rose-500" />
-                <span>{lang === 'nl' ? 'Originele Factuur Bekijken' : 'View Original Invoice'}</span>
+                <span>{t('viewOriginalInvoice')}</span>
               </button>
             )}
           </div>
@@ -198,14 +194,14 @@ export const ServiceDetailsModal: React.FC<ServiceDetailsModalProps> = ({
               className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs transition"
             >
               <Edit2 className="w-3.5 h-3.5" />
-              <span>{lang === 'nl' ? 'Beurt Bewerken' : 'Edit Record'}</span>
+              <span>{t('editRecordShort')}</span>
             </button>
             <button
               type="button"
               onClick={onClose}
               className="px-4 py-2 rounded-xl bg-accent-600 hover:bg-accent-700 text-white font-bold text-xs transition shadow-sm"
             >
-              {lang === 'nl' ? 'Sluiten' : 'Close'}
+              {t('close')}
             </button>
           </div>
         </div>
