@@ -79,33 +79,33 @@ export function drawKeyValueGrid(
 ): void {
   if (items.length === 0) return;
   const pageW = doc.page.width - 80;
-  const gap = 10;
+  const gap = 18;
   const colW = (pageW - gap * (cols - 1)) / cols;
-  const labelW = colW * 0.44;
+  const labelW = colW * 0.46;
   const valW = colW * 0.52;
 
   for (let i = 0; i < items.length; i += cols) {
-    let rowH = 21;
+    let rowH = 18;
     for (let c = 0; c < cols; c++) {
       const item = items[i + c];
       if (!item) continue;
-      doc.font('Helvetica-Bold').fontSize(8.2);
-      const valH = doc.heightOfString(cleanText(item.value || '-'), { width: valW - 6 });
-      doc.font('Helvetica').fontSize(8);
-      const lblH = doc.heightOfString(cleanText(item.label), { width: labelW - 6 });
-      rowH = Math.max(rowH, Math.ceil(Math.max(valH, lblH)) + 10);
+      doc.font('Helvetica-Bold').fontSize(8.3);
+      const valH = doc.heightOfString(cleanText(item.value || '-'), { width: valW });
+      doc.font('Helvetica').fontSize(8.1);
+      const lblH = doc.heightOfString(cleanText(item.label), { width: labelW });
+      rowH = Math.max(rowH, Math.ceil(Math.max(valH, lblH)) + 8);
     }
 
-    ensureSpace(doc, rowH + 4);
+    ensureSpace(doc, rowH + 2);
     const y = doc.y;
     for (let c = 0; c < cols; c++) {
       const item = items[i + c];
       if (!item) continue;
       const x = 40 + c * (colW + gap);
-      doc.roundedRect(x, y, colW, rowH, 3).fillAndStroke(C_BG, C_BORDER);
-      doc.fillColor(C_MUTED).font('Helvetica').fontSize(8).text(cleanText(item.label), x + 8, y + 5.5, { width: labelW - 6 });
-      doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(8.2).text(cleanText(item.value || '-'), x + labelW + 4, y + 5.5, { width: valW - 6, align: 'right' });
+      doc.fillColor(C_MUTED).font('Helvetica').fontSize(8.1).text(cleanText(item.label), x + 2, y + 4, { width: labelW });
+      doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(8.3).text(cleanText(item.value || '-'), x + labelW + 4, y + 4, { width: valW - 6, align: 'right' });
+      doc.moveTo(x, y + rowH).lineTo(x + colW, y + rowH).strokeColor(C_BORDER).lineWidth(0.5).stroke();
     }
-    doc.y = y + rowH + 3.5;
+    doc.y = y + rowH + 1;
   }
 }

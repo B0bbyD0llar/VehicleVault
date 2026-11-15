@@ -259,15 +259,16 @@ export class ShowcasePdfService {
 
     if (contacts.length > 0 || qrBuf) {
       drawSectionHeader(doc, 'Contact & Online Presentatie');
-      ensureSpace(doc, qrBuf ? 82 : 40);
+      const blockH = Math.max(contacts.length * 20 + 6, qrBuf ? 92 : 24);
+      ensureSpace(doc, blockH);
       const startY = doc.y;
       if (contacts.length > 0) {
         const contactW = qrBuf ? doc.page.width - 175 : doc.page.width - 80;
         contacts.forEach((c, idx) => {
-          const cy = startY + idx * 22;
-          doc.roundedRect(40, cy, contactW, 19, 3).fillAndStroke(C_BG, C_BORDER);
-          doc.fillColor(C_MUTED).font('Helvetica').fontSize(8).text(c.label, 48, cy + 5.5);
-          doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(8.2).text(cleanText(c.value), 48, cy + 5.5, { width: contactW - 16, align: 'right' });
+          const cy = startY + idx * 20;
+          doc.fillColor(C_MUTED).font('Helvetica').fontSize(8.1).text(c.label, 42, cy + 4);
+          doc.fillColor(C_NAVY).font('Helvetica-Bold').fontSize(8.3).text(cleanText(c.value), 42, cy + 4, { width: contactW - 6, align: 'right' });
+          doc.moveTo(40, cy + 18).lineTo(40 + contactW, cy + 18).strokeColor(C_BORDER).lineWidth(0.5).stroke();
         });
       }
       if (qrBuf && publicUrl) {
@@ -276,7 +277,7 @@ export class ShowcasePdfService {
         doc.image(qrBuf, qx + 8, startY + 6, { width: 64, height: 64 });
         doc.fillColor(C_MUTED).font('Helvetica').fontSize(6.5).text('Scan voor live pagina', qx, startY + 73, { width: 80, align: 'center' });
       }
-      doc.y = Math.max(startY + contacts.length * 22, qrBuf ? startY + 92 : startY);
+      doc.y = Math.max(startY + contacts.length * 20, qrBuf ? startY + 92 : startY);
     }
   }
 
