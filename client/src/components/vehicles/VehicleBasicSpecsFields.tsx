@@ -52,13 +52,13 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
   vin,
   setVin,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const countries: { code: 'NL' | 'BE' | 'DE' | 'EU'; label: string; activeClass: string }[] = [
     { code: 'NL', label: '🇳🇱 NL', activeClass: 'bg-[#f5c518] text-slate-950 shadow-2xs border border-amber-500' },
     { code: 'BE', label: '🇧🇪 BE', activeClass: 'bg-rose-700 text-white shadow-2xs border border-rose-800' },
     { code: 'DE', label: '🇩🇪 DE', activeClass: 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xs border border-slate-400' },
-    { code: 'EU', label: lang === 'nl' ? '🇪🇺 EU / Overig' : '🇪🇺 EU / Other', activeClass: 'bg-blue-600 text-white shadow-2xs border border-blue-700' },
+    { code: 'EU', label: `🇪🇺 ${t('plateCountryEuOther')}`, activeClass: 'bg-blue-600 text-white shadow-2xs border border-blue-700' },
   ];
 
   return (
@@ -140,9 +140,12 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
             value={licensePlate}
             onChange={(e) => setLicensePlate(e.target.value)}
             placeholder={
-              plateCountry === 'NL' ? 'bijv. GBB-01-B of 12-AB-34' :
-              plateCountry === 'BE' ? 'bijv. 1-ABC-123' :
-              plateCountry === 'DE' ? 'bijv. B-MW 1234' : 'bijv. ABC-1234'
+              t('examplePlaceholder', {
+                value:
+                  plateCountry === 'NL' ? 'GBB-01-B / 12-AB-34' :
+                  plateCountry === 'BE' ? '1-ABC-123' :
+                  plateCountry === 'DE' ? 'B-MW 1234' : 'ABC-1234',
+              })
             }
             className="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 uppercase font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
           />
@@ -161,9 +164,9 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
 
         {plateCountry !== 'NL' ? (
           <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
-            {plateCountry === 'BE' && (lang === 'nl' ? '🇧🇪 Belgisch kenteken: Vul specificaties en keuringsdatum handmatig in.' : '🇧🇪 Belgian plate: Enter specs and inspection date manually.')}
-            {plateCountry === 'DE' && (lang === 'nl' ? '🇩🇪 Duits kenteken: Vul specificaties en TÜV-vervaldatum handmatig in.' : '🇩🇪 German plate: Enter specs and TÜV date manually.')}
-            {plateCountry === 'EU' && (lang === 'nl' ? '🇪🇺 Internationaal kenteken: Voertuiggegevens kunnen handmatig worden ingevuld.' : '🇪🇺 International plate: Vehicle details can be entered manually.')}
+            {plateCountry === 'BE' && `🇧🇪 ${t('plateHintBe')}`}
+            {plateCountry === 'DE' && `🇩🇪 ${t('plateHintDe')}`}
+            {plateCountry === 'EU' && `🇪🇺 ${t('plateHintEu')}`}
           </p>
         ) : rdwSuccess ? (
           <p className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center space-x-1 font-medium">
@@ -183,7 +186,7 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={lang === 'nl' ? 'bijv. Golf 7 Daily' : 'e.g. Golf 7 Daily'}
+            placeholder={t('examplePlaceholder', { value: 'Golf 7 Daily' })}
             className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
           />
         </div>
@@ -247,17 +250,17 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
             onChange={(e) => setFuelType(e.target.value)}
             className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm font-medium"
           >
-            <option value="Benzine">{lang === 'nl' ? 'Benzine (Euro 95 / E10 / E5)' : 'Petrol / Gasoline'}</option>
-            <option value="Diesel">{lang === 'nl' ? 'Diesel (B7 / B10)' : 'Diesel'}</option>
-            <option value="Hybride (Benzine)">{lang === 'nl' ? 'Hybride (Benzine / HEV)' : 'Hybrid (Petrol / HEV)'}</option>
-            <option value="Hybride (Diesel)">{lang === 'nl' ? 'Hybride (Diesel / HEV)' : 'Hybrid (Diesel / HEV)'}</option>
-            <option value="Plug-in Hybride (Benzine)">{lang === 'nl' ? 'Plug-in Hybride (Benzine - PHEV)' : 'Plug-in Hybrid (Petrol - PHEV)'}</option>
-            <option value="Plug-in Hybride (Diesel)">{lang === 'nl' ? 'Plug-in Hybride (Diesel - PHEV)' : 'Plug-in Hybrid (Diesel - PHEV)'}</option>
-            <option value="Elektrisch">{lang === 'nl' ? 'Volledig Elektrisch (EV)' : 'Full Electric (EV)'}</option>
+            <option value="Benzine">{t('fuelPetrol')}</option>
+            <option value="Diesel">{t('fuelDiesel')}</option>
+            <option value="Hybride (Benzine)">{t('fuelHybridPetrol')}</option>
+            <option value="Hybride (Diesel)">{t('fuelHybridDiesel')}</option>
+            <option value="Plug-in Hybride (Benzine)">{t('fuelPhevPetrol')}</option>
+            <option value="Plug-in Hybride (Diesel)">{t('fuelPhevDiesel')}</option>
+            <option value="Elektrisch">{t('fuelElectric')}</option>
             <option value="LPG">LPG (Autogas)</option>
-            <option value="CNG">{lang === 'nl' ? 'CNG (Aardgas)' : 'CNG (Natural Gas)'}</option>
-            <option value="Waterstof">{lang === 'nl' ? 'Waterstof (FCEV)' : 'Hydrogen (FCEV)'}</option>
-            <option value="Overig">{lang === 'nl' ? 'Overig' : 'Other'}</option>
+            <option value="CNG">{t('fuelCng')}</option>
+            <option value="Waterstof">{t('fuelHydrogen')}</option>
+            <option value="Overig">{t('fuelOther')}</option>
             {fuelType && ![
               'Benzine', 'Diesel', 'Hybride (Benzine)', 'Hybride (Diesel)',
               'Plug-in Hybride (Benzine)', 'Plug-in Hybride (Diesel)', 'Elektrisch',
@@ -269,16 +272,16 @@ export const VehicleBasicSpecsFields: React.FC<VehicleBasicSpecsFieldsProps> = (
         </div>
         <div>
           <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
-            {lang === 'nl' ? 'Transmissie' : 'Transmission'}
+            {t('transmission')}
           </label>
           <select
             value={transmission || 'automatic'}
             onChange={(e) => setTransmission(e.target.value)}
             className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm font-medium"
           >
-            <option value="automatic">{lang === 'nl' ? '⚡ Automaat' : '⚡ Automatic'}</option>
-            <option value="manual">{lang === 'nl' ? '🕹️ Handgeschakeld' : '🕹️ Manual'}</option>
-            <option value="semi_automatic">{lang === 'nl' ? '⚙️ Semi-automaat / DCT' : '⚙️ Semi-auto / DCT'}</option>
+            <option value="automatic">{`⚡ ${t('transmissionAutomatic')}`}</option>
+            <option value="manual">{`🕹️ ${t('transmissionManual')}`}</option>
+            <option value="semi_automatic">{`⚙️ ${t('transmissionSemiAuto')}`}</option>
           </select>
         </div>
         <div>

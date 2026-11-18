@@ -67,7 +67,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
   rdwSuccess,
   onRdwLookup,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'specs' | 'purchase' | 'notifications' | 'telematics'>('specs');
 
   if (!isOpen) return null;
@@ -108,7 +108,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               }`}
             >
               <Car className="w-3.5 h-3.5" />
-              <span>{lang === 'nl' ? 'Basis & Specificaties' : 'Basic & Specs'}</span>
+              <span>{t('tabBasicSpecs')}</span>
             </button>
 
             <button
@@ -121,7 +121,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               }`}
             >
               <Landmark className="w-3.5 h-3.5" />
-              <span>{lang === 'nl' ? 'Aankoop & Keuring' : 'Purchase & Inspection'}</span>
+              <span>{t('tabPurchaseInspection')}</span>
             </button>
 
             <button
@@ -134,7 +134,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               }`}
             >
               <Bell className="w-3.5 h-3.5" />
-              <span>{lang === 'nl' ? 'Meldingen' : 'Notifications'}</span>
+              <span>{t('tabNotifications')}</span>
             </button>
 
             {setTelematicsEnabled && setTelematicsHaEntityId && (
@@ -244,11 +244,11 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
                 <span>Tab:</span>
                 <span className="font-semibold text-slate-600 dark:text-slate-300">
                   {activeTab === 'specs'
-                    ? (lang === 'nl' ? '1. Basis' : '1. Basic')
+                    ? t('stepBasic')
                     : activeTab === 'purchase'
-                    ? (lang === 'nl' ? '2. Aankoop & Keuring' : '2. Purchase')
+                    ? t('stepPurchase')
                     : activeTab === 'notifications'
-                    ? (lang === 'nl' ? '3. Meldingen' : '3. Notifications')
+                    ? t('stepNotifications')
                     : '4. Home Assistant'}
                 </span>
               </div>

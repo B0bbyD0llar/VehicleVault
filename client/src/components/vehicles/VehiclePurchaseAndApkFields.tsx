@@ -38,12 +38,10 @@ export const VehiclePurchaseAndApkFields: React.FC<VehiclePurchaseAndApkFieldsPr
       <div className="bg-slate-50 dark:bg-slate-950/70 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
         <div>
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-            {lang === 'nl' ? 'Aankoopgegevens & TCO-startpunt' : 'Purchase Details & TCO Baseline'}
+            {t('purchaseDetailsTitle')}
           </span>
           <span className="text-[10px] text-slate-500 dark:text-slate-400">
-            {lang === 'nl'
-              ? 'Bepaalt je bezitsduur en houdt historische facturen van vóór jouw aankoop automatisch buiten je eigen TCO.'
-              : 'Determines ownership duration and automatically excludes pre-ownership invoices from your TCO.'}
+            {t('purchaseDetailsHint')}
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -56,13 +54,13 @@ export const VehiclePurchaseAndApkFields: React.FC<VehiclePurchaseAndApkFieldsPr
           </div>
           <div>
             <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
-              {lang === 'nl' ? 'Aankoopstand (km)' : t('initialOdometer')}
+              {t('initialOdometer')}
             </label>
             <input
               type="number"
               value={initialOdometer}
               onChange={(e) => setInitialOdometer(e.target.value)}
-              placeholder="bijv. 67799"
+              placeholder={t('examplePlaceholder', { value: '67799' })}
               className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm font-mono"
             />
           </div>
@@ -75,7 +73,7 @@ export const VehiclePurchaseAndApkFields: React.FC<VehiclePurchaseAndApkFieldsPr
               step="0.01"
               value={purchasePrice}
               onChange={(e) => setPurchasePrice(e.target.value)}
-              placeholder="bijv. 19995"
+              placeholder={t('examplePlaceholder', { value: '19995' })}
               className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm font-mono"
             />
           </div>
@@ -96,7 +94,7 @@ export const VehiclePurchaseAndApkFields: React.FC<VehiclePurchaseAndApkFieldsPr
           rows={2}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder={lang === 'nl' ? 'Kleurcode, opties, bandenmaten...' : 'Paint code, options, tire sizes...'}
+          placeholder={t('vehicleNotesPlaceholder')}
           className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
         />
       </div>

@@ -20,7 +20,7 @@ interface ContextType {
 export const Vehicles: React.FC = () => {
   const { vehicles, refreshVehicles } = useOutletContext<ContextType>();
   const { user } = useAuth();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'archived'>('active');
   const [fleetView, setFleetView] = useState(false);
   const [fleetVehicles, setFleetVehicles] = useState<Vehicle[]>([]);
@@ -51,7 +51,7 @@ export const Vehicles: React.FC = () => {
         refreshVehicles();
         if (fleetView) fetchFleet();
       } catch (err: any) {
-        alert(err?.message || 'Delete failed');
+        alert(err?.message || t('deleteFailed'));
       }
     }
   };
@@ -80,12 +80,10 @@ export const Vehicles: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center space-x-2">
             <Car className="w-5 h-5 text-sky-500" />
-            <span>{fleetView ? 'Wagenpark (Super-Admin: Alle Voertuigen)' : (lang === 'nl' ? 'Mijn Voertuigen' : 'My Vehicles')}</span>
+            <span>{fleetView ? t('fleetViewTitle') : t('myVehicles')}</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {fleetView
-              ? 'Volledig overzicht van alle geregistreerde voertuigen van alle gebruikers op deze instantie'
-              : (lang === 'nl' ? 'Beheer al je geregistreerde auto\'s, motoren en aanhangers' : 'Manage your registered vehicles')}
+            {fleetView ? t('fleetViewSubtitle') : t('myVehiclesSubtitle')}
           </p>
         </div>
 
@@ -101,7 +99,7 @@ export const Vehicles: React.FC = () => {
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>{fleetView ? 'Alle Voertuigen Actief' : 'Toon Alle Voertuigen (Admin)'}</span>
+              <span>{fleetView ? t('fleetViewActive') : t('fleetViewToggle')}</span>
             </button>
           )}
 
@@ -152,12 +150,10 @@ export const Vehicles: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
           <Car className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
           <h3 className="text-sm font-bold text-slate-800 dark:text-white">
-            {lang === 'nl' ? 'Nog geen voertuigen toegevoegd' : 'No vehicles added yet'}
+            {t('noVehiclesYet')}
           </h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-6">
-            {lang === 'nl'
-              ? 'Voeg je eerste auto, motor of aanhanger toe om onderhoud, ritten en brandstof bij te houden.'
-              : 'Add your first car, motorcycle or trailer to track maintenance, trips and fuel.'}
+            {t('noVehiclesYetHint')}
           </p>
           <button
             onClick={form.openCreateModal}
