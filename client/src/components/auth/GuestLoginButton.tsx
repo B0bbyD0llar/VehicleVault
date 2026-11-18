@@ -9,7 +9,7 @@ interface GuestLoginButtonProps {
 
 export const GuestLoginButton: React.FC<GuestLoginButtonProps> = ({ onError }) => {
   const { loginAsGuest, allowGuestAccess } = useAuth();
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
 
   if (!allowGuestAccess) {
@@ -21,12 +21,7 @@ export const GuestLoginButton: React.FC<GuestLoginButtonProps> = ({ onError }) =
     try {
       await loginAsGuest();
     } catch (err: any) {
-      onError(
-        err?.message ||
-          (lang === 'nl'
-            ? 'Gasttoegang starten mislukt. Probeer opnieuw.'
-            : 'Starting guest access failed. Please try again.')
-      );
+      onError(err?.message || t('guestAccessFailed'));
     } finally {
       setLoading(false);
     }
@@ -46,15 +41,13 @@ export const GuestLoginButton: React.FC<GuestLoginButtonProps> = ({ onError }) =
           </div>
           <div>
             <div className="text-xs font-bold text-white flex items-center space-x-1.5">
-              <span>{lang === 'nl' ? 'Direct Proberen (Gasttoegang)' : 'Try Instantly (Guest Access)'}</span>
+              <span>{t('guestTryInstantly')}</span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                1-Klik
+                {t('guestOneClick')}
               </span>
             </div>
             <div className="text-[11px] text-slate-400 group-hover:text-slate-300 transition-colors">
-              {lang === 'nl'
-                ? 'Geen registratie vereist • Schone eigen garage'
-                : 'No registration required • Private trial garage'}
+              {t('guestNoRegistration')}
             </div>
           </div>
         </div>

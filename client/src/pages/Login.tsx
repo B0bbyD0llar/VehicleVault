@@ -60,7 +60,7 @@ export const Login: React.FC = () => {
       loginAsGuest()
         .then(() => navigate('/', { replace: true }))
         .catch((err: any) => {
-          setError(err?.message || 'Gasttoegang starten mislukt');
+          setError(err?.message || t('guestAccessFailed'));
           setLoading(false);
         });
     }
@@ -70,9 +70,9 @@ export const Login: React.FC = () => {
     const errParam = searchParams.get('error');
     if (errParam) {
       if (errParam === 'oidc_not_configured') {
-        setError(lang === 'nl' ? 'OpenID Connect (OIDC) is nog niet geconfigureerd.' : 'OIDC is not yet configured.');
+        setError(t('oidcNotConfigured'));
       } else if (errParam === 'oidc_session_expired' || errParam === 'oidc_state_mismatch') {
-        setError(lang === 'nl' ? 'De SSO sessie is verlopen of ongeldig. Probeer opnieuw.' : 'SSO session expired or invalid. Please retry.');
+        setError(t('ssoSessionExpired'));
       } else {
         setError(errParam);
       }
@@ -100,7 +100,7 @@ export const Login: React.FC = () => {
       }
       navigate('/');
     } catch (err: any) {
-      setError(err?.message || (lang === 'nl' ? 'Inloggen mislukt. Controleer uw gegevens.' : 'Login failed. Please check credentials.'));
+      setError(err?.message || t('loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -116,7 +116,7 @@ export const Login: React.FC = () => {
       await verify2Fa(twoFactorData.tempToken, twoFactorCode);
       navigate('/');
     } catch (err: any) {
-      setError(err?.message || (lang === 'nl' ? 'Ongeldige verificatiecode of herstelcode' : 'Invalid 2FA code'));
+      setError(err?.message || t('invalid2faCode'));
     } finally {
       setLoading(false);
     }
@@ -129,7 +129,7 @@ export const Login: React.FC = () => {
       await loginWithPasskey();
       navigate('/');
     } catch (err: any) {
-      setError(passkeyErrorMessage(err, lang));
+      setError(passkeyErrorMessage(err, t));
     } finally {
       setLoading(false);
     }
@@ -179,14 +179,14 @@ export const Login: React.FC = () => {
         <div className="relative z-10 my-auto w-full max-w-md mx-auto bg-slate-900/80 border border-slate-800/90 rounded-3xl p-7 sm:p-8 shadow-[0_15px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl">
           <div className="mb-6 space-y-1">
             <h1 className="text-2xl font-black tracking-tight text-white">
-              {lang === 'nl' ? 'Welkom terug' : 'Welcome back'}
+              {t('welcomeBack')}
             </h1>
             <p className="text-xs text-slate-400">
-              {lang === 'nl' ? 'Log in op je persoonlijke VehicleVault dashboard' : 'Sign in to access your VehicleVault dashboard'}
+              {t('loginSubtitle')}
             </p>
           </div>
 
-          {!hasUsers && <InitialSetupBanner lang={lang} />}
+          {!hasUsers && <InitialSetupBanner />}
 
           {error && (
             <div className="flex items-center space-x-2.5 bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs p-3.5 rounded-2xl mb-5 font-medium shadow-lg animate-in fade-in">
@@ -206,7 +206,6 @@ export const Login: React.FC = () => {
                 setError(null);
               }}
               loading={loading}
-              lang={lang}
             />
           ) : (
             <>
@@ -216,7 +215,7 @@ export const Login: React.FC = () => {
                   <div className="relative flex py-1 items-center">
                     <div className="flex-grow border-t border-slate-800"></div>
                     <span className="shrink-0 mx-3 text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-                      {lang === 'nl' ? 'of inloggen met account' : 'or sign in with account'}
+                      {t('orSignInWithAccount')}
                     </span>
                     <div className="flex-grow border-t border-slate-800"></div>
                   </div>
@@ -242,7 +241,6 @@ export const Login: React.FC = () => {
                   rememberMe={rememberMe}
                   setRememberMe={setRememberMe}
                   loading={loading}
-                  lang={lang}
                   onSubmit={handleSubmit}
                 />
 
@@ -252,9 +250,9 @@ export const Login: React.FC = () => {
           )}
 
           <div className="mt-6 text-center text-xs text-slate-500 border-t border-slate-800/80 pt-4">
-            <span>{lang === 'nl' ? 'Nog geen account? ' : 'No account yet? '}</span>
+            <span>{t('noAccountYet')} </span>
             <Link to="/register" className="text-emerald-400 hover:text-emerald-300 hover:underline font-bold">
-              {lang === 'nl' ? 'Account Registreren' : 'Register Account'}
+              {t('registerAccount')}
             </Link>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { Lock, Eye, EyeOff, Loader2, CheckCircle2, AlertCircle, KeyRound, ArrowR
 import { useLanguage } from '../context/LanguageContext.js';
 
 export const ResetPassword: React.FC = () => {
-  const { lang } = useLanguage();
+  const { t, lang } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token') || '';
@@ -25,7 +25,7 @@ export const ResetPassword: React.FC = () => {
     if (!token) {
       setVerifying(false);
       setTokenValid(false);
-      setTokenError(lang === 'nl' ? 'Geen herstel-token gevonden in de link. Vraag een nieuwe herstellink aan.' : 'No reset token found.');
+      setTokenError(t('resetNoToken'));
       return;
     }
 
@@ -34,13 +34,13 @@ export const ResetPassword: React.FC = () => {
         const res = await fetch(`/api/auth/verify-reset-token?token=${encodeURIComponent(token)}`);
         const data = await res.json();
         if (!res.ok) {
-          throw new Error(data.error || (lang === 'nl' ? 'Deze herstellink is ongeldig of verlopen.' : 'Invalid or expired link.'));
+          throw new Error(data.error || t('resetLinkInvalid'));
         }
         setTokenValid(true);
         setTokenEmail(data.email);
       } catch (err: any) {
         setTokenValid(false);
-        setTokenError(err?.message || (lang === 'nl' ? 'Controle van herstellink mislukt.' : 'Verification failed.'));
+        setTokenError(err?.message || t('resetVerifyFailed'));
       } finally {
         setVerifying(false);
       }
@@ -54,12 +54,12 @@ export const ResetPassword: React.FC = () => {
     setSubmitError(null);
 
     if (password.length < 6) {
-      setSubmitError(lang === 'nl' ? 'Het nieuwe wachtwoord moet minimaal 6 tekens bevatten.' : 'Password must be at least 6 characters.');
+      setSubmitError(t('passwordMinLength', { min: 6 }));
       return;
     }
 
     if (password !== confirmPassword) {
-      setSubmitError(lang === 'nl' ? 'De wachtwoorden komen niet overeen.' : 'Passwords do not match.');
+      setSubmitError(t('passwordMismatch'));
       return;
     }
 
@@ -73,12 +73,12 @@ export const ResetPassword: React.FC = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || (lang === 'nl' ? 'Wachtwoord instellen mislukt.' : 'Password update failed.'));
+        throw new Error(data.error || t('resetUpdateFailed'));
       }
 
       setSuccess(true);
     } catch (err: any) {
-      setSubmitError(err?.message || 'Er is een fout opgetreden.');
+      setSubmitError(err?.message || t('genericError'));
     } finally {
       setSubmitting(false);
     }
@@ -96,27 +96,27 @@ export const ResetPassword: React.FC = () => {
             <KeyRound className="w-7 h-7" />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white">
-            {lang === 'nl' ? 'Nieuw Wachtwoord' : 'New Password'}
+            {t('newPassword')}
           </h1>
           <p className="text-xs text-slate-400 mt-1 text-center">
-            {tokenEmail ? `${lang === 'nl' ? 'Voor account' : 'For account'} ${tokenEmail}` : (lang === 'nl' ? 'Kies een nieuw, veilig wachtwoord voor uw account' : 'Choose a secure password')}
+            {tokenEmail ? t('resetForAccount', { email: tokenEmail }) : t('resetChoosePassword')}
           </p>
         </div>
 
         {verifying ? (
           <div className="py-8 flex flex-col items-center justify-center space-y-3 text-slate-400 text-xs">
             <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
-            <span>{lang === 'nl' ? 'Herstellink verifiëren...' : 'Verifying link...'}</span>
+            <span>{t('verifyingLink')}</span>
           </div>
         ) : !tokenValid ? (
           <div className="space-y-4 text-xs">
             <div className="p-4 bg-rose-950/60 border border-rose-500/40 rounded-2xl text-rose-200 space-y-2">
               <div className="flex items-center space-x-2 font-bold text-rose-300">
                 <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-                <span>{lang === 'nl' ? 'Link Ongeldig of Verlopen' : 'Invalid or Expired Link'}</span>
+                <span>{t('linkInvalidTitle')}</span>
               </div>
               <p className="text-[11px] leading-relaxed">
-                {tokenError || (lang === 'nl' ? 'Deze herstellink is niet meer geldig. Vraag via het inlogscherm een nieuwe link aan.' : 'This link is no longer valid.')}
+                {tokenError || t('linkInvalidHint')}
               </p>
             </div>
 
@@ -125,7 +125,7 @@ export const ResetPassword: React.FC = () => {
                 to="/forgot-password"
                 className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 transition shadow-md"
               >
-                <span>{lang === 'nl' ? 'Nieuwe Link Aanvragen' : 'Request New Link'}</span>
+                <span>{t('requestNewLink')}</span>
               </Link>
             </div>
           </div>
@@ -134,12 +134,10 @@ export const ResetPassword: React.FC = () => {
             <div className="p-4 bg-emerald-950/60 border border-emerald-500/40 rounded-2xl text-emerald-300 space-y-2">
               <div className="flex items-center space-x-2 font-bold text-emerald-200">
                 <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-                <span>{lang === 'nl' ? 'Wachtwoord Succesvol Gewijzigd!' : 'Password Changed Successfully!'}</span>
+                <span>{t('passwordChanged')}</span>
               </div>
               <p className="text-[11px] leading-relaxed">
-                {lang === 'nl'
-                  ? 'Je nieuwe wachtwoord is opgeslagen. Je kunt nu direct inloggen met je nieuwe inloggegevens.'
-                  : 'Your password has been updated. You can now log in.'}
+                {t('passwordChangedHint')}
               </p>
             </div>
 
@@ -148,7 +146,7 @@ export const ResetPassword: React.FC = () => {
               onClick={() => navigate('/login')}
               className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition flex items-center justify-center space-x-2 shadow-lg shadow-emerald-950/60 hover:scale-[1.01]"
             >
-              <span>{lang === 'nl' ? 'Direct Inloggen' : 'Sign In Now'}</span>
+              <span>{t('signInNow')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -163,7 +161,7 @@ export const ResetPassword: React.FC = () => {
 
             <div>
               <label className="block text-slate-300 font-semibold mb-1.5">
-                {lang === 'nl' ? 'Nieuw Wachtwoord' : 'New Password'}
+                {t('newPassword')}
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
@@ -173,7 +171,7 @@ export const ResetPassword: React.FC = () => {
                   autoFocus
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={lang === 'nl' ? 'Minimaal 6 tekens' : 'At least 6 characters'}
+                  placeholder={t('passwordPlaceholderMin', { min: 6 })}
                   className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 font-medium transition shadow-inner"
                 />
                 <button
@@ -188,7 +186,7 @@ export const ResetPassword: React.FC = () => {
 
             <div>
               <label className="block text-slate-300 font-semibold mb-1.5">
-                {lang === 'nl' ? 'Wachtwoord Bevestigen' : 'Confirm Password'}
+                {t('authConfirmPassword')}
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
@@ -197,7 +195,7 @@ export const ResetPassword: React.FC = () => {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder={lang === 'nl' ? 'Herhaal nieuw wachtwoord' : 'Repeat password'}
+                  placeholder={t('repeatPassword')}
                   className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 font-medium transition shadow-inner"
                 />
               </div>
@@ -209,7 +207,7 @@ export const ResetPassword: React.FC = () => {
               className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition disabled:opacity-50 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-950/60 hover:scale-[1.01] mt-2"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              <span>{submitting ? (lang === 'nl' ? 'Opslaan...' : 'Saving...') : (lang === 'nl' ? 'Wachtwoord Opslaan' : 'Save Password')}</span>
+              <span>{submitting ? t('saving') : t('savePassword')}</span>
             </button>
           </form>
         )}

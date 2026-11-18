@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Lock, Loader2 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext.js';
 
 interface EmailLoginFormProps {
   email: string;
@@ -10,7 +11,6 @@ interface EmailLoginFormProps {
   rememberMe: boolean;
   setRememberMe: (rememberMe: boolean) => void;
   loading: boolean;
-  lang: 'nl' | 'en' | 'de';
   onSubmit: (e: React.FormEvent) => void;
 }
 
@@ -22,14 +22,15 @@ export const EmailLoginForm: React.FC<EmailLoginFormProps> = ({
   rememberMe,
   setRememberMe,
   loading,
-  lang,
   onSubmit,
 }) => {
+  const { t } = useLanguage();
+
   return (
     <form onSubmit={onSubmit} className="space-y-4 text-xs">
       <div>
         <label className="block text-slate-300 font-semibold mb-1.5">
-          {lang === 'nl' ? 'E-mailadres' : 'Email Address'}
+          {t('emailAddress')}
         </label>
         <div className="relative">
           <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
@@ -39,7 +40,7 @@ export const EmailLoginForm: React.FC<EmailLoginFormProps> = ({
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="bestuurder@voorbeeld.nl"
+            placeholder={t('emailPlaceholder')}
             className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 font-medium transition shadow-inner"
           />
         </div>
@@ -47,7 +48,7 @@ export const EmailLoginForm: React.FC<EmailLoginFormProps> = ({
 
       <div>
         <label className="block text-slate-300 font-semibold mb-1.5">
-          {lang === 'nl' ? 'Wachtwoord' : 'Password'}
+          {t('passwordLabel')}
         </label>
         <div className="relative">
           <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
@@ -71,14 +72,14 @@ export const EmailLoginForm: React.FC<EmailLoginFormProps> = ({
             onChange={(e) => setRememberMe(e.target.checked)}
             className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500/20"
           />
-          <span className="text-[11px] font-medium">{lang === 'nl' ? 'Blijf ingelogd' : 'Remember me'}</span>
+          <span className="text-[11px] font-medium">{t('rememberMe')}</span>
         </label>
 
         <Link
           to="/forgot-password"
           className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 hover:underline"
         >
-          {lang === 'nl' ? 'Wachtwoord vergeten?' : 'Forgot password?'}
+          {t('forgotPassword')}
         </Link>
       </div>
 
@@ -89,13 +90,7 @@ export const EmailLoginForm: React.FC<EmailLoginFormProps> = ({
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
         <span>
-          {loading
-            ? lang === 'nl'
-              ? 'Inloggen...'
-              : 'Signing in...'
-            : lang === 'nl'
-            ? 'Inloggen op Vault'
-            : 'Sign in to Vault'}
+          {loading ? t('signingIn') : t('signInToVault')}
         </span>
       </button>
     </form>

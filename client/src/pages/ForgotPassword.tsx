@@ -4,7 +4,7 @@ import { Mail, ArrowLeft, Loader2, CheckCircle2, AlertCircle, KeyRound } from 'l
 import { useLanguage } from '../context/LanguageContext.js';
 
 export const ForgotPassword: React.FC = () => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +30,12 @@ export const ForgotPassword: React.FC = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || (lang === 'nl' ? 'Aanvraag mislukt' : 'Request failed'));
+        throw new Error(data.error || t('resetRequestFailed'));
       }
 
       setResult(data);
     } catch (err: any) {
-      setError(err?.message || (lang === 'nl' ? 'Er is een fout opgetreden bij het aanvragen van het herstel.' : 'An error occurred during password reset.'));
+      setError(err?.message || t('resetRequestError'));
     } finally {
       setLoading(false);
     }
@@ -53,12 +53,10 @@ export const ForgotPassword: React.FC = () => {
             <KeyRound className="w-7 h-7" />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white">
-            {lang === 'nl' ? 'Wachtwoord Vergeten?' : 'Forgot Password?'}
+            {t('forgotPassword')}
           </h1>
           <p className="text-xs text-slate-400 mt-1 text-center">
-            {lang === 'nl'
-              ? 'Vul je e-mailadres in om een herstellink te ontvangen.'
-              : 'Enter your email address to receive a password reset link.'}
+            {t('forgotPasswordHint')}
           </p>
         </div>
 
@@ -74,7 +72,7 @@ export const ForgotPassword: React.FC = () => {
             <div className="p-4 bg-emerald-950/60 border border-emerald-500/40 rounded-2xl space-y-2 text-emerald-300">
               <div className="flex items-center space-x-2 font-bold text-emerald-200">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>{lang === 'nl' ? 'Herstelaanvraag Verwerkt' : 'Request Processed'}</span>
+                <span>{t('requestProcessed')}</span>
               </div>
               <p className="text-[11px] leading-relaxed">
                 {result.message}
@@ -84,12 +82,10 @@ export const ForgotPassword: React.FC = () => {
             {!result.smtpConfigured && (
               <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-2xl text-[11px] text-slate-400 space-y-1">
                 <span className="font-bold text-slate-300 block">
-                  ℹ️ {lang === 'nl' ? 'Homelab / Geen SMTP' : 'Homelab / No SMTP'}
+                  ℹ️ {t('noSmtpTitle')}
                 </span>
                 <p>
-                  {lang === 'nl'
-                    ? 'Als SMTP niet is geconfigureerd, kan de systeembeheerder een herstellink genereren via Instellingen > Gebruikersbeheer of de serverlogboeken raadplegen.'
-                    : 'If SMTP is not configured, the system administrator can generate a reset link via Settings > User Management or inspect server logs.'}
+                  {t('noSmtpHint')}
                 </p>
               </div>
             )}
@@ -100,14 +96,14 @@ export const ForgotPassword: React.FC = () => {
                 className="inline-flex items-center space-x-1.5 text-xs text-emerald-400 font-bold hover:underline"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>{lang === 'nl' ? 'Terug naar Inloggen' : 'Back to Login'}</span>
+                <span>{t('backToLogin')}</span>
               </Link>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <div>
-              <label className="block text-slate-300 font-semibold mb-1.5">{lang === 'nl' ? 'E-mailadres' : 'Email Address'}</label>
+              <label className="block text-slate-300 font-semibold mb-1.5">{t('emailAddress')}</label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
                 <input
@@ -117,7 +113,7 @@ export const ForgotPassword: React.FC = () => {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="bestuurder@voorbeeld.nl"
+                  placeholder={t('emailPlaceholder')}
                   className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 font-medium transition shadow-inner"
                 />
               </div>
@@ -129,7 +125,7 @@ export const ForgotPassword: React.FC = () => {
               className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition disabled:opacity-50 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-950/60 hover:scale-[1.01] mt-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              <span>{loading ? (lang === 'nl' ? 'Bezig met versturen...' : 'Sending...') : (lang === 'nl' ? 'Herstellink Aanvragen' : 'Request Reset Link')}</span>
+              <span>{loading ? t('sendingRequest') : t('requestResetLink')}</span>
             </button>
 
             <div className="pt-4 text-center border-t border-slate-800/80">
@@ -138,7 +134,7 @@ export const ForgotPassword: React.FC = () => {
                 className="inline-flex items-center space-x-1.5 text-xs text-slate-400 hover:text-white font-medium transition"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>{lang === 'nl' ? 'Terug naar inloggen' : 'Back to login'}</span>
+                <span>{t('backToLogin')}</span>
               </Link>
             </div>
           </form>

@@ -15,7 +15,7 @@ export const PasskeyAuthSection: React.FC<PasskeyAuthSectionProps> = ({
   loading,
   passkeyAvailable,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [showRecovery, setShowRecovery] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState('');
 
@@ -46,7 +46,7 @@ export const PasskeyAuthSection: React.FC<PasskeyAuthSectionProps> = ({
             </div>
             <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
               <span className="bg-slate-950/90 px-3 text-slate-500">
-                {lang === 'nl' ? 'of met e-mail & wachtwoord' : 'or sign in with email'}
+                {t('orSignInWithEmail')}
               </span>
             </div>
           </div>
