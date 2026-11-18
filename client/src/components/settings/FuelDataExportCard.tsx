@@ -13,7 +13,7 @@ export const FuelDataExportCard: React.FC<FuelDataExportCardProps> = ({
   vehicles,
   selectedVehicleId,
 }) => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [targetId, setTargetId] = useState(selectedVehicleId || vehicles[0]?.id || '');
   const [exportingType, setExportingType] = useState<'csv' | 'excel' | null>(null);
 
@@ -42,7 +42,7 @@ export const FuelDataExportCard: React.FC<FuelDataExportCardProps> = ({
       const ext = format === 'csv' ? 'csv' : 'xlsx';
       triggerDownload(blob, `Tankhistorie_${plate}.${ext}`);
     } catch (err: any) {
-      alert(err?.message || (lang === 'nl' ? 'Kon export niet voltooien' : 'Failed to export'));
+      alert(err?.message || t('exportFailed'));
     } finally {
       setExportingType(null);
     }
@@ -56,18 +56,16 @@ export const FuelDataExportCard: React.FC<FuelDataExportCardProps> = ({
         <div>
           <h2 className="text-sm font-black text-slate-900 dark:text-white flex items-center space-x-2">
             <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
-            <span>{lang === 'nl' ? 'Tank- en Laadhistorie Exporteren' : 'Export Fuel & Charging History'}</span>
+            <span>{t('fuelExportTitle')}</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {lang === 'nl'
-              ? 'Download de complete historie inclusief datums, tellerstanden, kosten en verbruik.'
-              : 'Download full history including dates, odometers, costs, and consumption.'}
+            {t('fuelExportHint')}
           </p>
         </div>
 
         {vehicles.length > 1 && (
           <div className="flex items-center space-x-2">
-            <span className="text-xs text-slate-500">{lang === 'nl' ? 'Voertuig:' : 'Vehicle:'}</span>
+            <span className="text-xs text-slate-500">{t('vehicle')}:</span>
             <select
               value={targetId}
               onChange={(e) => setTargetId(e.target.value)}
@@ -99,7 +97,7 @@ export const FuelDataExportCard: React.FC<FuelDataExportCardProps> = ({
               <Download className="w-3.5 h-3.5 opacity-60" />
             </div>
             <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
-              {lang === 'nl' ? 'Met opgemaakte tabellen, KPI-totalen en verbruiksberekening' : 'Formatted tables with KPI metrics and totals'}
+              {t('excelExportHint')}
             </p>
           </div>
         </button>
@@ -115,11 +113,11 @@ export const FuelDataExportCard: React.FC<FuelDataExportCardProps> = ({
           </div>
           <div>
             <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 flex items-center space-x-1.5">
-              <span>CSV Bestand (.csv)</span>
+              <span>{t('csvFileLabel')}</span>
               <Download className="w-3.5 h-3.5 opacity-60" />
             </div>
             <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
-              {lang === 'nl' ? 'Universeel UTF-8 CSV formaat voor import in andere programma’s' : 'Universal UTF-8 CSV separated for import in tools'}
+              {t('csvExportHint')}
             </p>
           </div>
         </button>
