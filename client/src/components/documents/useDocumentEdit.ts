@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Vehicle, VehicleDocument } from '../../types/index.js';
 import { apiFetch } from '../../api/client.js';
+import { useLanguage } from '../../context/LanguageContext.js';
 
 export function useDocumentEdit(
   selectedVehicle: Vehicle | null,
   loadDocuments: (vehicleId: string) => Promise<void>,
   extractDocumentDate: (doc: VehicleDocument) => string
 ) {
+  const { t } = useLanguage();
   const [editingDoc, setEditingDoc] = useState<VehicleDocument | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editName, setEditName] = useState('');
@@ -47,7 +49,7 @@ export function useDocumentEdit(
         await loadDocuments(selectedVehicle.id);
       }
     } catch (err: any) {
-      alert(err.message || 'Fout bij opslaan document');
+      alert(err.message || t('documentSaveFailed'));
     } finally {
       setIsSavingEdit(false);
     }

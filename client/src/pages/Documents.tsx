@@ -18,7 +18,7 @@ interface ContextType {
 
 export const Documents: React.FC = () => {
   const { selectedVehicle } = useOutletContext<ContextType>();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const [documents, setDocuments] = useState<VehicleDocument[]>([]);
   const [loading, setLoading] = useState(false);
@@ -84,12 +84,10 @@ export const Documents: React.FC = () => {
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <FolderLock className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" />
         <h3 className="text-base font-bold text-slate-800 dark:text-white">
-          {lang === 'nl' ? 'Geen voertuig geselecteerd' : 'No vehicle selected'}
+          {t('noVehicleSelected')}
         </h3>
         <p className="text-xs text-slate-500 max-w-sm mt-1">
-          {lang === 'nl'
-            ? 'Selecteer een voertuig in het menu hierboven om de digitale handschoenenkast te bekijken.'
-            : 'Select a vehicle from the top menu to access the digital glovebox.'}
+          {t('selectVehicleForDocuments')}
         </p>
       </div>
     );
@@ -138,7 +136,7 @@ export const Documents: React.FC = () => {
             {t('noDocumentsFound')}
           </h3>
           <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-5">
-            Bewaar al je belangrijke autopapieren, groene kaart, kentekencard scans en garagefacturen digitaal op één veilige plek.
+            {t('noDocumentsHint')}
           </p>
           <button
             onClick={() => ops.setIsUploadModalOpen(true)}
