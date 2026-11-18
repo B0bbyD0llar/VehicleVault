@@ -14,6 +14,20 @@ export const importer: Record<keyof typeof nl, string> = {
   errorsFound: 'Errors found',
   executeImport: 'Execute Import',
   importSuccess: 'Data successfully imported!',
+  importAutoDetect: 'Auto-detect format (Recommended)',
+  columnMappingWizard: 'Column Mapping Wizard',
+  importRecordType: 'Record Type',
+  recomputeWithMapping: 'Recompute with this mapping',
+  detectedVehicleInExport: 'Detected vehicle in export:',
+  importingInto: 'Importing into:',
+  detectedFormatLabel: 'Detected: {format}',
+  importRowSummary: '{valid} valid rows • {invalid} invalid',
+  importTypeHeader: 'Type',
+  litersOrDescription: 'Liters / Description',
+  stationOrLocation: 'Station / Location',
+  importRowValid: 'Valid',
+  importPreviewFailed: 'Failed to inspect CSV',
+  importFailed: 'Import failed',
 
   // Trip Import (Tax Authority / Spreadsheet)
   importTrips: 'Import Trips',
@@ -60,4 +74,7 @@ export const importer: Record<keyof typeof nl, string> = {
   tripFieldPlate: 'License Plate',
   tripFieldRoute: 'Detour Route',
   tripImportNoneOption: '— none —',
+  tripImportReadFailed: 'Could not read file',
+  tripImportSectionRows: '{count} trips',
+  tripImportRowError: 'Row {row}: {message}',
 };
