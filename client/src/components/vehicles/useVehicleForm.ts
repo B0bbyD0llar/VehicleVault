@@ -5,7 +5,7 @@ import { compressImage } from '../../utils/imageCompressor.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 
 export function useVehicleForm(refreshVehicles: () => void) {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
@@ -51,7 +51,7 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setYear('');
     setMake('');
     setModel('');
-    setFuelType(lang === 'nl' ? 'Benzine' : 'Petrol');
+    setFuelType('Benzine');
     setTransmission('automatic');
     setPurchaseDate('');
     setPurchasePrice('0');
@@ -207,7 +207,7 @@ export function useVehicleForm(refreshVehicles: () => void) {
       resetForm();
       refreshVehicles();
     } catch (err: any) {
-      setError(err?.message || 'Error saving vehicle');
+      setError(err?.message || t('vehicleSaveFailed'));
     }
   };
 

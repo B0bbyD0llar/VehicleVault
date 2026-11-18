@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Radio, RefreshCw, Check, AlertCircle, Loader2, Sparkles, History } from 'lucide-react';
 import { apiFetch } from '../../api/client.js';
 import { useLanguage } from '../../context/LanguageContext.js';
+import { formatDisplayDateTime } from '../../utils/format.js';
 import { TelematicsSyncLogModal } from '../telematics/TelematicsSyncLogModal.js';
 
 interface VehicleTelematicsFieldsProps {
@@ -27,7 +28,7 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
   telematicsLastOdometer,
   onOdometerUpdated,
 }) => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [sensors, setSensors] = useState<Array<{ entity_id: string; name: string; state: string; is_likely_odometer?: boolean }>>([]);
   const [loadingSensors, setLoadingSensors] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -68,22 +69,19 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
       if (res.success && res.odometer !== undefined) {
         setSyncResult({
           success: true,
-          message:
-            lang === 'nl'
-              ? `Succesvol gesynchroniseerd! Actuele tellerstand: ${res.odometer.toLocaleString()} km`
-              : `Successfully synced! Current odometer: ${res.odometer.toLocaleString()} km`,
+          message: t('telematicsSyncSuccess', { km: res.odometer.toLocaleString() }),
         });
         if (onOdometerUpdated) onOdometerUpdated(res.odometer);
       } else {
         setSyncResult({
           success: false,
-          message: res.error || (lang === 'nl' ? 'Synchronisatie mislukt' : 'Sync failed'),
+          message: res.error || t('telematicsSyncFailed'),
         });
       }
     } catch (err: any) {
       setSyncResult({
         success: false,
-        message: err?.message || (lang === 'nl' ? 'Synchronisatie mislukt' : 'Sync failed'),
+        message: err?.message || t('telematicsSyncFailed'),
       });
     } finally {
       setSyncing(false);
@@ -95,7 +93,7 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
       <div className="flex items-center justify-between">
         <label className="text-slate-800 dark:text-slate-200 font-bold flex items-center space-x-1.5 cursor-pointer select-none">
           <Radio className="w-4 h-4 text-emerald-500" />
-          <span>{lang === 'nl' ? 'Auto Telematica (Home Assistant Sync)' : 'Vehicle Telematics (Home Assistant)'}</span>
+          <span>{t('telematicsTitle')}</span>
         </label>
         <label className="relative inline-flex items-center cursor-pointer">
           <input
@@ -109,9 +107,7 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
       </div>
 
       <p className="text-[11px] text-slate-500 dark:text-slate-400">
-        {lang === 'nl'
-          ? 'Haal dagelijks automatisch de actuele tellerstand op via Home Assistant (bijv. Kia Connect, Hyundai Bluelink, Mercedes me, Stellantis, VW).'
-          : 'Automatically pull daily odometer readings from Home Assistant sensors (e.g. Kia Connect, Bluelink, Mercedes me, Stellantis, VW).'}
+        {t('telematicsHint')}
       </p>
 
       {telematicsEnabled && (
@@ -119,7 +115,7 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-slate-700 dark:text-slate-300 font-semibold text-[11px]">
-                {lang === 'nl' ? 'Home Assistant Sensor Entiteit' : 'Home Assistant Sensor Entity'}
+                {t('telematicsSensorEntity')}
               </label>
               <button
                 type="button"
@@ -128,7 +124,7 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
                 className="text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline flex items-center space-x-1 font-semibold"
               >
                 {loadingSensors ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                <span>{lang === 'nl' ? 'Sensoren vernieuwen' : 'Refresh sensors'}</span>
+                <span>{t('refreshSensors')}</span>
               </button>
             </div>
 
@@ -138,7 +134,7 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
                 list="ha-odometer-sensors"
                 value={telematicsHaEntityId}
                 onChange={(e) => setTelematicsHaEntityId(e.target.value)}
-                placeholder="sensor.kia_niro_odometer of sensor.mercedes_odometer"
+                placeholder={t('examplePlaceholder', { value: 'sensor.kia_niro_odometer / sensor.mercedes_odometer' })}
                 className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white font-mono placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
               />
               <datalist id="ha-odometer-sensors">
@@ -150,9 +146,7 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
               </datalist>
             </div>
             <p className="text-[10px] text-slate-400 mt-0.5">
-              {lang === 'nl'
-                ? 'Typ de sensornaam of selecteer er een uit de suggestielijst.'
-                : 'Type the sensor entity ID or select from the dropdown.'}
+              {t('telematicsSensorHint')}
             </p>
           </div>
 
@@ -161,13 +155,13 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
               <div className="text-[11px] text-slate-500 dark:text-slate-400">
                 {telematicsLastSyncAt ? (
                   <span>
-                    {lang === 'nl' ? 'Laatste sync: ' : 'Last sync: '}
-                    <strong>{new Date(telematicsLastSyncAt).toLocaleString(lang === 'nl' ? 'nl-NL' : 'en-US')}</strong>
+                    {t('lastSyncLabel')}{' '}
+                    <strong>{formatDisplayDateTime(telematicsLastSyncAt)}</strong>
                     {telematicsLastOdometer ? ` (${telematicsLastOdometer.toLocaleString()} km)` : ''}
                     {telematicsLastStatus && telematicsLastStatus !== 'ok' ? ` [${telematicsLastStatus}]` : ''}
                   </span>
                 ) : (
-                  <span>{lang === 'nl' ? 'Nog niet gesynchroniseerd' : 'Not yet synced'}</span>
+                  <span>{t('notYetSynced')}</span>
                 )}
               </div>
 
@@ -178,7 +172,7 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
                   className="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5"
                 >
                   <History className="w-3 h-3" />
-                  <span>{lang === 'nl' ? 'Sync Log' : 'Sync Log'}</span>
+                  <span>{t('syncLog')}</span>
                 </button>
 
                 <button
@@ -188,7 +182,7 @@ export const VehicleTelematicsFields: React.FC<VehicleTelematicsFieldsProps> = (
                   className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center space-x-1.5 disabled:opacity-50 shadow-2xs"
                 >
                   {syncing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                  <span>{syncing ? (lang === 'nl' ? 'Ophalen...' : 'Syncing...') : (lang === 'nl' ? 'Nu Syncen' : 'Sync Now')}</span>
+                  <span>{syncing ? t('syncing') : t('syncNow')}</span>
                 </button>
               </div>
             </div>

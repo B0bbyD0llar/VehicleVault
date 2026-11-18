@@ -94,25 +94,25 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
             {v.is_owner === false && (
               <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-accent-700 dark:text-accent-300 bg-accent-50 dark:bg-accent-950/60 px-2 py-0.5 rounded-full border border-accent-200 dark:border-accent-800/40">
                 <Users className="w-3 h-3 text-accent-500" />
-                <span>Gedeeld{v.owner_email ? ` (${v.owner_email})` : ''}</span>
+                <span>{t('sharedVehicle')}{v.owner_email ? ` (${v.owner_email})` : ''}</span>
               </span>
             )}
             {v.notifications_enabled === false && (
-              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700" title={lang === 'nl' ? 'Notificaties uitgeschakeld voor dit voertuig' : 'Notifications disabled for this vehicle'}>
+              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700" title={t('notificationsDisabledTooltip')}>
                 <BellOff className="w-3 h-3 text-slate-400" />
-                <span>{lang === 'nl' ? 'Stil' : 'Muted'}</span>
+                <span>{t('mutedBadge')}</span>
               </span>
             )}
             {v.telematics_enabled && (
-              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/40" title={lang === 'nl' ? 'Telematica actief' : 'Telematics active'}>
+              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/40" title={t('telematicsActive')}>
                 <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
-                <span>Telematica</span>
+                <span>{t('telematics')}</span>
               </span>
             )}
             {v.notifications_enabled !== false && v.maintenance_notifications_enabled === false && (
-              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/40" title={lang === 'nl' ? 'Onderhoudsherinneringen uitgeschakeld' : 'Maintenance alerts disabled'}>
+              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/40" title={t('maintenanceAlertsDisabledTooltip')}>
                 <BellOff className="w-3 h-3 text-amber-500" />
-                <span>{lang === 'nl' ? 'Geen onderhoudsmeldingen' : 'No maint. alerts'}</span>
+                <span>{t('noMaintenanceAlertsBadge')}</span>
               </span>
             )}
           </div>
@@ -133,20 +133,20 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
 
         <div className="bg-slate-50 dark:bg-slate-950/70 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 text-xs space-y-2">
           <div className="flex justify-between">
-            <span className="text-slate-500">{lang === 'nl' ? 'Huidige stand' : t('odometer')}</span>
+            <span className="text-slate-500">{t('currentOdometer')}</span>
             <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
               {(v.current_odometer || v.initial_odometer || 0).toLocaleString()} km
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-500">{lang === 'nl' ? 'Aankoopstand' : t('initialOdometer')}</span>
+            <span className="text-slate-500">{t('purchaseOdometer')}</span>
             <span className="font-mono font-medium text-slate-700 dark:text-slate-300">
               {(v.initial_odometer || 0).toLocaleString()} km
             </span>
           </div>
           {(v.current_odometer || v.initial_odometer || 0) > (v.initial_odometer || 0) && (
             <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
-              <span>{lang === 'nl' ? 'Gereden na aankoop' : 'Driven since purchase'}</span>
+              <span>{t('drivenSincePurchase')}</span>
               <span className="font-mono font-bold">
                 +{((v.current_odometer || v.initial_odometer || 0) - (v.initial_odometer || 0)).toLocaleString()} km
               </span>
@@ -182,12 +182,12 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
             <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800/80 pt-1.5 text-[11px]">
               <span className="text-slate-500 flex items-center space-x-1">
                 <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
-                <span>{lang === 'nl' ? 'Telematica' : 'Telematics'}</span>
+                <span>{t('telematics')}</span>
               </span>
               <div className="flex items-center space-x-1.5">
                 {v.telematics_last_sync_at && (
                   <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
-                    {new Date(v.telematics_last_sync_at).toLocaleDateString(lang === 'nl' ? 'nl-NL' : 'en-US')}
+                    {formatDisplayDate(v.telematics_last_sync_at)}
                   </span>
                 )}
                 <button
@@ -197,7 +197,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
                     setIsLogOpen(true);
                   }}
                   className="p-1 rounded text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition"
-                  title={lang === 'nl' ? 'Sync log & direct syncen' : 'Sync log & sync now'}
+                  title={t('syncLogAndSyncNow')}
                 >
                   <History className="w-3 h-3" />
                 </button>
@@ -220,7 +220,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
             <button
               onClick={() => onOpenShowcase(v)}
               className="p-1.5 text-slate-500 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-              title="Verkooppagina & Showcase Dossier"
+              title={t('showcaseDossier')}
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
             </button>
@@ -229,7 +229,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
             <button
               onClick={() => onOpenShare(v)}
               className="p-1.5 text-slate-500 hover:text-accent-600 dark:hover:text-accent-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-              title={lang === 'nl' ? 'Voertuig delen met gezinslid/gebruiker' : 'Share vehicle'}
+              title={t('shareVehicle')}
             >
               <Users className="w-4 h-4" />
             </button>
@@ -262,10 +262,10 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
               window.dispatchEvent(new CustomEvent('vehicle:changed', { detail: { vehicleId: v.id } }));
             }}
             className="text-slate-500 hover:text-accent-600 dark:hover:text-accent-400 font-semibold text-xs flex items-center space-x-1 transition"
-            title="Vaste lasten bekijken"
+            title={t('viewFixedExpenses')}
           >
             <Landmark className="w-3.5 h-3.5 text-accent-500" />
-            <span>Lasten</span>
+            <span>{t('fixedExpensesShort')}</span>
           </Link>
           <span className="text-slate-300 dark:text-slate-700">|</span>
           <Link

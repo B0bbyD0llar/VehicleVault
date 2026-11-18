@@ -30,7 +30,7 @@ export const VehicleNotificationSettingsFields: React.FC<VehicleNotificationSett
   tireTreadNotificationsEnabled = true,
   setTireTreadNotificationsEnabled,
 }) => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
 
   const isMotorcycleOrTrailer = type === 'motorcycle' || type === 'trailer';
 
@@ -45,12 +45,10 @@ export const VehicleNotificationSettingsFields: React.FC<VehicleNotificationSett
           )}
           <div>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-              {lang === 'nl' ? 'Notificaties & Herinneringen' : 'Notifications & Alerts'}
+              {t('vehicleNotificationsTitle')}
             </span>
             <span className="text-[10px] text-slate-500 dark:text-slate-400">
-              {lang === 'nl'
-                ? 'Stel in welke automatische meldingen je wilt ontvangen voor dit specifieke voertuig.'
-                : 'Configure automated push and email alerts for this specific vehicle.'}
+              {t('vehicleNotificationsHint')}
             </span>
           </div>
         </div>
@@ -74,12 +72,10 @@ export const VehicleNotificationSettingsFields: React.FC<VehicleNotificationSett
               <Wrench className="w-3.5 h-3.5 text-amber-500" />
               <div>
                 <span className="font-semibold text-slate-800 dark:text-slate-200 block">
-                  {lang === 'nl' ? 'Onderhoudsmeldingen' : 'Maintenance Overdue Alerts'}
+                  {t('maintenanceAlertsLabel')}
                 </span>
                 <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                  {lang === 'nl'
-                    ? 'Waarschuw bij overschreden onderhoudsintervallen (km of tijd)'
-                    : 'Alert when maintenance intervals are overdue'}
+                  {t('maintenanceAlertsHint')}
                 </span>
               </div>
             </div>
@@ -97,12 +93,12 @@ export const VehicleNotificationSettingsFields: React.FC<VehicleNotificationSett
               <ShieldAlert className="w-3.5 h-3.5 text-emerald-500" />
               <div>
                 <span className="font-semibold text-slate-800 dark:text-slate-200 block">
-                  {lang === 'nl' ? 'APK / Keuringsherinneringen' : 'Inspection / APK Alerts'}
+                  {t('inspectionAlertsLabel')}
                 </span>
                 <span className="text-[10px] text-slate-500 dark:text-slate-400">
                   {isMotorcycleOrTrailer
-                    ? (lang === 'nl' ? 'Niet van toepassing (motoren/aanhangers hebben geen APK-plicht)' : 'Not applicable for motorcycles or trailers')
-                    : (lang === 'nl' ? 'Ontvang 30 en 7 dagen voor vervaldatum een melding' : 'Receive alerts 30 and 7 days before expiration')}
+                    ? t('inspectionAlertsNotApplicable')
+                    : t('inspectionAlertsHint')}
                 </span>
               </div>
             </div>
@@ -121,12 +117,10 @@ export const VehicleNotificationSettingsFields: React.FC<VehicleNotificationSett
                 <RefreshCw className="w-3.5 h-3.5 text-sky-500" />
                 <div>
                   <span className="font-semibold text-slate-800 dark:text-slate-200 block">
-                    {lang === 'nl' ? 'Bandenwissel Herinneringen' : 'Tire Seasonal Swap Alerts'}
+                    {t('tireSwapAlertsLabel')}
                   </span>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                    {lang === 'nl'
-                      ? 'Melding in de herfst (winterbanden) en het voorjaar (zomerbanden)'
-                      : 'Seasonal reminder to swap between summer and winter tire sets'}
+                    {t('tireSwapAlertsHint')}
                   </span>
                 </div>
               </div>
@@ -146,12 +140,10 @@ export const VehicleNotificationSettingsFields: React.FC<VehicleNotificationSett
                 <CircleGauge className="w-3.5 h-3.5 text-rose-500" />
                 <div>
                   <span className="font-semibold text-slate-800 dark:text-slate-200 block">
-                    {lang === 'nl' ? 'Bandenprofiel Waarschuwingen' : 'Tire Tread Depth Alerts'}
+                    {t('tireTreadAlertsLabel')}
                   </span>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                    {lang === 'nl'
-                      ? 'Waarschuw bij adviesgrens (≤ 3,0 mm) en wettelijke limiet (≤ 1,6 mm)'
-                      : 'Alert when tire tread reaches warning (≤ 3.0 mm) or legal minimum (≤ 1.6 mm)'}
+                    {t('tireTreadAlertsHint')}
                   </span>
                 </div>
               </div>
