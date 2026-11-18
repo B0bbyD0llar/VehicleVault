@@ -29,6 +29,7 @@ export const auth: Record<keyof typeof nl, string> = {
   passkeyErrorGeneric: 'Beim Passkey ist etwas schiefgelaufen.',
 
   // Login page
+  languageSelectLabel: 'Sprache',
   welcomeBack: 'Willkommen zurück',
   loginSubtitle: 'Melde dich bei deinem persönlichen VehicleVault-Dashboard an',
   orSignInWithAccount: 'oder mit Konto anmelden',

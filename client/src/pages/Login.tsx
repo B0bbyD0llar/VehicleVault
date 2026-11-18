@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Languages } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.js';
 import { useLanguage } from '../context/LanguageContext.js';
+import { translations, Language } from '../i18n/translations.js';
 import { passkeyErrorMessage } from '../utils/passkeys.js';
 import { LoginHeroSection } from '../components/auth/LoginHeroSection.js';
 import { TwoFactorLoginForm } from '../components/auth/TwoFactorLoginForm.js';
@@ -11,6 +12,19 @@ import { GuestLoginButton } from '../components/auth/GuestLoginButton.js';
 import { LoginOidcSection } from '../components/auth/LoginOidcSection.js';
 import { InitialSetupBanner } from '../components/auth/InitialSetupBanner.js';
 import { EmailLoginForm } from '../components/auth/EmailLoginForm.js';
+
+const AVAILABLE_LANGUAGES = Object.keys(translations) as Language[];
+
+/** Name of a language in that language itself, e.g. "Deutsch" for 'de'. */
+function nativeLanguageName(code: Language): string {
+  try {
+    const name = new Intl.DisplayNames([code], { type: 'language' }).of(code);
+    if (name) return name.charAt(0).toLocaleUpperCase(code) + name.slice(1);
+  } catch {
+    // Intl.DisplayNames not available: fall back to the code below.
+  }
+  return code.toUpperCase();
+}
 
 export const Login: React.FC = () => {
   const { t, lang, setLang } = useLanguage();
@@ -165,14 +179,21 @@ export const Login: React.FC = () => {
             <span className="font-black text-white text-lg tracking-tight">VehicleVault</span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setLang(lang === 'nl' ? 'en' : 'nl')}
-            className="ml-auto inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-white text-xs font-semibold transition shadow-xs"
-          >
+          <label className="ml-auto inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-white text-xs font-semibold transition shadow-xs cursor-pointer">
             <Languages className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{lang === 'nl' ? 'English' : 'Nederlands'}</span>
-          </button>
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value as Language)}
+              aria-label={t('languageSelectLabel')}
+              className="bg-transparent focus:outline-none cursor-pointer"
+            >
+              {AVAILABLE_LANGUAGES.map((code) => (
+                <option key={code} value={code} className="bg-slate-900 text-slate-200">
+                  {nativeLanguageName(code)}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {/* Center Floating Glassmorphic Card */}

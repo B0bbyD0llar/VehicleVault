@@ -29,6 +29,7 @@ export const auth: Record<keyof typeof nl, string> = {
   passkeyErrorGeneric: 'Something went wrong with the passkey.',
 
   // Login page
+  languageSelectLabel: 'Language',
   welcomeBack: 'Welcome back',
   loginSubtitle: 'Sign in to access your VehicleVault dashboard',
   orSignInWithAccount: 'or sign in with account',

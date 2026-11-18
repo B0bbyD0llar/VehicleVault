@@ -27,6 +27,7 @@ export const auth = {
   passkeyErrorGeneric: 'Er ging iets mis met de passkey.',
 
   // Login page
+  languageSelectLabel: 'Taal',
   welcomeBack: 'Welkom terug',
   loginSubtitle: 'Log in op je persoonlijke VehicleVault dashboard',
   orSignInWithAccount: 'of inloggen met account',
