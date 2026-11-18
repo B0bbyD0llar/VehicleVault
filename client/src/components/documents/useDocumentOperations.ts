@@ -10,7 +10,7 @@ export function useDocumentOperations(
   selectedVehicle: Vehicle | null,
   loadDocuments: (vehicleId: string) => Promise<void>
 ) {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   // Document AI scanner hook
   const scanner = useDocumentScan();
@@ -36,7 +36,7 @@ export function useDocumentOperations(
     if (data.notes) {
       setDocNotes(data.notes);
     } else if (data.totalAmount) {
-      setDocNotes(lang === 'nl' ? `Totaalbedrag: €${data.totalAmount.toFixed(2)}` : `Total amount: €${data.totalAmount.toFixed(2)}`);
+      setDocNotes(t('documentTotalAmountNote', { amount: data.totalAmount.toFixed(2) }));
     }
   };
 
@@ -120,11 +120,7 @@ export function useDocumentOperations(
       const lower = file.name.toLowerCase();
       const isSupported = validExtensions.some((ext) => lower.endsWith(ext)) || file.type.startsWith('image/') || file.type === 'application/pdf';
       if (!isSupported) {
-        alert(
-          lang === 'nl'
-            ? 'Alleen PDF- of afbeeldingsbestanden (.pdf, .jpg, .png, .webp) zijn toegestaan.'
-            : 'Only PDF or image files (.pdf, .jpg, .png, .webp) are supported.'
-        );
+        alert(t('documentUnsupportedFile'));
         return;
       }
       await processSelectedFile(file);
@@ -163,7 +159,7 @@ export function useDocumentOperations(
       scanner.resetScan();
       await loadDocuments(selectedVehicle.id);
     } catch (err: any) {
-      alert(err?.message || 'Upload mislukt. Controleer bestandsformaat (PDF, JPG, PNG) en bestandsgrootte (max 30MB).');
+      alert(err?.message || t('documentUploadFailed'));
     } finally {
       setIsUploading(false);
     }

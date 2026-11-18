@@ -27,7 +27,7 @@ export const DocumentListView: React.FC<DocumentListViewProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const formatFileSize = (bytes: number): string => {
     if (!bytes || bytes === 0) return '0 B';
@@ -144,7 +144,7 @@ export const DocumentListView: React.FC<DocumentListViewProps> = ({
                         type="button"
                         onClick={() => onEdit(doc)}
                         className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-700 dark:bg-slate-800 dark:hover:bg-sky-950/40 dark:text-slate-300 dark:hover:text-sky-300 border border-slate-200 dark:border-slate-700 hover:border-sky-300 transition cursor-pointer"
-                        title={lang === 'nl' ? 'Klik om datum of document te wijzigen' : 'Click to edit date or document'}
+                        title={t('editDocumentDateTooltip')}
                       >
                         📅 {formatDisplayDate(dateStr)}
                       </button>
@@ -183,7 +183,7 @@ export const DocumentListView: React.FC<DocumentListViewProps> = ({
                   className="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 rounded-xl transition inline-flex items-center space-x-1.5 font-bold text-xs border border-sky-200/60 dark:border-sky-800/40 shadow-2xs"
                 >
                   <Eye className="w-3.5 h-3.5 text-sky-500" />
-                  <span>{lang === 'nl' ? 'Bekijken' : 'Preview'}</span>
+                  <span>{t('view')}</span>
                 </button>
 
                 <a
@@ -269,7 +269,7 @@ export const DocumentListView: React.FC<DocumentListViewProps> = ({
                 className="text-xs font-bold text-sky-600 dark:text-sky-400 flex items-center space-x-1"
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>{lang === 'nl' ? 'Bekijken' : 'Preview'}</span>
+                <span>{t('view')}</span>
               </button>
               <div className="flex items-center space-x-1">
                 <button onClick={() => onEdit(doc)} className="p-1 text-slate-400 hover:text-slate-600">

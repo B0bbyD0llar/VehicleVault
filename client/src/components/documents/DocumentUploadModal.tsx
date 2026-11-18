@@ -62,7 +62,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
   scanWarning = null,
   onReScan,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   if (!isOpen) return null;
 
@@ -115,21 +115,21 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                     {compressing && (
                       <span className="text-[11px] text-amber-500 inline-flex items-center space-x-1">
                         <RefreshCw className="w-3 h-3 animate-spin" />
-                        <span>{lang === 'nl' ? 'Bezig met comprimeren...' : 'Compressing image...'}</span>
+                        <span>{t('compressingImage')}</span>
                       </span>
                     )}
                     {compressionRatio && (
                       <span className="text-[10px] text-emerald-500 block font-medium">
-                        {lang === 'nl' ? 'Compressie' : 'Compression'}: {compressionRatio}
+                        {t('compressionLabel', { ratio: compressionRatio })}
                       </span>
                     )}
                   </div>
                 ) : (
                   <div>
                     <span className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                      {lang === 'nl' ? 'Klik om te bladeren of sleep een bestand hierheen' : 'Click to browse or drop a file here'}
+                      {t('documentDropHint')}
                     </span>
-                    <span className="text-[10px] text-slate-400 block">PDF, JPG, PNG, WEBP (max 30MB) • Met automatische AI-herkenning</span>
+                    <span className="text-[10px] text-slate-400 block">{t('documentFormatsHint')}</span>
                   </div>
                 )}
               </>
@@ -194,7 +194,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                 onClick={onRemoveFile}
                 className="text-[11px] text-rose-500 hover:text-rose-600 block text-right font-medium ml-auto"
               >
-                {lang === 'nl' ? 'Bestand verwijderen' : 'Remove file'}
+                {t('removeFile')}
               </button>
             </div>
           )}
@@ -206,7 +206,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
               required
               value={docName}
               onChange={(e) => setDocName(e.target.value)}
-              placeholder={lang === 'nl' ? 'bijv. Factuur Inschrijving - Kia Nederland' : 'e.g. Registration Invoice - Kia'}
+              placeholder={t('documentNamePlaceholder')}
               className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
             />
           </div>
@@ -229,13 +229,13 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
             </div>
 
             <div>
-              <DatePicker label={lang === 'nl' ? 'Document- / Factuurdatum' : 'Document / Invoice Date'} value={docDate} onChange={setDocDate} />
+              <DatePicker label={t('documentDateLabel')} value={docDate} onChange={setDocDate} />
             </div>
           </div>
 
           <div>
             <DatePicker
-              label={lang === 'nl' ? 'Vervaldatum (optioneel, voor bijv. polis of keuring)' : 'Expiration Date (optional, e.g. for policy or inspection)'}
+              label={t('documentExpiresLabel')}
               value={docExpiresAt}
               onChange={setDocExpiresAt}
             />
@@ -247,7 +247,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
               rows={2}
               value={docNotes}
               onChange={(e) => setDocNotes(e.target.value)}
-              placeholder={lang === 'nl' ? 'bijv. Inschrijving voertuig, factuurnummer, polisnummer...' : 'e.g. Vehicle registration, invoice number, policy number...'}
+              placeholder={t('documentNotesPlaceholder')}
               className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
             />
           </div>

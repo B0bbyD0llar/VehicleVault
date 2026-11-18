@@ -39,7 +39,7 @@ export const DocumentEditModal: React.FC<DocumentEditModalProps> = ({
   setEditNotes,
   isSavingEdit,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   if (!isOpen || !editingDoc) return null;
 
@@ -48,7 +48,7 @@ export const DocumentEditModal: React.FC<DocumentEditModalProps> = ({
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 text-slate-900 dark:text-slate-100 shadow-2xl my-8">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
           <h3 className="text-base font-bold">
-            {lang === 'nl' ? 'Document Gegevens Bewerken' : 'Edit Document Details'}
+            {t('editDocumentTitle')}
           </h3>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
             <X className="w-5 h-5" />
@@ -89,13 +89,13 @@ export const DocumentEditModal: React.FC<DocumentEditModalProps> = ({
             </div>
 
             <div>
-              <DatePicker label={lang === 'nl' ? 'Document- / Factuurdatum' : 'Document / Invoice Date'} value={editDate} onChange={setEditDate} />
+              <DatePicker label={t('documentDateLabel')} value={editDate} onChange={setEditDate} />
             </div>
           </div>
 
           <div>
             <DatePicker
-              label={lang === 'nl' ? 'Vervaldatum (optioneel, voor bijv. polis of keuring)' : 'Expiration Date (optional, e.g. for policy or inspection)'}
+              label={t('documentExpiresLabel')}
               value={editExpiresAt}
               onChange={setEditExpiresAt}
             />
@@ -109,7 +109,7 @@ export const DocumentEditModal: React.FC<DocumentEditModalProps> = ({
               rows={2}
               value={editNotes}
               onChange={(e) => setEditNotes(e.target.value)}
-              placeholder={lang === 'nl' ? 'Notities...' : 'Notes...'}
+              placeholder={t('documentEditNotesPlaceholder')}
               className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
             />
           </div>

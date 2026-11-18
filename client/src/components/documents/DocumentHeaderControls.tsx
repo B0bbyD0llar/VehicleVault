@@ -24,7 +24,7 @@ export const DocumentHeaderControls: React.FC<DocumentHeaderControlsProps> = ({
   viewMode,
   onSetViewMode,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const categories: { key: DocCategory; label: string }[] = [
     { key: 'all', label: t('docCatAll') },
@@ -67,9 +67,9 @@ export const DocumentHeaderControls: React.FC<DocumentHeaderControlsProps> = ({
           onChange={(e) => setSortBy(e.target.value as any)}
           className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-2xs"
         >
-          <option value="date_desc">{lang === 'nl' ? 'Datum: Nieuwste eerst' : 'Date: Newest first'}</option>
-          <option value="date_asc">{lang === 'nl' ? 'Datum: Oudste eerst' : 'Date: Oldest first'}</option>
-          <option value="name_asc">{lang === 'nl' ? 'Naam (A-Z)' : 'Name (A-Z)'}</option>
+          <option value="date_desc">{t('sortDateNewest')}</option>
+          <option value="date_asc">{t('sortDateOldest')}</option>
+          <option value="name_asc">{t('sortNameAsc')}</option>
         </select>
 
         <div className="flex items-center space-x-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">

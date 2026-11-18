@@ -30,7 +30,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
   date,
   notes,
 }) => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [rotation, setRotation] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
 
@@ -74,7 +74,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               </h3>
               <div className="flex items-center space-x-2 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                 <span className="font-semibold uppercase tracking-wider px-1.5 py-0.2 rounded bg-slate-200/70 dark:bg-slate-800 text-[10px]">
-                  {isPdf ? 'PDF Document' : isImage ? (lang === 'nl' ? 'Afbeelding' : 'Image') : (lang === 'nl' ? 'Bestand' : 'File')}
+                  {isPdf ? t('fileTypePdf') : isImage ? t('fileTypeImage') : t('fileTypeFile')}
                 </span>
                 {fileSize && (
                   <>
@@ -101,7 +101,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                   onClick={handleZoomOut}
                   disabled={zoomLevel <= 0.5}
                   className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 disabled:opacity-30 transition"
-                  title={lang === 'nl' ? 'Uitzoomen' : 'Zoom out'}
+                  title={t('zoomOut')}
                 >
                   <ZoomOut className="w-4 h-4" />
                 </button>
@@ -113,7 +113,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                   onClick={handleZoomIn}
                   disabled={zoomLevel >= 3}
                   className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 disabled:opacity-30 transition"
-                  title={lang === 'nl' ? 'Inzoomen' : 'Zoom in'}
+                  title={t('zoomIn')}
                 >
                   <ZoomIn className="w-4 h-4" />
                 </button>
@@ -122,7 +122,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                   type="button"
                   onClick={handleRotate}
                   className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition"
-                  title={lang === 'nl' ? 'Draaien (90°)' : 'Rotate (90°)'}
+                  title={t('rotate90')}
                 >
                   <RotateCw className="w-4 h-4" />
                 </button>
@@ -134,7 +134,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
-              title={lang === 'nl' ? 'Open in nieuw tabblad' : 'Open in new tab'}
+              title={t('openInNewTab')}
             >
               <ExternalLink className="w-4 h-4" />
             </a>
@@ -143,7 +143,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               href={url}
               download={title}
               className="p-2 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
-              title={lang === 'nl' ? 'Downloaden' : 'Download file'}
+              title={t('download')}
             >
               <Download className="w-4 h-4" />
             </a>
@@ -152,7 +152,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               type="button"
               onClick={onClose}
               className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition ml-1"
-              title={lang === 'nl' ? 'Sluiten' : 'Close'}
+              title={t('close')}
             >
               <X className="w-5 h-5" />
             </button>
@@ -175,16 +175,14 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 title={title}
               />
               <div className="text-center pt-2 text-[11px] text-slate-500">
-                {lang === 'nl'
-                  ? 'Wordt de PDF niet goed geladen? '
-                  : 'Having issues loading the PDF? '}
+                {t('pdfLoadIssue')}{' '}
                 <a
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sky-600 dark:text-sky-400 font-semibold hover:underline"
                 >
-                  {lang === 'nl' ? 'Klik hier om direct te openen' : 'Click here to open directly'}
+                  {t('openDirectly')}
                 </a>
               </div>
             </div>
@@ -207,9 +205,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 {title}
               </p>
               <p className="text-[11px] text-slate-500 mb-4">
-                {lang === 'nl'
-                  ? 'Voor dit bestandsformaat is geen directe inline viewer beschikbaar.'
-                  : 'Direct inline preview is not supported for this file type.'}
+                {t('previewNotSupported')}
               </p>
               <a
                 href={url}
@@ -217,7 +213,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-2 transition shadow-sm"
               >
                 <Download className="w-4 h-4" />
-                <span>{lang === 'nl' ? 'Bestand Downloaden' : 'Download File'}</span>
+                <span>{t('downloadFile')}</span>
               </a>
             </div>
           )}

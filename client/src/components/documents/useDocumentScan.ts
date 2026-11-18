@@ -18,7 +18,7 @@ export interface AiDocumentExtraction {
 }
 
 export function useDocumentScan() {
-  const { lang } = useLanguage();
+  const { t, lang } = useLanguage();
   const [scanning, setScanning] = useState(false);
   const [scanExtraction, setScanExtraction] = useState<AiDocumentExtraction | null>(null);
   const [scanWarning, setScanWarning] = useState<string | null>(null);
@@ -68,9 +68,7 @@ export function useDocumentScan() {
         onApply(res.extraction);
       }
     } catch (err: any) {
-      setScanWarning(
-        err?.message || (lang === 'nl' ? 'Fout bij analyseren van document' : 'Failed to analyze document')
-      );
+      setScanWarning(err?.message || t('documentScanFailed'));
     } finally {
       setScanning(false);
     }
