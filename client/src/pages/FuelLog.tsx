@@ -21,7 +21,7 @@ interface ContextType {
 
 export const FuelLog: React.FC = () => {
   const { selectedVehicle } = useOutletContext<ContextType>();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [entries, setEntries] = useState<FuelEntry[]>([]);
   const [towingFilter, setTowingFilter] = useState<'all' | 'solo' | 'towing'>('all');
   const [isOcrOpen, setIsOcrOpen] = useState(false);
@@ -69,7 +69,7 @@ export const FuelLog: React.FC = () => {
         await apiFetch(`/api/fuel/${id}`, { method: 'DELETE' });
         if (selectedVehicle) loadEntries(selectedVehicle.id);
       } catch (err: any) {
-        alert(err?.message || 'Delete failed');
+        alert(err?.message || t('deleteFailed'));
       }
     }
   };
@@ -84,7 +84,7 @@ export const FuelLog: React.FC = () => {
   if (!selectedVehicle) {
     return (
       <div className="p-8 text-center text-slate-500">
-        {lang === 'nl' ? 'Selecteer eerst een voertuig.' : 'Please select a vehicle first.'}
+        {t('selectVehicleFirst')}
       </div>
     );
   }
@@ -104,14 +104,12 @@ export const FuelLog: React.FC = () => {
             )}
             <span>
               {isElectric
-                ? (lang === 'nl' ? 'Laadsessies & Energiebeheer' : 'EV Charging Management')
+                ? t('evChargingTitle')
                 : t('fuelTitle')}
             </span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {isElectric
-              ? (lang === 'nl' ? 'Laadbeurt invoeren voor' : 'Log charging session for')
-              : (lang === 'nl' ? 'Tankbeurt invoeren voor' : 'Log fill-up for')}{' '}
+            {isElectric ? t('logChargingFor') : t('logFillUpFor')}{' '}
             <span className="font-semibold text-slate-900 dark:text-white">{selectedVehicle.name}</span>
           </p>
         </div>

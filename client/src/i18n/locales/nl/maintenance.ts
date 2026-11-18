@@ -57,7 +57,6 @@ export const maintenance = {
   totalDiySaved: 'Totale Besparing Zelf Sleutelen',
 
   // Maintenance page
-  selectVehicleFirst: 'Selecteer eerst een voertuig.',
   logServiceScanInvoice: 'Onderhoud / Factuur Scannen',
   recordsCount: '{count} beurten',
   recordsOwnAndPreOwnership: '{own} eigen • {pre} historie (buiten TCO)',
@@ -65,7 +64,6 @@ export const maintenance = {
   garageWorkshopLabor: 'Garage & werkplaatstarieven',
   diyServicesCountOne: '{count} beurt zelf gesleuteld',
   diyServicesCount: '{count} beurten zelf gesleuteld',
-  deleteFailed: 'Verwijderen mislukt',
   invoiceUploadFailed: 'Uploaden van factuur mislukt',
 
   // Service records (table, mobile card, details)
@@ -105,7 +103,6 @@ export const maintenance = {
   garageNameLabel: 'Naam Garage / Dealer',
   garageNamePlaceholder: 'Naam van de garage of dealer',
   garageAddressLabel: 'Adres van de Garage',
-  garageAddressPlaceholder: 'Straat, huisnummer en woonplaats',
   resetIntervalsSelected: 'Onderhoudsintervallen bijwerken ({count} geselecteerd)',
   autoDetectIntervals: 'Auto-herken uit factuur',
   clearSelection: 'Wis selectie',

@@ -59,4 +59,9 @@ export const common = {
   status: 'Status',
   today: 'Vandaag',
   yesterday: 'Gisteren',
+  selectVehicleFirst: 'Selecteer eerst een voertuig.',
+  deleteFailed: 'Verwijderen mislukt',
+  addressPlaceholder: 'Straat, huisnummer en woonplaats',
+  examplePlaceholder: 'bijv. {value}',
+  pageOf: 'Pagina {current} van {total}',
 };

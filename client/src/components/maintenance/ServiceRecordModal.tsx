@@ -525,7 +525,7 @@ export const ServiceRecordModal: React.FC<ServiceRecordModalProps> = ({
                   type="text"
                   value={garageAddress}
                   onChange={(e) => setGarageAddress(e.target.value)}
-                  placeholder={t('garageAddressPlaceholder')}
+                  placeholder={t('addressPlaceholder')}
                   className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
                 />
               </div>

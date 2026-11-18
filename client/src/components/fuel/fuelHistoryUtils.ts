@@ -25,13 +25,17 @@ export function calculateFuelAverages(entries: FuelEntry[]) {
   };
 }
 
-export function computeEconomyText(curr: FuelEntry, prev?: FuelEntry): string | null {
+export function computeEconomy(
+  curr: FuelEntry,
+  prev?: FuelEntry
+): { kmPerLiter: number; litersPer100Km: number } | null {
   if (curr.is_full_tank && !curr.missed_previous && prev && prev.is_full_tank) {
     const deltaKm = curr.odometer - prev.odometer;
     if (deltaKm > 0 && curr.liters > 0) {
-      const kmPerLiter = deltaKm / curr.liters;
-      const litersPer100Km = (curr.liters / deltaKm) * 100;
-      return `1 op ${kmPerLiter.toFixed(1)} (${litersPer100Km.toFixed(1)} L/100)`;
+      return {
+        kmPerLiter: deltaKm / curr.liters,
+        litersPer100Km: (curr.liters / deltaKm) * 100,
+      };
     }
   }
   return null;

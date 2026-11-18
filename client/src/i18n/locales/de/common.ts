@@ -61,4 +61,9 @@ export const common: Record<keyof typeof nl, string> = {
   status: 'Status',
   today: 'Heute',
   yesterday: 'Gestern',
+  selectVehicleFirst: 'Bitte wähle zuerst ein Fahrzeug aus.',
+  deleteFailed: 'Löschen fehlgeschlagen',
+  addressPlaceholder: 'Straße, Hausnummer und Ort',
+  examplePlaceholder: 'z. B. {value}',
+  pageOf: 'Seite {current} von {total}',
 };
