@@ -19,7 +19,7 @@ interface VehicleFuelPriceStatsProps {
 }
 
 export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tco }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 space-y-5 shadow-xs transition-colors">
@@ -56,7 +56,7 @@ export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tc
               <span className="text-xs font-normal text-slate-400">/ L</span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-              {lang === 'nl' ? 'Gewogen gemiddelde literprijs' : 'Weighted average price per liter'}
+              {t('weightedAvgPricePerLiter')}
             </p>
           </div>
         </div>
@@ -69,7 +69,7 @@ export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tc
               <span>{t('cheapestFuel')}</span>
             </span>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
-              {lang === 'nl' ? 'Laagste prijs' : 'Lowest price'}
+              {t('lowestPrice')}
             </span>
           </div>
           <div>
@@ -84,7 +84,7 @@ export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tc
                   {tco.priceStats.minPrice.station && ` • ${tco.priceStats.minPrice.station}`}
                 </>
               ) : (
-                lang === 'nl' ? 'Nog geen gegevens' : 'No data yet'
+                t('noDataYet')
               )}
             </p>
           </div>
@@ -98,7 +98,7 @@ export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tc
               <span>{t('mostExpensiveFuel')}</span>
             </span>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300">
-              {lang === 'nl' ? 'Hoogste prijs' : 'Highest price'}
+              {t('highestPrice')}
             </span>
           </div>
           <div>
@@ -113,7 +113,7 @@ export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tc
                   {tco.priceStats.maxPrice.station && ` • ${tco.priceStats.maxPrice.station}`}
                 </>
               ) : (
-                lang === 'nl' ? 'Nog geen gegevens' : 'No data yet'
+                t('noDataYet')
               )}
             </p>
           </div>
@@ -130,12 +130,12 @@ export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tc
           <div className="flex items-center space-x-3 text-[11px] text-slate-500">
             <span className="flex items-center space-x-1">
               <span className="w-3 h-0.5 bg-amber-500 inline-block rounded-xs" />
-              <span>{lang === 'nl' ? 'Literprijs (€/L)' : 'Price / L (€)'}</span>
+              <span>{t('pricePerLiterSeries')}</span>
             </span>
             {tco?.priceStats?.avgPrice && (
               <span className="flex items-center space-x-1">
                 <span className="w-3 h-0.5 border-t border-dashed border-sky-400 inline-block" />
-                <span>{lang === 'nl' ? 'Gemiddelde' : 'Average'} (€{tco.priceStats.avgPrice.toFixed(3)})</span>
+                <span>{t('average')} (€{tco.priceStats.avgPrice.toFixed(3)})</span>
               </span>
             )}
           </div>
@@ -172,20 +172,20 @@ export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tc
                             <span className="font-mono text-slate-400">{data.odometer.toLocaleString()} km</span>
                           </div>
                           <div className="flex items-center justify-between gap-4">
-                            <span className="text-slate-400">{lang === 'nl' ? 'Literprijs:' : 'Price/L:'}</span>
+                            <span className="text-slate-400">{t('pricePerLiterLabel')}</span>
                             <span className="font-mono font-black text-amber-400 text-sm">€ {data.pricePerLiter.toFixed(3)}/L</span>
                           </div>
                           <div className="flex items-center justify-between gap-4">
-                            <span className="text-slate-400">{lang === 'nl' ? 'Aantal liters:' : 'Volume:'}</span>
+                            <span className="text-slate-400">{t('volumeLabel')}</span>
                             <span className="font-mono font-semibold">{data.liters.toFixed(2)} L</span>
                           </div>
                           <div className="flex items-center justify-between gap-4">
-                            <span className="text-slate-400">{lang === 'nl' ? 'Totaalbedrag:' : 'Total Cost:'}</span>
+                            <span className="text-slate-400">{t('totalCost')}:</span>
                             <span className="font-mono font-semibold">€ {data.totalCost.toFixed(2)}</span>
                           </div>
                           {data.station && (
                             <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-800/80 text-[11px]">
-                              <span className="text-slate-400">{lang === 'nl' ? 'Pomp/Notitie:' : 'Station:'}</span>
+                              <span className="text-slate-400">{t('stationOrNoteLabel')}</span>
                               <span className="text-slate-300 font-medium truncate max-w-[150px]">{data.station}</span>
                             </div>
                           )}
@@ -213,7 +213,7 @@ export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tc
                 <Area
                   type="monotone"
                   dataKey="pricePerLiter"
-                  name={lang === 'nl' ? 'Literprijs (€/L)' : 'Price / L (€)'}
+                  name={t('pricePerLiterSeries')}
                   stroke="#f59e0b"
                   strokeWidth={2.5}
                   fillOpacity={1}
@@ -225,7 +225,7 @@ export const VehicleFuelPriceStats: React.FC<VehicleFuelPriceStatsProps> = ({ tc
             </ResponsiveContainer>
           ) : (
             <div className="h-full flex items-center justify-center text-xs text-slate-400">
-              {lang === 'nl' ? 'Voer minimaal 1 tankbeurt in om het brandstofprijsverloop te zien.' : 'Log at least 1 fill-up to view fuel price evolution.'}
+              {t('fuelPriceEmpty')}
             </div>
           )}
         </div>

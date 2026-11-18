@@ -19,7 +19,7 @@ interface VehicleTankDistanceStatsProps {
 }
 
 export const VehicleTankDistanceStats: React.FC<VehicleTankDistanceStatsProps> = ({ tco }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 space-y-6 shadow-xs transition-colors">
@@ -34,7 +34,7 @@ export const VehicleTankDistanceStats: React.FC<VehicleTankDistanceStatsProps> =
           </p>
         </div>
         <span className="text-[10px] font-bold px-2.5 py-1 bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 rounded-lg border border-amber-200 dark:border-amber-800/40 self-start sm:self-auto">
-          Actieradius &amp; Station Intelligence
+          {t('rangeStationBadge')}
         </span>
       </div>
 
@@ -62,7 +62,7 @@ export const VehicleTankDistanceStats: React.FC<VehicleTankDistanceStatsProps> =
         </div>
 
         <div className="p-3.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/80 dark:border-slate-800">
-          <span className="text-[11px] text-slate-500 font-medium block mb-1">{lang === 'nl' ? 'Totaal Getankte Liters' : 'Total Fuel Liters'}</span>
+          <span className="text-[11px] text-slate-500 font-medium block mb-1">{t('totalFuelLiters')}</span>
           <span className="text-lg font-bold font-mono text-amber-600 dark:text-amber-400">
             {tco?.fuelStats?.totalFuelLiters ? `${tco.fuelStats.totalFuelLiters.toFixed(1)} L` : '—'}
           </span>
@@ -76,24 +76,22 @@ export const VehicleTankDistanceStats: React.FC<VehicleTankDistanceStatsProps> =
             <span className="text-xl">🏕️</span>
             <div>
               <span className="font-bold text-amber-900 dark:text-amber-300">
-                {lang === 'nl' ? 'Caravan / Aanhanger Verbruiksvergelijking' : 'Towing / Trailer Consumption Split'}
+                {t('towingSplitTitle')}
               </span>
               <p className="text-[11px] text-amber-700/80 dark:text-amber-400">
-                {lang === 'nl'
-                  ? 'Verbruikscijfers gesplitst op basis van tankbeurten met aanhanger/caravan.'
-                  : 'Fuel consumption isolated for towing vs. solo driving.'}
+                {t('towingSplitHint')}
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-4 font-mono font-bold self-end sm:self-auto">
             <div className="text-right">
-              <span className="text-[10px] text-slate-400 block font-sans">SOLO VERBRUIK</span>
+              <span className="text-[10px] text-slate-400 block font-sans uppercase">{t('soloConsumption')}</span>
               <span className="text-emerald-600 dark:text-emerald-400">
                 {tco?.fuelStats?.avgNormalLPer100Km ? `${tco.fuelStats.avgNormalLPer100Km.toFixed(2)} L/100km` : '—'}
               </span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] text-slate-400 block font-sans">MET AANHANGER</span>
+              <span className="text-[10px] text-slate-400 block font-sans uppercase">{t('towingConsumption')}</span>
               <span className="text-amber-600 dark:text-amber-400">
                 {tco?.fuelStats?.avgTowingLPer100Km ? `${tco.fuelStats.avgTowingLPer100Km.toFixed(2)} L/100km` : '—'}
               </span>
@@ -126,12 +124,12 @@ export const VehicleTankDistanceStats: React.FC<VehicleTankDistanceStatsProps> =
                       fontSize: '11px',
                     }}
                   />
-                  <Bar dataKey="deltaKm" name={lang === 'nl' ? 'Actieradius (km)' : 'Range (km)'} fill="#38bdf8" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="deltaKm" name={t('rangeKm')} fill="#38bdf8" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                {lang === 'nl' ? 'Minimaal 2 tankbeurten vereist om actieradius per tank te berekenen.' : 'Need at least 2 fill-ups to calculate tank range.'}
+                {t('tankRangeEmpty')}
               </div>
             )}
           </div>
@@ -168,7 +166,7 @@ export const VehicleTankDistanceStats: React.FC<VehicleTankDistanceStatsProps> =
                   <Area
                     type="monotone"
                     dataKey="costPer100Km"
-                    name={lang === 'nl' ? 'Kosten per 100km (€)' : 'Cost / 100km (€)'}
+                    name={`${t('costPer100Km')} (€)`}
                     stroke="#f59e0b"
                     strokeWidth={2}
                     fillOpacity={1}
@@ -178,7 +176,7 @@ export const VehicleTankDistanceStats: React.FC<VehicleTankDistanceStatsProps> =
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                {lang === 'nl' ? 'Geen kosten per 100km gegevens beschikbaar.' : 'No cost per 100km data available.'}
+                {t('costPer100KmEmpty')}
               </div>
             )}
           </div>

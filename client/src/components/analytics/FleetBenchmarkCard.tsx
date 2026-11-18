@@ -22,7 +22,7 @@ interface FleetBenchmarkCardProps {
 }
 
 export const FleetBenchmarkCard: React.FC<FleetBenchmarkCardProps> = ({ vehicles }) => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
 
   if (!vehicles || vehicles.length === 0) {
     return null;
@@ -58,12 +58,10 @@ export const FleetBenchmarkCard: React.FC<FleetBenchmarkCardProps> = ({ vehicles
         <div>
           <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
             <Trophy className="w-3.5 h-3.5 text-amber-500" />
-            <span>{lang === 'nl' ? 'Voertuig-Benchmark & Kostenranking' : 'Vehicle Benchmark & Cost Ranking'}</span>
+            <span>{t('benchmarkTitle')}</span>
           </h3>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-            {lang === 'nl'
-              ? 'Vergelijk de kostenefficiëntie en het verbruik van al je eigen voertuigen onderling.'
-              : 'Compare the cost efficiency and fuel economy across all your personal vehicles.'}
+            {t('benchmarkSubtitle')}
           </p>
         </div>
       </div>
@@ -77,7 +75,7 @@ export const FleetBenchmarkCard: React.FC<FleetBenchmarkCardProps> = ({ vehicles
             </div>
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block">
-                {lang === 'nl' ? 'Meest voordelig per kilometer' : 'Lowest cost per kilometer'}
+                {t('lowestCostPerKm')}
               </span>
               <span className="font-bold text-xs text-slate-900 dark:text-white">
                 {bestCostVehicle.name}
@@ -96,14 +94,14 @@ export const FleetBenchmarkCard: React.FC<FleetBenchmarkCardProps> = ({ vehicles
             </div>
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 block">
-                {lang === 'nl' ? 'Zuinigste brandstofverbruik' : 'Best fuel economy'}
+                {t('bestFuelEconomy')}
               </span>
               <span className="font-bold text-xs text-slate-900 dark:text-white">
                 {bestFuelVehicle.name}
               </span>
               <span className="text-xs font-mono font-black text-amber-600 dark:text-amber-400 ml-2">
                 {bestFuelVehicle.avgLPer100Km?.toFixed(2)} l/100km
-                {bestFuelVehicle.avgKmPerLiter ? ` (1 op ${bestFuelVehicle.avgKmPerLiter.toFixed(1)})` : ''}
+                {bestFuelVehicle.avgKmPerLiter ? ` (${t('kmPerLiterValue', { value: bestFuelVehicle.avgKmPerLiter.toFixed(1) })})` : ''}
               </span>
             </div>
           </div>
@@ -181,17 +179,17 @@ export const FleetBenchmarkCard: React.FC<FleetBenchmarkCardProps> = ({ vehicles
               {/* Mini Cost Breakdown Pills */}
               <div className="flex flex-wrap items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 font-medium pt-1 border-t border-slate-200/50 dark:border-slate-800/60">
                 <span>
-                  {lang === 'nl' ? 'Totaal gereden:' : 'Total driven:'}{' '}
+                  {t('totalDriven')}{' '}
                   <strong className="text-slate-700 dark:text-slate-300 font-mono">
                     {v.totalDistanceKm ? v.totalDistanceKm.toLocaleString() : 0} km
                   </strong>
                 </span>
                 <div className="flex items-center space-x-2 font-mono text-[10px]">
-                  <span>⛽ Brandstof: {fuelShare}%</span>
+                  <span>⛽ {t('energyTypeFuel')}: {fuelShare}%</span>
                   <span>•</span>
-                  <span>🔧 Onderhoud: {serviceShare}%</span>
+                  <span>🔧 {t('maintenance')}: {serviceShare}%</span>
                   <span>•</span>
-                  <span>📑 Vast: {fixedShare}%</span>
+                  <span>📑 {t('fixedShort')}: {fixedShare}%</span>
                 </div>
               </div>
             </div>

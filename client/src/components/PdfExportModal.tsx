@@ -17,7 +17,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
   vehicleId,
   vehicleName,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [includeTires, setIncludeTires] = useState(true);
   const [includeFuel, setIncludeFuel] = useState(true);
   const [includeReceipts, setIncludeReceipts] = useState(true);
@@ -57,7 +57,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
 
       onClose();
     } catch (err: any) {
-      setError(err?.message || 'Failed to generate PDF');
+      setError(err?.message || t('pdfGenerateFailed'));
     } finally {
       setLoading(false);
     }
@@ -90,7 +90,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
         <div className="space-y-4 text-xs">
           <div>
             <label className="text-slate-700 dark:text-slate-300 font-medium block mb-1">
-              {lang === 'nl' ? 'Geselecteerd Voertuig' : 'Selected Vehicle'}
+              {t('pdfSelectedVehicle')}
             </label>
             <div className="px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md font-semibold text-slate-900 dark:text-slate-100">
               {vehicleName}
@@ -100,18 +100,18 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <DatePicker
-                label={lang === 'nl' ? 'Vanaf datum' : 'Start date'}
+                label={t('filterStartDate')}
                 value={startDate}
                 onChange={setStartDate}
-                placeholder={lang === 'nl' ? 'Geen beginfilter' : 'No start filter'}
+                placeholder={t('noStartFilter')}
               />
             </div>
             <div>
               <DatePicker
-                label={lang === 'nl' ? 'Tot en met datum' : 'End date'}
+                label={t('filterEndDate')}
                 value={endDate}
                 onChange={setEndDate}
-                placeholder={lang === 'nl' ? 'Geen eindfilter' : 'No end filter'}
+                placeholder={t('noEndFilter')}
               />
             </div>
           </div>
@@ -125,9 +125,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                 className="rounded border-slate-300 dark:border-slate-700 text-accent-600 focus:ring-accent-500"
               />
               <span className="text-slate-700 dark:text-slate-300 font-medium">
-                {lang === 'nl'
-                  ? 'Huidige bandenset & profieldieptes opnemen'
-                  : 'Include current tires & tread depths'}
+                {t('includeTires')}
               </span>
             </label>
 
@@ -149,9 +147,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                 className="rounded border-slate-300 dark:border-slate-700 text-accent-600 focus:ring-accent-500"
               />
               <span className="text-slate-700 dark:text-slate-300 font-medium">
-                {lang === 'nl'
-                  ? 'Facturen & tankbonnen als aparte bijlagepagina\'s toevoegen'
-                  : t('includeReceipts')}
+                {t('includeReceipts')}
               </span>
             </label>
           </div>
