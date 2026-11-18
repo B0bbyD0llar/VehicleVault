@@ -36,7 +36,7 @@ interface SeasonalStatsProps {
 }
 
 export const VehicleSeasonalStatsCard: React.FC<SeasonalStatsProps> = ({ seasonalStats }) => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
 
   if (!seasonalStats || !seasonalStats.hasData) {
     return null;
@@ -50,12 +50,10 @@ export const VehicleSeasonalStatsCard: React.FC<SeasonalStatsProps> = ({ seasona
         <div>
           <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
             <Fuel className="w-3.5 h-3.5 text-amber-500" />
-            <span>{lang === 'nl' ? 'Seizoensinvloed op Verbruik (Zomer vs. Winter)' : 'Seasonal Fuel Impact (Summer vs. Winter)'}</span>
+            <span>{t('seasonalTitle')}</span>
           </h3>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-            {lang === 'nl'
-              ? 'Vergelijking van verbruik en brandstofkosten tussen de warme (apr-sep) en koude (okt-mrt) maanden.'
-              : 'Direct efficiency comparison between warm (Apr-Sep) and cold (Oct-Mar) periods.'}
+            {t('seasonalSubtitle')}
           </p>
         </div>
 
@@ -75,7 +73,7 @@ export const VehicleSeasonalStatsCard: React.FC<SeasonalStatsProps> = ({ seasona
             <span>
               {delta.isWinterHigher ? '+' : ''}
               {delta.diffLPer100Km.toFixed(2)} l/100km ({delta.percentDiff && delta.percentDiff > 0 ? '+' : ''}
-              {delta.percentDiff}%) {lang === 'nl' ? (delta.isWinterHigher ? 'in de winter' : 'in de winter') : 'in winter'}
+              {delta.percentDiff}%) {t('inWinter')}
             </span>
           </div>
         )}
@@ -91,10 +89,10 @@ export const VehicleSeasonalStatsCard: React.FC<SeasonalStatsProps> = ({ seasona
               </div>
               <div>
                 <span className="font-bold text-xs text-slate-900 dark:text-white block">
-                  {lang === 'nl' ? 'Zomerperiode' : 'Summer Period'}
+                  {t('summerPeriod')}
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium">
-                  {summer.period} • {summer.fillCount} {lang === 'nl' ? 'tankbeurten' : 'fill-ups'}
+                  {summer.period} • {t('fillUpsCount', { count: summer.fillCount })}
                 </span>
               </div>
             </div>
@@ -105,18 +103,18 @@ export const VehicleSeasonalStatsCard: React.FC<SeasonalStatsProps> = ({ seasona
 
           <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-amber-200/50 dark:border-amber-900/30">
             <div>
-              <span className="text-[10px] text-slate-500 block">{lang === 'nl' ? 'Gem. verbruik' : 'Avg consumption'}</span>
+              <span className="text-[10px] text-slate-500 block">{t('avgConsumption')}</span>
               <span className="font-mono font-black text-slate-900 dark:text-white text-base">
                 {summer.avgLPer100Km !== null ? `${summer.avgLPer100Km.toFixed(2)}` : '—'}
                 <span className="text-[10px] font-normal text-slate-400 ml-1">l/100km</span>
               </span>
               {summer.avgKmPerLiter !== null && (
-                <span className="text-[10px] text-slate-500 block font-mono">1 op {summer.avgKmPerLiter.toFixed(1)}</span>
+                <span className="text-[10px] text-slate-500 block font-mono">{t('kmPerLiterValue', { value: summer.avgKmPerLiter.toFixed(1) })}</span>
               )}
             </div>
 
             <div>
-              <span className="text-[10px] text-slate-500 block">{lang === 'nl' ? 'Kosten / 100km' : 'Cost / 100km'}</span>
+              <span className="text-[10px] text-slate-500 block">{t('costPer100Km')}</span>
               <span className="font-mono font-black text-slate-900 dark:text-white text-base">
                 € {summer.avgCostPer100Km !== null ? summer.avgCostPer100Km.toFixed(2) : '—'}
               </span>
@@ -136,10 +134,10 @@ export const VehicleSeasonalStatsCard: React.FC<SeasonalStatsProps> = ({ seasona
               </div>
               <div>
                 <span className="font-bold text-xs text-slate-900 dark:text-white block">
-                  {lang === 'nl' ? 'Winterperiode' : 'Winter Period'}
+                  {t('winterPeriod')}
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium">
-                  {winter.period} • {winter.fillCount} {lang === 'nl' ? 'tankbeurten' : 'fill-ups'}
+                  {winter.period} • {t('fillUpsCount', { count: winter.fillCount })}
                 </span>
               </div>
             </div>
@@ -150,18 +148,18 @@ export const VehicleSeasonalStatsCard: React.FC<SeasonalStatsProps> = ({ seasona
 
           <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-sky-200/50 dark:border-sky-900/30">
             <div>
-              <span className="text-[10px] text-slate-500 block">{lang === 'nl' ? 'Gem. verbruik' : 'Avg consumption'}</span>
+              <span className="text-[10px] text-slate-500 block">{t('avgConsumption')}</span>
               <span className="font-mono font-black text-slate-900 dark:text-white text-base">
                 {winter.avgLPer100Km !== null ? `${winter.avgLPer100Km.toFixed(2)}` : '—'}
                 <span className="text-[10px] font-normal text-slate-400 ml-1">l/100km</span>
               </span>
               {winter.avgKmPerLiter !== null && (
-                <span className="text-[10px] text-slate-500 block font-mono">1 op {winter.avgKmPerLiter.toFixed(1)}</span>
+                <span className="text-[10px] text-slate-500 block font-mono">{t('kmPerLiterValue', { value: winter.avgKmPerLiter.toFixed(1) })}</span>
               )}
             </div>
 
             <div>
-              <span className="text-[10px] text-slate-500 block">{lang === 'nl' ? 'Kosten / 100km' : 'Cost / 100km'}</span>
+              <span className="text-[10px] text-slate-500 block">{t('costPer100Km')}</span>
               <span className="font-mono font-black text-slate-900 dark:text-white text-base">
                 € {winter.avgCostPer100Km !== null ? winter.avgCostPer100Km.toFixed(2) : '—'}
               </span>

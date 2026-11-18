@@ -43,7 +43,7 @@ export const TcoFilters: React.FC<TcoFiltersProps> = ({
   selectedVehicle,
   tco,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 space-y-4 text-xs shadow-xs transition-colors">
@@ -104,7 +104,7 @@ export const TcoFilters: React.FC<TcoFiltersProps> = ({
             <span className="text-slate-800 dark:text-slate-200 font-bold flex items-center space-x-1.5 text-xs">
               <Landmark className="w-3.5 h-3.5 text-indigo-500" />
               <span>
-                {lang === 'nl' ? 'Vaste lasten meerekenen' : 'Include fixed expenses'}
+                {t('includeFixedExpensesToggle')}
                 {tco?.fixedExpensesTotal ? ` (€${tco.fixedExpensesTotal.toFixed(0)})` : ''}
               </span>
             </span>
@@ -131,47 +131,47 @@ export const TcoFilters: React.FC<TcoFiltersProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800/60">
         <div>
           <DatePicker
-            label={lang === 'nl' ? 'Vanaf Datum' : 'Start Date'}
+            label={t('filterStartDate')}
             value={startDate}
             onChange={(v) => {
               setTimePreset('all');
               setStartDate(v);
             }}
-            placeholder={lang === 'nl' ? 'Geen beginfilter' : 'No start filter'}
+            placeholder={t('noStartFilter')}
           />
         </div>
         <div>
           <DatePicker
-            label={lang === 'nl' ? 'Tot en met Datum' : 'End Date'}
+            label={t('filterEndDate')}
             value={endDate}
             onChange={(v) => {
               setTimePreset('all');
               setEndDate(v);
             }}
-            placeholder={lang === 'nl' ? 'Geen eindfilter' : 'No end filter'}
+            placeholder={t('noEndFilter')}
           />
         </div>
         <div>
           <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1 text-xs">
-            {lang === 'nl' ? 'Minimale KM-stand' : 'Minimum Odometer (km)'}
+            {t('minOdometer')}
           </label>
           <input
             type="number"
             value={minOdometer}
             onChange={(e) => setMinOdometer(e.target.value)}
-            placeholder="e.g. 50000"
+            placeholder={t('examplePlaceholder', { value: '50000' })}
             className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-md px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 font-mono focus:outline-none focus:border-sky-500 shadow-xs"
           />
         </div>
         <div>
           <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1 text-xs">
-            {lang === 'nl' ? 'Maximale KM-stand' : 'Maximum Odometer (km)'}
+            {t('maxOdometer')}
           </label>
           <input
             type="number"
             value={maxOdometer}
             onChange={(e) => setMaxOdometer(e.target.value)}
-            placeholder="e.g. 75000"
+            placeholder={t('examplePlaceholder', { value: '75000' })}
             className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-md px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 font-mono focus:outline-none focus:border-sky-500 shadow-xs"
           />
         </div>
