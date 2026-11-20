@@ -16,8 +16,7 @@ type Purpose = 'business' | 'commute' | 'private';
 const MAPPABLE: TripImportField[] = ['date', 'from', 'to', 'start', 'end', 'distance', 'purpose', 'description'];
 
 export const TripImportModal: React.FC<Props> = ({ vehicle, onClose, onImported }) => {
-  const { t, lang } = useLanguage();
-  const nl = lang === 'nl';
+  const { t } = useLanguage();
 
   const PURPOSE_LABEL: Record<Purpose, string> = {
     business: t('tripImportPurposeBusiness'),
@@ -74,7 +73,7 @@ export const TripImportModal: React.FC<Props> = ({ vehicle, onClose, onImported 
       if (!manual) setMapping(data.mapping);
     } catch (err: any) {
       setPreview(null);
-      setError(err?.message || (nl ? 'Het bestand kon niet worden gelezen' : 'Could not read file'));
+      setError(err?.message || t('tripImportReadFailed'));
     } finally {
       setLoading(false);
     }
@@ -102,7 +101,7 @@ export const TripImportModal: React.FC<Props> = ({ vehicle, onClose, onImported 
       setResult(res);
       onImported();
     } catch (err: any) {
-      setError(err?.message || (nl ? 'Importeren mislukt' : 'Import failed'));
+      setError(err?.message || t('importFailed'));
     } finally {
       setImporting(false);
     }
@@ -283,7 +282,7 @@ export const TripImportModal: React.FC<Props> = ({ vehicle, onClose, onImported 
                           />
                           <span>
                             <span className="font-semibold text-slate-900 dark:text-white">{s.label}</span>
-                            <span className="text-slate-500"> — {s.rows} {nl ? 'ritten' : 'trips'}</span>
+                            <span className="text-slate-500"> — {t('tripImportSectionRows', { count: s.rows })}</span>
                             {s.plateMatches === true && <span className="ml-2 text-emerald-600 font-bold">{t('tripImportPlateMatches')}</span>}
                             {s.plateMatches === false && <span className="ml-2 text-amber-600 font-bold">{t('tripImportPlateMismatch').replace('{vehicle}', vehicle.name)}</span>}
                           </span>
@@ -322,7 +321,7 @@ export const TripImportModal: React.FC<Props> = ({ vehicle, onClose, onImported 
                                 <td className="px-3 py-1.5 text-right">{r.distanceKm}</td>
                                 <td className="px-3 py-1.5">{PURPOSE_LABEL[r.purpose]}</td>
                                 <td className="px-3 py-1.5 text-[11px]">
-                                  {r.error ? <span className="text-rose-600 font-semibold">{nl ? `Regel ${r.rowNumber}: ${r.error}` : `Row ${r.rowNumber}: ${r.error}`}</span> : null}
+                                  {r.error ? <span className="text-rose-600 font-semibold">{t('tripImportRowError', { row: r.rowNumber, message: r.error })}</span> : null}
                                   {!r.error && r.isDuplicate ? <span className="text-amber-600 font-semibold">{t('tripImportRowDuplicate')}</span> : null}
                                   {!r.error && r.warning ? <span className="text-slate-500"> {r.warning}</span> : null}
                                 </td>
@@ -342,7 +341,7 @@ export const TripImportModal: React.FC<Props> = ({ vehicle, onClose, onImported 
                       <ul className="mt-1 space-y-0.5 pl-4 list-disc">
                         {preview.ignoredRows.map((r) => (
                           <li key={r.rowNumber}>
-                            {nl ? `Regel ${r.rowNumber}: ${r.reason}` : `Row ${r.rowNumber}: ${r.reason}`}{' '}
+                            {t('tripImportRowError', { row: r.rowNumber, message: r.reason })}{' '}
                             <span className="text-slate-400">({r.text})</span>
                           </li>
                         ))}

@@ -14,6 +14,20 @@ export const importer: Record<keyof typeof nl, string> = {
   errorsFound: 'Gefundene Fehler',
   executeImport: 'Import ausführen',
   importSuccess: 'Daten erfolgreich importiert!',
+  importAutoDetect: 'Format automatisch erkennen (empfohlen)',
+  columnMappingWizard: 'Assistent für Spaltenzuordnung',
+  importRecordType: 'Datentyp',
+  recomputeWithMapping: 'Mit dieser Zuordnung neu berechnen',
+  detectedVehicleInExport: 'Erkanntes Fahrzeug im Export:',
+  importingInto: 'Wird importiert in:',
+  detectedFormatLabel: 'Erkannt: {format}',
+  importRowSummary: '{valid} gültige Zeilen • {invalid} ungültig',
+  importTypeHeader: 'Typ',
+  litersOrDescription: 'Liter / Beschreibung',
+  stationOrLocation: 'Tankstelle / Ort',
+  importRowValid: 'Gültig',
+  importPreviewFailed: 'CSV konnte nicht gelesen werden',
+  importFailed: 'Import fehlgeschlagen',
 
   // Trip Import (Tax Authority / Spreadsheet)
   importTrips: 'Fahrten importieren',
@@ -60,4 +74,7 @@ export const importer: Record<keyof typeof nl, string> = {
   tripFieldPlate: 'Kennzeichen',
   tripFieldRoute: 'Abweichende Route',
   tripImportNoneOption: '— keine —',
+  tripImportReadFailed: 'Die Datei konnte nicht gelesen werden',
+  tripImportSectionRows: '{count} Fahrten',
+  tripImportRowError: 'Zeile {row}: {message}',
 };

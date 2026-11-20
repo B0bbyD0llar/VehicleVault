@@ -12,6 +12,20 @@ export const importer = {
   errorsFound: 'Fouten gevonden',
   executeImport: 'Import Uitvoeren',
   importSuccess: 'Gegevens succesvol geïmporteerd!',
+  importAutoDetect: 'Automatisch detecteren (Aanbevolen)',
+  columnMappingWizard: 'Kolomtoewijzing Wizard',
+  importRecordType: 'Type data',
+  recomputeWithMapping: 'Opnieuw berekenen met deze toewijzing',
+  detectedVehicleInExport: 'Gedetecteerd voertuig in export:',
+  importingInto: 'Wordt geïmporteerd naar:',
+  detectedFormatLabel: 'Gedetecteerd: {format}',
+  importRowSummary: '{valid} geldige rijen • {invalid} ongeldig',
+  importTypeHeader: 'Type',
+  litersOrDescription: 'Liters / Omschrijving',
+  stationOrLocation: 'Station / Locatie',
+  importRowValid: 'Geldig',
+  importPreviewFailed: 'CSV kon niet worden gelezen',
+  importFailed: 'Importeren mislukt',
 
   // Trip Import (Belastingdienst / Kilometeradministratie)
   importTrips: 'Ritten Importeren',
@@ -58,4 +72,7 @@ export const importer = {
   tripFieldPlate: 'Kenteken',
   tripFieldRoute: 'Afwijkende route',
   tripImportNoneOption: '— geen —',
+  tripImportReadFailed: 'Het bestand kon niet worden gelezen',
+  tripImportSectionRows: '{count} ritten',
+  tripImportRowError: 'Regel {row}: {message}',
 };

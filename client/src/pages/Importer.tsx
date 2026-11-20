@@ -18,7 +18,7 @@ interface ContextType {
 
 export const Importer: React.FC = () => {
   const { selectedVehicle } = useOutletContext<ContextType>();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [forcedFormat, setForcedFormat] = useState<'auto' | 'fuelio' | 'lubelogger' | 'generic'>('auto');
   const [preview, setPreview] = useState<any | null>(null);
@@ -88,7 +88,7 @@ export const Importer: React.FC = () => {
         setCostCol(data.headers[2] || '');
       }
     } catch (err: any) {
-      setError(err?.message || 'Failed to inspect CSV');
+      setError(err?.message || t('importPreviewFailed'));
     } finally {
       setLoading(false);
     }
@@ -112,7 +112,7 @@ export const Importer: React.FC = () => {
       setPreview(null);
       setCsvFile(null);
     } catch (err: any) {
-      setError(err?.message || 'Import failed');
+      setError(err?.message || t('importFailed'));
     } finally {
       setImporting(false);
     }
@@ -162,7 +162,7 @@ export const Importer: React.FC = () => {
               onChange={(e) => setForcedFormat(e.target.value as any)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 shadow-sm"
             >
-              <option value="auto">{lang === 'nl' ? 'Automatisch detecteren (Aanbevolen)' : 'Auto-detect format (Recommended)'}</option>
+              <option value="auto">{t('importAutoDetect')}</option>
               <option value="fuelio">{t('fuelioCsv')}</option>
               <option value="lubelogger">{t('lubeLoggerCsv')}</option>
               <option value="generic">{t('genericCsv')}</option>
@@ -185,10 +185,10 @@ export const Importer: React.FC = () => {
         {/* Generic Column Mapper Wizard */}
         {showMapping && preview && (
           <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 rounded-xl space-y-3 text-xs">
-            <h4 className="font-bold text-slate-900 dark:text-white">{lang === 'nl' ? 'Kolomtoewijzing Wizard' : 'Column Mapping Wizard'}</h4>
+            <h4 className="font-bold text-slate-900 dark:text-white">{t('columnMappingWizard')}</h4>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               <div>
-                <label className="text-slate-500 font-medium block mb-1">{lang === 'nl' ? 'Type data' : 'Record Type'}</label>
+                <label className="text-slate-500 font-medium block mb-1">{t('importRecordType')}</label>
                 <select
                   value={recordType}
                   onChange={(e) => setRecordType(e.target.value as any)}
@@ -247,7 +247,7 @@ export const Importer: React.FC = () => {
                   onChange={(e) => setLitersCol(e.target.value)}
                   className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white font-medium"
                 >
-                  <option value="">(None)</option>
+                  <option value="">{t('tripImportNoneOption')}</option>
                   {preview.headers.map((h: string) => (
                     <option key={h} value={h}>
                       {h}
@@ -262,7 +262,7 @@ export const Importer: React.FC = () => {
                   onChange={(e) => setNotesCol(e.target.value)}
                   className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white font-medium"
                 >
-                  <option value="">(None)</option>
+                  <option value="">{t('tripImportNoneOption')}</option>
                   {preview.headers.map((h: string) => (
                     <option key={h} value={h}>
                       {h}
@@ -276,7 +276,7 @@ export const Importer: React.FC = () => {
               onClick={() => handlePreview()}
               className="mt-2 px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-700 shadow-sm"
             >
-              {lang === 'nl' ? 'Opnieuw berekenen met deze toewijzing' : 'Recompute with this mapping'}
+              {t('recomputeWithMapping')}
             </button>
           </div>
         )}
@@ -301,7 +301,7 @@ export const Importer: React.FC = () => {
             <div className="p-4 bg-sky-50/80 dark:bg-sky-950/40 border-b border-sky-100 dark:border-sky-900/50 flex flex-wrap items-center justify-between gap-2 text-xs">
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-sky-900 dark:text-sky-300">
-                  {lang === 'nl' ? 'Gedetecteerd voertuig in export:' : 'Detected vehicle in export:'}
+                  {t('detectedVehicleInExport')}
                 </span>
                 <span className="font-black px-2 py-0.5 rounded-lg bg-sky-100 dark:bg-sky-900/70 text-sky-800 dark:text-sky-200">
                   {preview.vehicleInfo.name || `${preview.vehicleInfo.make} ${preview.vehicleInfo.model}`}
@@ -311,7 +311,7 @@ export const Importer: React.FC = () => {
               </div>
               {selectedVehicle && (
                 <span className="text-slate-500 text-[11px]">
-                  {lang === 'nl' ? 'Wordt geïmporteerd naar:' : 'Importing into:'}{' '}
+                  {t('importingInto')}{' '}
                   <strong>{selectedVehicle.name}</strong>
                 </span>
               )}
@@ -320,10 +320,10 @@ export const Importer: React.FC = () => {
           <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <div className="text-xs">
               <span className="font-bold text-slate-900 dark:text-white">
-                {lang === 'nl' ? 'Gedetecteerd:' : 'Detected:'} {preview.detectedFormat.toUpperCase()}
+                {t('detectedFormatLabel', { format: preview.detectedFormat.toUpperCase() })}
               </span>
               <span className="text-slate-500 ml-3">
-                {preview.validRows} {lang === 'nl' ? 'geldige rijen' : 'valid rows'} • {preview.errorRows} {lang === 'nl' ? 'ongeldig' : 'invalid'}
+                {t('importRowSummary', { valid: preview.validRows, invalid: preview.errorRows })}
               </span>
             </div>
 
@@ -341,11 +341,11 @@ export const Importer: React.FC = () => {
             <table className="w-full text-xs text-left">
               <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 sticky top-0 uppercase tracking-wider text-[10px]">
                 <tr>
-                  <th className="py-2.5 px-3">Type</th>
+                  <th className="py-2.5 px-3">{t('importTypeHeader')}</th>
                   <th className="py-2.5 px-3">{t('date')}</th>
                   <th className="py-2.5 px-3">{t('odometer')}</th>
-                  <th className="py-2.5 px-3">{lang === 'nl' ? 'Liters / Omschrijving' : 'Liters / Description'}</th>
-                  <th className="py-2.5 px-3">{lang === 'nl' ? 'Station / Locatie' : 'Station / Location'}</th>
+                  <th className="py-2.5 px-3">{t('litersOrDescription')}</th>
+                  <th className="py-2.5 px-3">{t('stationOrLocation')}</th>
                   <th className="py-2.5 px-3">{t('cost')}</th>
                   <th className="py-2.5 px-3">{t('status')}</th>
                 </tr>
@@ -370,7 +370,7 @@ export const Importer: React.FC = () => {
                     <td className="py-2.5 px-3 font-black text-slate-900 dark:text-white">€ {r.totalCost.toFixed(2)}</td>
                     <td className="py-2.5 px-3">
                       {r.isValid ? (
-                        <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">{lang === 'nl' ? 'Geldig' : 'Valid'}</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">{t('importRowValid')}</span>
                       ) : (
                         <span className="text-rose-600 dark:text-rose-400 font-medium text-[11px]">{r.error}</span>
                       )}
