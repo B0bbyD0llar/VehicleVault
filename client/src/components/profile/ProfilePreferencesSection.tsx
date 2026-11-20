@@ -19,7 +19,7 @@ export const ProfilePreferencesSection: React.FC = () => {
         <div>
           <label className="block text-xs font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-2">
             <Globe className="w-4 h-4 text-sky-500" />
-            <span>{lang === 'nl' ? 'Taal / Language' : 'Language'}</span>
+            <span>{t('languageLabel')}</span>
           </label>
           <div className="flex items-center space-x-3">
             <button
