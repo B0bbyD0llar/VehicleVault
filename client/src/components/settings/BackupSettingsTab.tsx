@@ -13,7 +13,7 @@ import { apiFetch, getAuthToken } from '../../api/client.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 
 export const BackupSettingsTab: React.FC = () => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
 
   const [storageStats, setStorageStats] = useState<{
     databaseSizeFormatted: string;
@@ -41,7 +41,7 @@ export const BackupSettingsTab: React.FC = () => {
       const res = await fetch('/api/backup/export', {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (!res.ok) throw new Error('Backup download mislukt');
+      if (!res.ok) throw new Error(t('backupDownloadFailed'));
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -52,14 +52,14 @@ export const BackupSettingsTab: React.FC = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err: any) {
-      alert(err?.message || 'Fout bij downloaden van backup');
+      alert(err?.message || t('backupDownloadFailed'));
     }
   };
 
   const handleRestoreFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
-    if (!confirm(`Weet je zeker dat je de backup "${file.name}" wilt terugzetten? De huidige database wordt bijgewerkt.`)) {
+    if (!confirm(t('confirmRestoreBackup', { file: file.name }))) {
       e.target.value = '';
       return;
     }
@@ -80,12 +80,12 @@ export const BackupSettingsTab: React.FC = () => {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Herstellen van backup mislukt');
+      if (!res.ok) throw new Error(data.error || t('backupRestoreFailed'));
 
-      setRestoreMessage(data.message || 'Backup succesvol hersteld!');
+      setRestoreMessage(data.message || t('backupRestored'));
       loadStorageStats();
     } catch (err: any) {
-      setRestoreError(err?.message || 'Fout bij herstellen van backup');
+      setRestoreError(err?.message || t('backupRestoreFailed'));
     } finally {
       setRestoringBackup(false);
       e.target.value = '';
@@ -98,12 +98,10 @@ export const BackupSettingsTab: React.FC = () => {
         <div>
           <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
             <Database className="w-4 h-4 text-rose-500" />
-            <span>{lang === 'nl' ? '1-Klik Database & Bestanden Backup' : '1-Click Database & Files Backup'}</span>
+            <span>{t('backupTitle')}</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {lang === 'nl'
-              ? 'Download een compleet ZIP-archief met de SQLite database en alle geüploade tankbonnen en facturen.'
-              : 'Download a complete ZIP archive containing the SQLite database and all uploaded receipts and invoices.'}
+            {t('backupSubtitle')}
           </p>
         </div>
 
@@ -111,7 +109,7 @@ export const BackupSettingsTab: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
           <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800">
             <span className="text-[10px] text-slate-400 uppercase font-bold block">
-              {lang === 'nl' ? 'Database Grootte' : 'Database Size'}
+              {t('databaseSize')}
             </span>
             <span className="font-mono font-bold text-slate-800 dark:text-slate-200 mt-1 block">
               {storageStats?.databaseSizeFormatted || '—'}
@@ -119,7 +117,7 @@ export const BackupSettingsTab: React.FC = () => {
           </div>
           <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800">
             <span className="text-[10px] text-slate-400 uppercase font-bold block">
-              {lang === 'nl' ? 'Geüploade Bestanden' : 'Uploaded Files'}
+              {t('uploadedFiles')}
             </span>
             <span className="font-mono font-bold text-slate-800 dark:text-slate-200 mt-1 block">
               {storageStats?.totalUploadsFormatted || '—'}
@@ -127,7 +125,7 @@ export const BackupSettingsTab: React.FC = () => {
           </div>
           <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800">
             <span className="text-[10px] text-slate-400 uppercase font-bold block">
-              {lang === 'nl' ? 'Opslagpad' : 'Storage Path'}
+              {t('storagePath')}
             </span>
             <span className="font-mono font-bold text-slate-800 dark:text-slate-200 mt-1 block truncate">
               {storageStats?.dataDir || '/data'}
@@ -156,12 +154,10 @@ export const BackupSettingsTab: React.FC = () => {
             <div>
               <h3 className="font-bold text-xs text-slate-900 dark:text-white flex items-center space-x-2">
                 <Download className="w-4 h-4 text-emerald-500" />
-                <span>{lang === 'nl' ? 'Backup Exporteren' : 'Export Backup'}</span>
+                <span>{t('exportBackup')}</span>
               </h3>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                {lang === 'nl'
-                  ? 'Creëert een consistent ZIP-bestand van vehiclevault.db en de uploads.'
-                  : 'Creates a consistent ZIP file containing vehiclevault.db and uploads.'}
+                {t('exportBackupHint')}
               </p>
             </div>
 
@@ -171,7 +167,7 @@ export const BackupSettingsTab: React.FC = () => {
               className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 shadow-sm"
             >
               <Download className="w-4 h-4" />
-              <span>{lang === 'nl' ? 'Download Volledige Backup (.zip)' : 'Download Complete Backup (.zip)'}</span>
+              <span>{t('downloadFullBackup')}</span>
             </button>
           </div>
 
@@ -179,12 +175,10 @@ export const BackupSettingsTab: React.FC = () => {
             <div>
               <h3 className="font-bold text-xs text-slate-900 dark:text-white flex items-center space-x-2">
                 <Upload className="w-4 h-4 text-sky-500" />
-                <span>{lang === 'nl' ? 'Backup Terugzetten' : 'Restore Backup'}</span>
+                <span>{t('restoreBackup')}</span>
               </h3>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                {lang === 'nl'
-                  ? 'Herstel VehicleVault vanaf een eerder gedownload ZIP-archief.'
-                  : 'Restore VehicleVault from a previous ZIP archive backup.'}
+                {t('restoreBackupHint')}
               </p>
             </div>
 
@@ -195,9 +189,7 @@ export const BackupSettingsTab: React.FC = () => {
             >
               {restoringBackup ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
               <span>
-                {restoringBackup
-                  ? (lang === 'nl' ? 'Bezig met herstellen...' : 'Restoring...')
-                  : (lang === 'nl' ? 'Selecteer ZIP Backup Bestand' : 'Select ZIP Backup File')}
+                {restoringBackup ? t('restoringBackup') : t('selectBackupFile')}
               </span>
               <input
                 type="file"
@@ -218,12 +210,10 @@ export const BackupSettingsTab: React.FC = () => {
             </div>
             <div>
               <h3 className="font-bold text-xs text-slate-900 dark:text-white">
-                {lang === 'nl' ? 'Ondersteun VehicleVault' : 'Support VehicleVault'}
+                {t('supportTitle')}
               </h3>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                {lang === 'nl'
-                  ? 'Trakteer de ontwikkelaar op een kop koffie via Ko-fi!'
-                  : 'Buy the developer a coffee on Ko-fi!'}
+                {t('supportHint')}
               </p>
             </div>
           </div>
@@ -234,7 +224,7 @@ export const BackupSettingsTab: React.FC = () => {
             className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold inline-flex items-center justify-center space-x-1.5 transition shrink-0"
           >
             <Coffee className="w-3.5 h-3.5" />
-            <span>Support on Ko-fi</span>
+            <span>{t('supportOnKofi')}</span>
             <ExternalLink className="w-3 h-3 ml-0.5" />
           </a>
         </div>

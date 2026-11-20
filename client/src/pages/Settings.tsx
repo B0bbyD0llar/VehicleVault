@@ -21,16 +21,16 @@ import { ImportSettingsTab } from '../components/settings/ImportSettingsTab.js';
 
 export const Settings: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
   const validTabs = ['general', 'ai', 'users', 'notifications', 'homeassistant', 'backup', 'import'] as const;
   type TabType = typeof validTabs[number];
 
-  const normalizeTab = (t: string | null): TabType => {
-    if (t === 'ha') return 'homeassistant';
-    if (t && (validTabs as readonly string[]).includes(t)) return t as TabType;
+  const normalizeTab = (tab: string | null): TabType => {
+    if (tab === 'ha') return 'homeassistant';
+    if (tab && (validTabs as readonly string[]).includes(tab)) return tab as TabType;
     return 'general';
   };
 
@@ -53,12 +53,10 @@ export const Settings: React.FC = () => {
       {/* Page Header */}
       <div>
         <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-          {lang === 'nl' ? 'Instellingen & Beheer' : 'Settings & Management'}
+          {t('settingsPageTitle')}
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          {lang === 'nl'
-            ? 'Configureer systeemparameters, AI-bonherkenning, gebruikers, meldingen, integraties en gegevens import/export.'
-            : 'Configure system settings, AI receipt scanner, users, notifications, integrations, and data import/export.'}
+          {t('settingsPageSubtitle')}
         </p>
       </div>
 
@@ -73,7 +71,7 @@ export const Settings: React.FC = () => {
           }`}
         >
           <Sliders className="w-4 h-4" />
-          <span>{lang === 'nl' ? 'Algemeen' : 'General'}</span>
+          <span>{t('tabGeneral')}</span>
         </button>
 
         <button
@@ -85,7 +83,7 @@ export const Settings: React.FC = () => {
           }`}
         >
           <Sparkles className="w-4 h-4" />
-          <span>{lang === 'nl' ? 'AI Bonherkenning' : 'AI Receipt Scanner'}</span>
+          <span>{t('tabAiScanner')}</span>
         </button>
 
         {isAdmin && (
@@ -98,7 +96,7 @@ export const Settings: React.FC = () => {
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>{lang === 'nl' ? 'Server Gebruikers (Admin)' : 'Server Users (Admin)'}</span>
+            <span>{t('tabServerUsers')}</span>
           </button>
         )}
 
@@ -111,7 +109,7 @@ export const Settings: React.FC = () => {
           }`}
         >
           <Bell className="w-4 h-4" />
-          <span>{lang === 'nl' ? 'Meldingen' : 'Notifications'}</span>
+          <span>{t('tabNotifications')}</span>
         </button>
 
         <button
@@ -136,7 +134,7 @@ export const Settings: React.FC = () => {
             }`}
           >
             <Database className="w-4 h-4" />
-            <span>{lang === 'nl' ? 'Database & Backups' : 'Database & Backups'}</span>
+            <span>{t('tabBackups')}</span>
           </button>
         )}
 
@@ -149,7 +147,7 @@ export const Settings: React.FC = () => {
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span>{lang === 'nl' ? 'Import & Export' : 'Import & Export'}</span>
+          <span>{t('tabImportExport')}</span>
         </button>
       </div>
 

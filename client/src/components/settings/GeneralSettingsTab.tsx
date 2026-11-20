@@ -23,6 +23,16 @@ import { useTheme, ACCENT_COLOR_OPTIONS } from '../../context/ThemeContext.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { useModules, EnabledModules } from '../../context/ModuleContext.js';
 import { apiFetch } from '../../api/client.js';
+import type { TranslationKey } from '../../i18n/translations.js';
+
+const ACCENT_LABEL_KEYS: Record<string, TranslationKey> = {
+  indigo: 'accentIndigo',
+  sky: 'accentSky',
+  emerald: 'accentEmerald',
+  amber: 'accentAmber',
+  rose: 'accentRose',
+  violet: 'accentViolet',
+};
 
 interface GeneralSettingsTabProps {
   health?: any;
@@ -67,54 +77,14 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
   const { modules, toggleModule } = useModules();
 
   const moduleItems: { key: keyof EnabledModules; label: string; desc: string; icon: React.FC<{ className?: string }> }[] = [
-    {
-      key: 'fuel',
-      label: lang === 'nl' ? 'Brandstof & Tankbeurten' : 'Fuel & Charging',
-      desc: lang === 'nl' ? 'Bijhouden van tank- en laadbeurten, kosten per km en verbruik.' : 'Log fueling and charging sessions, cost per km and consumption.',
-      icon: Fuel,
-    },
-    {
-      key: 'trips',
-      label: lang === 'nl' ? 'Ritregistratie' : 'Trip Log',
-      desc: lang === 'nl' ? 'Fiscale rittenadministratie voor zakelijk, woon-werk en privé.' : 'Tax-compliant trip registration for business, commute and private.',
-      icon: Route,
-    },
-    {
-      key: 'maintenance',
-      label: lang === 'nl' ? 'Onderhoud & Facturen' : 'Maintenance & Invoices',
-      desc: lang === 'nl' ? 'Servicehistorie, facturen uploaden, AI bonherkenning en intervallen.' : 'Service history, invoice uploads, AI recognition and interval alerts.',
-      icon: Wrench,
-    },
-    {
-      key: 'tires',
-      label: lang === 'nl' ? 'Bandenbeheer' : 'Tire Management',
-      desc: lang === 'nl' ? 'Zomer-, winter- en all-season sets, profieldiepte per wielhoek.' : 'Summer, winter, and all-season sets with tread depth monitoring.',
-      icon: Disc,
-    },
-    {
-      key: 'vignettes',
-      label: lang === 'nl' ? 'Tolvignetten & Stickers' : 'Toll Vignettes & Badges',
-      desc: lang === 'nl' ? 'Vignetten (CH, AT, SI, CZ) en milieustickers (Crit\'Air, Umweltplakette).' : 'Digital toll vignettes and environmental emission stickers.',
-      icon: Table,
-    },
-    {
-      key: 'documents',
-      label: lang === 'nl' ? 'Digitaal Dashboardkastje' : 'Digital Glovebox',
-      desc: lang === 'nl' ? 'Kentekenbewijzen, polissen, APK-rapporten en handleidingen veilig bewaren.' : 'Secure storage for registration cards, policies, APK reports and manuals.',
-      icon: FolderLock,
-    },
-    {
-      key: 'fixedExpenses',
-      label: lang === 'nl' ? 'Vaste Lasten & Verzekering' : 'Recurring Expenses',
-      desc: lang === 'nl' ? 'Wegenbelasting (MRB), verzekering, pechhulp en periodieke kosten.' : 'Road tax, insurance, roadside assistance and recurring subscriptions.',
-      icon: Landmark,
-    },
-    {
-      key: 'analytics',
-      label: lang === 'nl' ? 'TCO & Uitgebreide Rapporten' : 'TCO & Analytics',
-      desc: lang === 'nl' ? 'Total Cost of Ownership, pure kilometerprijs en garage-overzicht.' : 'Total Cost of Ownership, cost-per-km breakdown and fleet overview.',
-      icon: LineChart,
-    },
+    { key: 'fuel', label: t('moduleFuelLabel'), desc: t('moduleFuelDesc'), icon: Fuel },
+    { key: 'trips', label: t('moduleTripsLabel'), desc: t('moduleTripsDesc'), icon: Route },
+    { key: 'maintenance', label: t('moduleMaintenanceLabel'), desc: t('moduleMaintenanceDesc'), icon: Wrench },
+    { key: 'tires', label: t('moduleTiresLabel'), desc: t('moduleTiresDesc'), icon: Disc },
+    { key: 'vignettes', label: t('moduleVignettesLabel'), desc: t('moduleVignettesDesc'), icon: Table },
+    { key: 'documents', label: t('moduleDocumentsLabel'), desc: t('moduleDocumentsDesc'), icon: FolderLock },
+    { key: 'fixedExpenses', label: t('moduleFixedExpensesLabel'), desc: t('moduleFixedExpensesDesc'), icon: Landmark },
+    { key: 'analytics', label: t('moduleAnalyticsLabel'), desc: t('moduleAnalyticsDesc'), icon: LineChart },
   ];
 
   return (
@@ -124,12 +94,10 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
         <div>
           <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
             <Sun className="w-4 h-4 text-amber-500" />
-            <span>{lang === 'nl' ? 'Weergave & Taal' : 'Appearance & Language'}</span>
+            <span>{t('appearanceAndLanguage')}</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {lang === 'nl'
-              ? 'Pas de interface van VehicleVault aan naar jouw persoonlijke voorkeur.'
-              : 'Customize the appearance and interface language to your preference.'}
+            {t('appearanceAndLanguageHint')}
           </p>
         </div>
 
@@ -138,10 +106,10 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
           <div className="space-y-2.5 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/80">
             <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
               <Sun className="w-3.5 h-3.5 text-amber-500" />
-              <span>{lang === 'nl' ? 'Kleurthema' : 'Color Theme'}</span>
+              <span>{t('colorTheme')}</span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              {lang === 'nl' ? 'Kies voor een lichte, donkere of automatische weergave.' : 'Choose between light, dark, or automatic system appearance.'}
+              {t('colorThemeHint')}
             </p>
 
             <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-200/70 dark:bg-slate-800/80 rounded-xl shadow-inner mt-2">
@@ -190,10 +158,10 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
           <div className="space-y-2.5 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/80">
             <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
               <Languages className="w-3.5 h-3.5 text-sky-500" />
-              <span>{lang === 'nl' ? 'Taal' : 'Language'}</span>
+              <span>{t('languageLabel')}</span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              {lang === 'nl' ? 'Selecteer de taal van de interface.' : 'Select the user interface language.'}
+              {t('languageHint')}
             </p>
 
             <div className="grid grid-cols-3 gap-2 mt-2">
@@ -251,10 +219,10 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
           <div className="space-y-2.5 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/80">
             <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
               <Palette className="w-3.5 h-3.5 text-purple-500" />
-              <span>{lang === 'nl' ? 'Accentkleur' : 'Accent Color'}</span>
+              <span>{t('accentColor')}</span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              {lang === 'nl' ? 'Kies een accentkleur voor knoppen, links en markeringen.' : 'Select an accent color for buttons, badges, and focus rings.'}
+              {t('accentColorHint')}
             </p>
 
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-1">
@@ -273,7 +241,7 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
                   >
                     <span className="w-5 h-5 rounded-full mb-1.5 shadow-xs" style={{ backgroundColor: opt.dotColor }} />
                     <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate w-full text-center">
-                      {lang === 'nl' ? opt.name : opt.enName}
+                      {ACCENT_LABEL_KEYS[opt.id] ? t(ACCENT_LABEL_KEYS[opt.id]) : opt.enName}
                     </span>
                   </button>
                 );
@@ -290,12 +258,10 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
           <div>
             <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
               <Layers className="w-4 h-4 text-sky-500" />
-              <span>{lang === 'nl' ? 'Actieve Modules' : 'Active Modules'}</span>
+              <span>{t('activeModules')}</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              {lang === 'nl'
-                ? 'Schakel functies uit die je niet gebruikt om de navigatie rustig te houden.'
-                : 'Disable unused modules to keep the sidebar and navigation minimal.'}
+              {t('activeModulesHint')}
             </p>
           </div>
 
@@ -339,10 +305,10 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span>{lang === 'nl' ? 'Systeeminformatie' : 'System Information'}</span>
+                <span>{t('systemInfo')}</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {lang === 'nl' ? 'Status van de server, database en achtergrondservices.' : 'Server status, database health, and background workers.'}
+                {t('systemInfoHint')}
               </p>
             </div>
 
@@ -353,20 +319,20 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
               className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold inline-flex items-center space-x-1.5 transition disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-sky-500 ${diagnosticsRefreshing ? 'animate-spin' : ''}`} />
-              <span>{diagnosticsRefreshing ? '...' : (lang === 'nl' ? 'Vernieuwen' : 'Refresh')}</span>
+              <span>{diagnosticsRefreshing ? '...' : t('refresh')}</span>
             </button>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/80">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Versie</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t('versionLabel')}</span>
               <span className="text-xs font-bold text-slate-900 dark:text-white block mt-0.5">
                 {health?.version ? `v${health.version}` : 'v2.1.0'}
               </span>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/80">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Database</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t('databaseLabel')}</span>
               <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5 flex items-center space-x-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>{health?.database || 'SQLite WAL'}</span>
@@ -374,9 +340,9 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
             </div>
 
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/80 col-span-2 sm:col-span-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Status</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t('status')}</span>
               <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5">
-                {health?.status === 'ok' ? 'Online' : 'Actief'}
+                {health?.status === 'ok' ? t('statusOnline') : t('statusActive')}
               </span>
             </div>
           </div>
@@ -389,12 +355,10 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
               </div>
               <div>
                 <h3 className="font-bold text-xs text-slate-900 dark:text-white">
-                  {lang === 'nl' ? 'Ondersteun VehicleVault' : 'Support VehicleVault'}
+                  {t('supportTitle')}
                 </h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  {lang === 'nl'
-                    ? 'Trakteer de ontwikkelaar op een kop koffie via Ko-fi!'
-                    : 'Buy the developer a coffee on Ko-fi!'}
+                  {t('supportHint')}
                 </p>
               </div>
             </div>
@@ -405,7 +369,7 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
               className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold inline-flex items-center justify-center space-x-1.5 transition shrink-0"
             >
               <Coffee className="w-3.5 h-3.5" />
-              <span>Support on Ko-fi</span>
+              <span>{t('supportOnKofi')}</span>
               <ExternalLink className="w-3 h-3 ml-0.5" />
             </a>
           </div>
