@@ -141,4 +141,13 @@ export const vehicles = {
   soldSummary: 'Verkocht op {date} voor € {price}',
   soldSummaryNoPrice: 'Verkocht op {date}',
   keepShowcaseOpenLabel: 'Verkooppagina online houden (anders wordt deze automatisch offline gehaald)',
+
+  // Inspection terms (utils/inspectionTerms.ts); {term} is the country-specific name (APK, TÜV, MOT, ...)
+  inspShortBe: 'Autokeuring',
+  inspTermBe: 'Keuring',
+  inspDateLabel: '{term} Vervaldatum',
+  inspBadgeValid: 'Geldig',
+  inspBadgeDueSoon: 'Binnenkort',
+  inspBadgeOverdue: 'Verlopen!',
+  inspSyncLabel: '{term} Synchroniseren',
 };
