@@ -46,8 +46,8 @@ describe('Security Audit Regression Tests', () => {
       [otherId, `cal-other-${otherId}@test.local`, 'x', 'user', now, now]
     );
     db.run(
-      'INSERT INTO vehicles (id, user_id, name, type, license_plate, status, initial_odometer, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [vehicleId, ownerId, 'Secret Car', 'car', 'XX-99-YY', 'active', 0, now, now]
+      'INSERT INTO vehicles (id, user_id, name, type, license_plate, apk_expiration_date, status, initial_odometer, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [vehicleId, ownerId, 'Secret Car', 'car', 'XX-99-YY', '2027-12-31', 'active', 0, now, now]
     );
 
     const ownerIcs = CalendarService.generateIcs(vehicleId, ownerId);
@@ -132,6 +132,7 @@ describe('Security Audit Regression Tests', () => {
     const js = zip.readAsText('js/app.js');
 
     assert.equal(html.includes('" onmouseover="alert(1)'), false);
-    assert.ok(js.includes('const plate = "\\";ALERT(1);//";'));
+    assert.equal(js.includes('";alert(1)'), false);
+    assert.equal(js.includes('";ALERT(1)'), false);
   });
 });

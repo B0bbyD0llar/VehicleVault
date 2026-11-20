@@ -716,7 +716,7 @@ Date,Odometer,Fuel_amount,Price,Total_cost,Notes
       try {
         statusCode = 200;
         jsonPayload = null;
-        await FuelController.rescanReceipt({ params: {}, body: { receiptPath: dummyFileName } } as any, mockRes);
+        await FuelController.rescanReceipt({ params: {}, user: { userId: 'test-admin', role: 'admin' }, body: { receiptPath: dummyFileName } } as any, mockRes);
         assert.equal(statusCode, 200);
         assert.equal(jsonPayload.receiptPath, dummyFileName);
         assert.equal(jsonPayload.extracted.liters, 45.0);
@@ -753,7 +753,7 @@ Date,Odometer,Fuel_amount,Price,Total_cost,Notes
       try {
         statusCode = 200;
         jsonPayload = null;
-        await FuelController.rescanReceipt({ params: { id: fuelId }, body: {} } as any, mockRes);
+        await FuelController.rescanReceipt({ params: { id: fuelId }, user: { userId: 'test-admin', role: 'admin' }, body: {} } as any, mockRes);
         assert.equal(statusCode, 200);
         assert.equal(jsonPayload.receiptPath, dbReceiptName);
         assert.equal(jsonPayload.extracted.station, 'Shell');
