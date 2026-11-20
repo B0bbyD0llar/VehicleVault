@@ -4,6 +4,15 @@ Dit document bevat de gerealiseerde mijlpalen en geplande doorontwikkelingen voo
 
 ---
 
+## 💡 Geplande Verbeteringen (Ideeën-backlog)
+- 🔲 **Per-gebruiker Eenheden, Valuta & Datumnotatie:** Laat elke gebruiker in het profiel kiezen tussen `km` / `miles`, `L/100km` / `MPG`, valuta (`€` / `$` / `£`) en datumformaat.
+- 🔲 **White-Label Branding & Gedeeld Grafiek-Thema:** Instelbare app-naam, tagline en eigen logo voor beheerders, plus automatische tekstcontrastcontrole en doorvoering van de accentkleur in alle grafieken.
+- 🔲 **Voertuig-Tijdlijn, Onderdelen (`parts`) & CO₂-Overzicht:** Eén chronologische tijdlijn per voertuig (tanken, onderhoud, kosten, documenten, ritten), een onderdelen-inventory, CO₂-uitstootstatistieken en favoriete tankstations met inline invoervalidatie.
+- 🔲 **HTML/CSS → PDF-Rendering:** Overstappen van handmatige PDFKit-coördinaten naar HTML/CSS-gebaseerde PDF-generatie zodat rapporten en brochures exact dezelfde visuele opmaak als de webapp krijgen.
+- 🔲 **Docker `PUID`/`PGID` & Optionele PostgreSQL-Ondersteuning:** Ondersteuning voor `PUID`/`PGID` in de container-entrypoint voor NAS-omgevingen (Synology/Unraid/TrueNAS) en een optionele PostgreSQL-databasebackend naast SQLite.
+
+---
+
 ## 🏛️ Gerealiseerd in v3.2 (Community, Proefmodus & Telemetrie HUD)
 - ✅ **1-Click Gast / Proef Sandbox Modus:** Laagdrempelige testmodus voor geïnteresseerden en demonstraties via `/proef` of invite links (`?guest=1`, `?proef=1`), met 1-klik conversie naar een vast account zonder dataverlies.
 - ✅ **Reverse Proxy SSO Beheerpaneel & Hardening:** Beheerdersinterface onder Instellingen > Gebruikers om header-authenticatie (Pangolin, Authelia, Authentik, Traefik) in of uit te schakelen, beschermd door strikte loopback en private netwerk CIDR validatie.
