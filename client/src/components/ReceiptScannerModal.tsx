@@ -49,7 +49,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
   onClose,
   onExtracted,
 }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'camera' | 'upload'>('camera');
   const [file, setFile] = useState<File | null>(null);
   const [fullFile, setFullFile] = useState<File | null>(null);
@@ -98,14 +98,14 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
             });
           } else {
             setEngineInfo({
-              name: lang === 'nl' ? 'Tesseract OCR (Lokaal)' : 'Tesseract OCR (Local)',
+              name: t('ocrEngineLocal'),
               isAi: false,
             });
           }
         })
         .catch(() => {
           setEngineInfo({
-            name: lang === 'nl' ? 'Tesseract OCR (Lokaal)' : 'Tesseract OCR (Local)',
+            name: t('ocrEngineLocal'),
             isAi: false,
           });
         });
@@ -140,11 +140,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
   // Start live camera stream
   const startCamera = async (targetFacing: 'environment' | 'user' = facingMode) => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setCameraError(
-        lang === 'nl'
-          ? 'Je browser ondersteunt geen directe cameratoegang. Gebruik bestand uploaden.'
-          : 'Your browser does not support camera access. Please use file upload.'
-      );
+      setCameraError(t('cameraNotSupported'));
       return;
     }
 
@@ -180,11 +176,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
       }
     } catch (err: any) {
       console.warn('[Camera] Failed to initialize camera:', err);
-      setCameraError(
-        lang === 'nl'
-          ? 'Geen toegang tot camera. Controleer je permissies of gebruik de bestandskiezer.'
-          : 'Camera access denied or unavailable. Please check permissions or upload a file.'
-      );
+      setCameraError(t('cameraAccessDenied'));
     } finally {
       setCameraLoading(false);
     }
@@ -493,13 +485,13 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
       if (!res.ok) {
         const errJson = await res.json();
-        throw new Error(errJson.error || 'Failed to scan receipt');
+        throw new Error(errJson.error || t('receiptScanFailed'));
       }
 
       const data = await res.json();
       setOcrResult(data);
     } catch (err: any) {
-      setError(err?.message || 'OCR processing failed');
+      setError(err?.message || t('receiptScanFailed'));
     } finally {
       setLoading(false);
     }
@@ -542,7 +534,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
     }
     return (
       <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-        <span>Tesseract OCR (Lokaal)</span>
+        <span>{t('ocrEngineLocal')}</span>
       </span>
     );
   };
@@ -579,16 +571,14 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                 )}
               </div>
               <p className="text-[11px] text-slate-500">
-                {lang === 'nl'
-                  ? 'Live viewfinder met automatische randdetectie of bestand uploaden'
-                  : 'Live viewfinder with automatic receipt contour detection'}
+                {t('receiptScannerSubtitle')}
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
             className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition"
-            title={lang === 'nl' ? 'Sluiten' : 'Close'}
+            title={t('close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -607,7 +597,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               }`}
             >
               <Camera className="w-4 h-4" />
-              <span>{lang === 'nl' ? 'Live Camera' : 'Live Camera'}</span>
+              <span>{t('liveCamera')}</span>
             </button>
             <button
               type="button"
@@ -622,7 +612,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               }`}
             >
               <Upload className="w-4 h-4" />
-              <span>{lang === 'nl' ? 'Bestand Uploaden' : 'Upload File'}</span>
+              <span>{t('uploadFile')}</span>
             </button>
           </div>
         )}
@@ -656,7 +646,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                       className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold inline-flex items-center justify-center space-x-1.5"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
-                      <span>{lang === 'nl' ? 'Opnieuw proberen' : 'Retry'}</span>
+                      <span>{t('retryCamera')}</span>
                     </button>
                     <button
                       type="button"
@@ -664,7 +654,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                       className="px-3 py-1.5 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-xs font-semibold inline-flex items-center justify-center space-x-1.5"
                     >
                       <Upload className="w-3.5 h-3.5" />
-                      <span>{lang === 'nl' ? 'Bestand kiezen' : 'Choose file'}</span>
+                      <span>{t('chooseFile')}</span>
                     </button>
                   </div>
                 </div>
@@ -689,7 +679,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                     <div className="absolute inset-0 bg-slate-950/80 flex flex-col items-center justify-center text-white space-y-2 z-20">
                       <Loader2 className="w-8 h-8 animate-spin text-accent-400" />
                       <span className="text-xs font-medium">
-                        {lang === 'nl' ? 'Camera starten...' : 'Starting camera...'}
+                        {t('startingCamera')}
                       </span>
                     </div>
                   )}
@@ -703,19 +693,11 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                         {detectedReceipt?.isDetected ? (
                           <div className="bg-emerald-600/90 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full border border-emerald-400/50 shadow-md flex items-center space-x-1.5 animate-in fade-in zoom-in-95">
                             <Sparkles className="w-3.5 h-3.5 text-emerald-200 animate-pulse" />
-                            <span>
-                              {lang === 'nl'
-                                ? '✨ Tankbon gedetecteerd (Auto-Crop gereed)'
-                                : '✨ Receipt detected (Auto-Crop ready)'}
-                            </span>
+                            <span>✨ {t('receiptDetectedAutoCrop')}</span>
                           </div>
                         ) : (
                           <div className="bg-black/60 backdrop-blur-md text-white text-[11px] font-medium px-3.5 py-1 rounded-full border border-white/10 shadow-sm flex items-center space-x-1.5">
-                            <span>
-                              {lang === 'nl'
-                                ? '📄 Richt op de bon binnen het kader'
-                                : '📄 Frame the receipt inside the box'}
-                            </span>
+                            <span>📄 {t('frameReceiptHint')}</span>
                           </div>
                         )}
                       </div>
@@ -729,22 +711,10 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                             ? 'bg-emerald-500/80 text-white border-emerald-400/60 shadow-xs'
                             : 'bg-black/50 text-slate-300 border-white/20 hover:bg-black/70'
                         }`}
-                        title={
-                          lang === 'nl'
-                            ? 'Automatische randdetectie aan/uit'
-                            : 'Toggle auto edge detection'
-                        }
+                        title={t('toggleAutoDetect')}
                       >
                         <Sparkles className="w-3 h-3" />
-                        <span>
-                          {lang === 'nl'
-                            ? isAutoDetectEnabled
-                              ? 'Auto: Aan'
-                              : 'Auto: Uit'
-                            : isAutoDetectEnabled
-                            ? 'Auto: On'
-                            : 'Auto: Off'}
-                        </span>
+                        <span>{isAutoDetectEnabled ? t('autoDetectOn') : t('autoDetectOff')}</span>
                       </button>
                     </div>
 
@@ -760,7 +730,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                               ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-lg scale-105'
                               : 'bg-black/55 hover:bg-black/80 text-white border-white/20'
                           }`}
-                          title={lang === 'nl' ? 'Zaklamp aan/uit' : 'Toggle torch'}
+                          title={t('toggleTorch')}
                         >
                           {torchOn ? (
                             <Zap className="w-5 h-5 fill-current" />
@@ -782,15 +752,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                             ? 'bg-emerald-400 ring-4 ring-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.55)] scale-105'
                             : 'bg-white hover:scale-105'
                         }`}
-                        title={
-                          lang === 'nl'
-                            ? detectedReceipt?.isDetected
-                              ? 'Bon vastleggen & uitsnijden'
-                              : 'Foto maken'
-                            : detectedReceipt?.isDetected
-                            ? 'Capture & auto-crop receipt'
-                            : 'Take photo'
-                        }
+                        title={detectedReceipt?.isDetected ? t('captureAndCropReceipt') : t('takePhoto')}
                       >
                         <div className="w-13 h-13 rounded-full border-2 border-slate-900 bg-white flex items-center justify-center">
                           <div
@@ -808,7 +770,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                         type="button"
                         onClick={handleFlipCamera}
                         className="w-11 h-11 rounded-full bg-black/55 hover:bg-black/80 text-white border border-white/20 flex items-center justify-center transition"
-                        title={lang === 'nl' ? 'Wissel camera' : 'Flip camera'}
+                        title={t('flipCamera')}
                       >
                         <SwitchCamera className="w-5 h-5" />
                       </button>
@@ -840,7 +802,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                   {t('ocrDropzoneText')}
                 </span>
                 <span className="text-[11px] text-slate-500 mt-1">
-                  JPG, PNG, WEBP of HEIC (max 15MB)
+                  {t('receiptUploadFormats')}
                 </span>
               </label>
             </div>
@@ -868,25 +830,11 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                           ? 'bg-emerald-600/90 text-white border-emerald-400/50'
                           : 'bg-black/60 hover:bg-black/90 text-slate-200 border-white/10'
                       }`}
-                      title={
-                        lang === 'nl'
-                          ? isCroppedActive
-                            ? 'Toon volledige foto'
-                            : 'Herstel bijgesneden bon'
-                          : isCroppedActive
-                          ? 'Show full sensor capture'
-                          : 'Show cropped receipt'
-                      }
+                      title={isCroppedActive ? t('showFullPhoto') : t('showCroppedReceipt')}
                     >
                       <Crop className="w-3.5 h-3.5" />
                       <span className="text-[10px] font-semibold">
-                        {isCroppedActive
-                          ? lang === 'nl'
-                            ? 'Bijgesneden'
-                            : 'Cropped'
-                          : lang === 'nl'
-                          ? 'Volledig'
-                          : 'Full'}
+                        {isCroppedActive ? t('croppedLabel') : t('fullPhotoLabel')}
                       </span>
                     </button>
                   )}
@@ -896,7 +844,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                     type="button"
                     onClick={handleRotate90}
                     className="p-1.5 rounded-lg bg-black/60 hover:bg-black/90 text-white backdrop-blur-sm border border-white/10 transition text-xs flex items-center space-x-1 shadow-md"
-                    title={lang === 'nl' ? 'Foto 90° draaien' : 'Rotate 90°'}
+                    title={t('rotatePhoto90')}
                   >
                     <RotateCw className="w-3.5 h-3.5" />
                     <span className="text-[10px] font-semibold">90°</span>
@@ -907,11 +855,11 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                     type="button"
                     onClick={handleRetake}
                     className="p-1.5 rounded-lg bg-black/60 hover:bg-black/90 text-white backdrop-blur-sm border border-white/10 transition text-xs flex items-center space-x-1 shadow-md"
-                    title={lang === 'nl' ? 'Opnieuw nemen' : 'Retake'}
+                    title={t('retakePhoto')}
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                     <span className="text-[10px] font-semibold">
-                      {lang === 'nl' ? 'Opnieuw' : 'Retake'}
+                      {t('retakeShort')}
                     </span>
                   </button>
                 </div>
@@ -920,15 +868,13 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pt-1">
                 <div className="min-w-0">
                   <p className="font-semibold text-xs text-slate-800 dark:text-slate-200 truncate">
-                    {file?.name ||
-                      (lang === 'nl' ? 'Tankbon_Shell.jpg' : 'Fuel_Receipt_Shell.jpg')}
+                    {file?.name || t('receiptPlaceholderFileName')}
                   </p>
                   <p className="text-slate-500 text-[11px]">
-                    {Math.round((file?.size || 48200) / 1024)} KB{' '}
-                    {lang === 'nl' ? 'geoptimaliseerd' : 'optimized'}
+                    {t('optimizedSize', { size: Math.round((file?.size || 48200) / 1024) })}
                     {isCroppedActive && (
                       <span className="text-emerald-600 dark:text-emerald-400 ml-1.5 font-medium">
-                        • {lang === 'nl' ? 'Slim bijgesneden' : 'Auto-cropped'}
+                        • {t('autoCropped')}
                       </span>
                     )}
                   </p>
@@ -946,13 +892,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                       <Sparkles className="w-3.5 h-3.5" />
                     )}
                     <span>
-                      {loading
-                        ? lang === 'nl'
-                          ? 'Analyseren...'
-                          : 'Analyzing...'
-                        : lang === 'nl'
-                        ? 'Start Bon Scan'
-                        : 'Start Receipt Scan'}
+                      {loading ? t('analyzingShort') : t('startReceiptScan')}
                     </span>
                   </button>
                 )}
@@ -967,15 +907,11 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               <div className="flex-1 min-w-0">
                 <span className="font-semibold block">
                   {engineInfo?.isAi
-                    ? lang === 'nl'
-                      ? `Tankbon analyseren met ${engineInfo.name}...`
-                      : `Analyzing receipt with ${engineInfo.name}...`
+                    ? t('analyzingReceiptWith', { engine: engineInfo.name })
                     : t('scanningReceipt')}
                 </span>
                 <span className="text-[11px] text-accent-600 dark:text-accent-400">
-                  {lang === 'nl'
-                    ? 'Datum, liters, bedragen en tankstation worden automatisch herkend...'
-                    : 'Extracting date, liters, amounts, and station...'}
+                  {t('extractingReceiptHint')}
                 </span>
               </div>
             </div>
@@ -987,7 +923,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
                 <div className="flex items-center space-x-2">
                   <span className="font-bold text-slate-800 dark:text-slate-200">
-                    {lang === 'nl' ? 'Herkende Gegevens' : 'Recognized Data'}
+                    {t('recognizedData')}
                   </span>
                   {renderEngineBadge()}
                 </div>
@@ -1004,17 +940,13 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                     <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <span className="font-bold block">
-                        {lang === 'nl'
-                          ? 'AI Analyse mislukt (teruggevallen op lokale Tesseract OCR):'
-                          : 'AI Analysis failed (fell back to local OCR):'}
+                        {t('aiFallbackWarning')}
                       </span>
                       <span className="text-amber-800 dark:text-amber-300 font-mono text-[10px] break-all block mt-0.5">
                         {ocrResult.extracted.aiError}
                       </span>
                       <span className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 block">
-                        {lang === 'nl'
-                          ? 'Tip: Controleer je API-sleutel in Instellingen → AI Bonherkenning.'
-                          : 'Tip: Check your API key in Settings → AI Receipt Scanner.'}
+                        {t('aiApiKeyTip')}
                       </span>
                     </div>
                   </div>
@@ -1107,7 +1039,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
             className="px-5 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-1.5"
           >
             <CheckCircle2 className="w-4 h-4" />
-            <span>{lang === 'nl' ? 'Gegevens overnemen' : 'Apply values'}</span>
+            <span>{t('applyValues')}</span>
           </button>
         </div>
       </div>
