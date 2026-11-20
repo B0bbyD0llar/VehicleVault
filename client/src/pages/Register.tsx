@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext.js';
 import { useLanguage } from '../context/LanguageContext.js';
 
 export const Register: React.FC = () => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,12 +25,12 @@ export const Register: React.FC = () => {
     setError(null);
 
     if (password.length < 8) {
-      setError(lang === 'nl' ? 'Wachtwoord moet minimaal 8 tekens lang zijn' : 'Password must be at least 8 characters');
+      setError(t('passwordMinLength', { min: 8 }));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError(lang === 'nl' ? 'Wachtwoorden komen niet overeen' : 'Passwords do not match');
+      setError(t('passwordMismatch'));
       return;
     }
 
@@ -39,7 +39,7 @@ export const Register: React.FC = () => {
       await register(email, password);
       navigate('/');
     } catch (err: any) {
-      setError(err?.message || (lang === 'nl' ? 'Registratie mislukt' : 'Registration failed'));
+      setError(err?.message || t('registrationFailed'));
     } finally {
       setLoading(false);
     }
@@ -57,12 +57,10 @@ export const Register: React.FC = () => {
             <img src="/icon-512.png" alt="VehicleVault" className="w-14 h-14 object-contain drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]" />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white">
-            {lang === 'nl' ? 'Account Aanmaken' : 'Create Account'}
+            {t('createAccount')}
           </h1>
           <p className="text-xs text-slate-400 mt-1 text-center">
-            {lang === 'nl'
-              ? 'Het eerste geregistreerde account krijgt automatisch beheerdersrechten.'
-              : 'The first registered user is automatically granted administrator privileges.'}
+            {t('registerFirstUserHint')}
           </p>
         </div>
 
@@ -75,7 +73,7 @@ export const Register: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block text-slate-300 font-semibold mb-1.5">{lang === 'nl' ? 'E-mailadres' : 'Email Address'}</label>
+            <label className="block text-slate-300 font-semibold mb-1.5">{t('emailAddress')}</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
               <input
@@ -84,14 +82,14 @@ export const Register: React.FC = () => {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="bestuurder@voorbeeld.nl"
+                placeholder={t('emailPlaceholder')}
                 className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 font-medium transition shadow-inner"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-slate-300 font-semibold mb-1.5">{lang === 'nl' ? 'Wachtwoord' : 'Password'}</label>
+            <label className="block text-slate-300 font-semibold mb-1.5">{t('passwordLabel')}</label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
               <input
@@ -100,14 +98,14 @@ export const Register: React.FC = () => {
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={lang === 'nl' ? 'Minimaal 8 tekens' : 'At least 8 characters'}
+                placeholder={t('passwordPlaceholderMin', { min: 8 })}
                 className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition shadow-inner"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-slate-300 font-semibold mb-1.5">{lang === 'nl' ? 'Bevestig Wachtwoord' : 'Confirm Password'}</label>
+            <label className="block text-slate-300 font-semibold mb-1.5">{t('authConfirmPassword')}</label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
               <input
@@ -116,7 +114,7 @@ export const Register: React.FC = () => {
                 autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={lang === 'nl' ? 'Herhaal wachtwoord' : 'Repeat password'}
+                placeholder={t('repeatPassword')}
                 className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition shadow-inner"
               />
             </div>
@@ -128,14 +126,14 @@ export const Register: React.FC = () => {
             className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition disabled:opacity-50 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-950/60 hover:scale-[1.01] mt-3"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
-            <span>{loading ? (lang === 'nl' ? 'Aanmaken...' : 'Creating...') : (lang === 'nl' ? 'Account Aanmaken' : 'Create Account')}</span>
+            <span>{loading ? t('creatingAccount') : t('createAccount')}</span>
           </button>
         </form>
 
         <div className="mt-6 text-center text-xs text-slate-500 border-t border-slate-800/80 pt-4">
-          <span>{lang === 'nl' ? 'Al een account? ' : 'Already have an account? '}</span>
+          <span>{t('alreadyHaveAccount')} </span>
           <Link to="/login" className="text-emerald-400 hover:text-emerald-300 hover:underline font-bold inline-flex items-center space-x-1">
-            <span>{lang === 'nl' ? 'Inloggen' : 'Sign in'}</span>
+            <span>{t('signIn')}</span>
             <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
           </Link>
         </div>

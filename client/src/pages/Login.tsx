@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Languages } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.js';
 import { useLanguage } from '../context/LanguageContext.js';
+import { translations, Language } from '../i18n/translations.js';
 import { passkeyErrorMessage } from '../utils/passkeys.js';
 import { LoginHeroSection } from '../components/auth/LoginHeroSection.js';
 import { TwoFactorLoginForm } from '../components/auth/TwoFactorLoginForm.js';
@@ -11,6 +12,19 @@ import { GuestLoginButton } from '../components/auth/GuestLoginButton.js';
 import { LoginOidcSection } from '../components/auth/LoginOidcSection.js';
 import { InitialSetupBanner } from '../components/auth/InitialSetupBanner.js';
 import { EmailLoginForm } from '../components/auth/EmailLoginForm.js';
+
+const AVAILABLE_LANGUAGES = Object.keys(translations) as Language[];
+
+/** Name of a language in that language itself, e.g. "Deutsch" for 'de'. */
+function nativeLanguageName(code: Language): string {
+  try {
+    const name = new Intl.DisplayNames([code], { type: 'language' }).of(code);
+    if (name) return name.charAt(0).toLocaleUpperCase(code) + name.slice(1);
+  } catch {
+    // Intl.DisplayNames not available: fall back to the code below.
+  }
+  return code.toUpperCase();
+}
 
 export const Login: React.FC = () => {
   const { t, lang, setLang } = useLanguage();
@@ -60,7 +74,7 @@ export const Login: React.FC = () => {
       loginAsGuest()
         .then(() => navigate('/', { replace: true }))
         .catch((err: any) => {
-          setError(err?.message || 'Gasttoegang starten mislukt');
+          setError(err?.message || t('guestAccessFailed'));
           setLoading(false);
         });
     }
@@ -70,9 +84,9 @@ export const Login: React.FC = () => {
     const errParam = searchParams.get('error');
     if (errParam) {
       if (errParam === 'oidc_not_configured') {
-        setError(lang === 'nl' ? 'OpenID Connect (OIDC) is nog niet geconfigureerd.' : 'OIDC is not yet configured.');
+        setError(t('oidcNotConfigured'));
       } else if (errParam === 'oidc_session_expired' || errParam === 'oidc_state_mismatch') {
-        setError(lang === 'nl' ? 'De SSO sessie is verlopen of ongeldig. Probeer opnieuw.' : 'SSO session expired or invalid. Please retry.');
+        setError(t('ssoSessionExpired'));
       } else {
         setError(errParam);
       }
@@ -100,7 +114,7 @@ export const Login: React.FC = () => {
       }
       navigate('/');
     } catch (err: any) {
-      setError(err?.message || (lang === 'nl' ? 'Inloggen mislukt. Controleer uw gegevens.' : 'Login failed. Please check credentials.'));
+      setError(err?.message || t('loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -116,7 +130,7 @@ export const Login: React.FC = () => {
       await verify2Fa(twoFactorData.tempToken, twoFactorCode);
       navigate('/');
     } catch (err: any) {
-      setError(err?.message || (lang === 'nl' ? 'Ongeldige verificatiecode of herstelcode' : 'Invalid 2FA code'));
+      setError(err?.message || t('invalid2faCode'));
     } finally {
       setLoading(false);
     }
@@ -129,7 +143,7 @@ export const Login: React.FC = () => {
       await loginWithPasskey();
       navigate('/');
     } catch (err: any) {
-      setError(passkeyErrorMessage(err, lang));
+      setError(passkeyErrorMessage(err, t));
     } finally {
       setLoading(false);
     }
@@ -165,28 +179,35 @@ export const Login: React.FC = () => {
             <span className="font-black text-white text-lg tracking-tight">VehicleVault</span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setLang(lang === 'nl' ? 'en' : 'nl')}
-            className="ml-auto inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-white text-xs font-semibold transition shadow-xs"
-          >
+          <label className="ml-auto inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-white text-xs font-semibold transition shadow-xs cursor-pointer">
             <Languages className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{lang === 'nl' ? 'English' : 'Nederlands'}</span>
-          </button>
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value as Language)}
+              aria-label={t('languageSelectLabel')}
+              className="bg-transparent focus:outline-none cursor-pointer"
+            >
+              {AVAILABLE_LANGUAGES.map((code) => (
+                <option key={code} value={code} className="bg-slate-900 text-slate-200">
+                  {nativeLanguageName(code)}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {/* Center Floating Glassmorphic Card */}
         <div className="relative z-10 my-auto w-full max-w-md mx-auto bg-slate-900/80 border border-slate-800/90 rounded-3xl p-7 sm:p-8 shadow-[0_15px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl">
           <div className="mb-6 space-y-1">
             <h1 className="text-2xl font-black tracking-tight text-white">
-              {lang === 'nl' ? 'Welkom terug' : 'Welcome back'}
+              {t('welcomeBack')}
             </h1>
             <p className="text-xs text-slate-400">
-              {lang === 'nl' ? 'Log in op je persoonlijke VehicleVault dashboard' : 'Sign in to access your VehicleVault dashboard'}
+              {t('loginSubtitle')}
             </p>
           </div>
 
-          {!hasUsers && <InitialSetupBanner lang={lang} />}
+          {!hasUsers && <InitialSetupBanner />}
 
           {error && (
             <div className="flex items-center space-x-2.5 bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs p-3.5 rounded-2xl mb-5 font-medium shadow-lg animate-in fade-in">
@@ -206,7 +227,6 @@ export const Login: React.FC = () => {
                 setError(null);
               }}
               loading={loading}
-              lang={lang}
             />
           ) : (
             <>
@@ -216,7 +236,7 @@ export const Login: React.FC = () => {
                   <div className="relative flex py-1 items-center">
                     <div className="flex-grow border-t border-slate-800"></div>
                     <span className="shrink-0 mx-3 text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-                      {lang === 'nl' ? 'of inloggen met account' : 'or sign in with account'}
+                      {t('orSignInWithAccount')}
                     </span>
                     <div className="flex-grow border-t border-slate-800"></div>
                   </div>
@@ -242,7 +262,6 @@ export const Login: React.FC = () => {
                   rememberMe={rememberMe}
                   setRememberMe={setRememberMe}
                   loading={loading}
-                  lang={lang}
                   onSubmit={handleSubmit}
                 />
 
@@ -252,9 +271,9 @@ export const Login: React.FC = () => {
           )}
 
           <div className="mt-6 text-center text-xs text-slate-500 border-t border-slate-800/80 pt-4">
-            <span>{lang === 'nl' ? 'Nog geen account? ' : 'No account yet? '}</span>
+            <span>{t('noAccountYet')} </span>
             <Link to="/register" className="text-emerald-400 hover:text-emerald-300 hover:underline font-bold">
-              {lang === 'nl' ? 'Account Registreren' : 'Register Account'}
+              {t('registerAccount')}
             </Link>
           </div>
         </div>

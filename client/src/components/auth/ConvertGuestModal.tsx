@@ -10,7 +10,7 @@ interface ConvertGuestModalProps {
 
 export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, onClose }) => {
   const { convertGuestAccount } = useAuth();
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,16 +25,12 @@ export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, on
     setError(null);
 
     if (password.length < 8) {
-      setError(
-        lang === 'nl'
-          ? 'Wachtwoord moet minimaal 8 tekens lang zijn.'
-          : 'Password must be at least 8 characters long.'
-      );
+      setError(t('passwordMinLength', { min: 8 }));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError(lang === 'nl' ? 'Wachtwoorden komen niet overeen.' : 'Passwords do not match.');
+      setError(t('passwordMismatch'));
       return;
     }
 
@@ -46,7 +42,7 @@ export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, on
         onClose();
       }, 1800);
     } catch (err: any) {
-      setError(err?.message || (lang === 'nl' ? 'Opslaan mislukt. Probeer opnieuw.' : 'Save failed.'));
+      setError(err?.message || t('accountSaveFailed'));
     } finally {
       setLoading(false);
     }
@@ -69,10 +65,10 @@ export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, on
           </div>
           <div>
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              {lang === 'nl' ? 'Proefaccount Opslaan' : 'Save Trial Account'}
+              {t('saveTrialAccountTitle')}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              {lang === 'nl' ? 'Behoud al je voertuigen en data' : 'Keep all your vehicles and data'}
+              {t('saveTrialAccountSubtitle')}
             </p>
           </div>
         </div>
@@ -83,20 +79,16 @@ export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, on
               <CheckCircle2 className="w-7 h-7" />
             </div>
             <p className="text-sm font-bold text-slate-900 dark:text-white">
-              {lang === 'nl' ? 'Account succesvol opgeslagen!' : 'Account successfully saved!'}
+              {t('accountSaved')}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
-              {lang === 'nl'
-                ? 'Je bent nu een permanente gebruiker. Je kunt voortaan met je eigen e-mail en wachtwoord inloggen.'
-                : 'You are now a permanent user. You can sign in with your email and password from now on.'}
+              {t('accountSavedHint')}
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px]">
-              {lang === 'nl'
-                ? 'Kies je persoonlijke e-mailadres en een veilig wachtwoord. Alle auto’s, ritten en gegevens die je zojuist hebt ingevoerd blijven gekoppeld.'
-                : 'Choose your personal email address and a password. All vehicles, trips, and logs created in this trial session will remain saved.'}
+              {t('convertGuestIntro')}
             </p>
 
             {error && (
@@ -108,7 +100,7 @@ export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, on
 
             <div>
               <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
-                {lang === 'nl' ? 'Je E-mailadres' : 'Your Email Address'}
+                {t('yourEmailAddress')}
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -117,7 +109,7 @@ export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, on
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="naam@voorbeeld.nl"
+                  placeholder={t('emailPlaceholder')}
                   className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 transition"
                 />
               </div>
@@ -125,7 +117,7 @@ export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, on
 
             <div>
               <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
-                {lang === 'nl' ? 'Wachtwoord (min. 8 tekens)' : 'Password (min. 8 chars)'}
+                {t('passwordMin8Label')}
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -142,7 +134,7 @@ export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, on
 
             <div>
               <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
-                {lang === 'nl' ? 'Wachtwoord Bevestigen' : 'Confirm Password'}
+                {t('authConfirmPassword')}
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -163,7 +155,7 @@ export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, on
                 onClick={onClose}
                 className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold transition"
               >
-                {lang === 'nl' ? 'Later' : 'Later'}
+                {t('later')}
               </button>
               <button
                 type="submit"
@@ -171,7 +163,7 @@ export const ConvertGuestModal: React.FC<ConvertGuestModalProps> = ({ isOpen, on
                 className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition disabled:opacity-50 flex items-center space-x-2 shadow-md shadow-emerald-950/20"
               >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                <span>{lang === 'nl' ? 'Account Opslaan' : 'Save Account'}</span>
+                <span>{t('saveAccount')}</span>
               </button>
             </div>
           </form>

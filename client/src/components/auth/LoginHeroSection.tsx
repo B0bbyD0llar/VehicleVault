@@ -4,7 +4,7 @@ import { useLanguage } from '../../context/LanguageContext.js';
 import { AnimatedCockpitVisual } from './AnimatedCockpitVisual.js';
 
 export const LoginHeroSection: React.FC = () => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="relative hidden lg:flex lg:col-span-7 xl:col-span-7 flex-col justify-between p-10 xl:p-12 bg-slate-950 text-white overflow-hidden select-none border-r border-slate-800/80">
@@ -55,35 +55,18 @@ export const LoginHeroSection: React.FC = () => {
         <div className="space-y-2 text-center sm:text-left">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
             <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span>
-              {lang === 'nl'
-                ? 'Tanken, Documenten & Live Telematica'
-                : 'Fuel Logs, Documents & Telematics'}
-            </span>
+            <span>{t('heroBadge')}</span>
           </div>
 
           <h2 className="text-2xl xl:text-3xl font-black tracking-tight text-white leading-tight">
-            {lang === 'nl' ? (
-              <>
-                Volledige controle over tanken,{' '}
-                <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
-                  documenten &amp; telematica.
-                </span>
-              </>
-            ) : (
-              <>
-                Complete control over fueling,{' '}
-                <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
-                  documents &amp; telematics.
-                </span>
-              </>
-            )}
+            {t('heroTitlePrefix')}{' '}
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
+              {t('heroTitleHighlight')}
+            </span>
           </h2>
 
           <p className="text-xs text-slate-400 leading-relaxed max-w-lg">
-            {lang === 'nl'
-              ? 'Beheer al je tankbeurten, gescande facturen, APK en realtime kilometerstanden op één veilige, privacy-vriendelijke plek.'
-              : 'Manage all your fill-ups, scanned invoices, inspections and realtime odometer telemetry in one privacy-friendly vault.'}
+            {t('heroSubtitle')}
           </p>
         </div>
 
@@ -95,10 +78,10 @@ export const LoginHeroSection: React.FC = () => {
               <Fuel className="w-4 h-4 text-amber-400" />
             </div>
             <h4 className="text-xs font-bold text-white mb-0.5">
-              {lang === 'nl' ? 'Slimme Tanklog' : 'Smart Fuel Log'}
+              {t('heroCardFuelTitle')}
             </h4>
             <p className="text-[11px] text-slate-400 leading-tight">
-              {lang === 'nl' ? 'Bonnen scannen, GPS & km/l' : 'Receipt scan, GPS & km/l'}
+              {t('heroCardFuelText')}
             </p>
           </div>
 
@@ -108,10 +91,10 @@ export const LoginHeroSection: React.FC = () => {
               <FileText className="w-4 h-4 text-sky-400" />
             </div>
             <h4 className="text-xs font-bold text-white mb-0.5">
-              {lang === 'nl' ? 'Documenten & Facturen' : 'Docs & Invoices'}
+              {t('heroCardDocsTitle')}
             </h4>
             <p className="text-[11px] text-slate-400 leading-tight">
-              {lang === 'nl' ? 'AI factuurherkenning & APK' : 'AI invoice OCR & APK'}
+              {t('heroCardDocsText')}
             </p>
           </div>
 
@@ -121,10 +104,10 @@ export const LoginHeroSection: React.FC = () => {
               <Radio className="w-4 h-4 text-emerald-400" />
             </div>
             <h4 className="text-xs font-bold text-white mb-0.5">
-              {lang === 'nl' ? 'Telematica & TCO' : 'Telematics & TCO'}
+              {t('heroCardTelematicsTitle')}
             </h4>
             <p className="text-[11px] text-slate-400 leading-tight">
-              {lang === 'nl' ? 'Kia, HA, Mercedes & tellers' : 'Kia, HA, Mercedes & odo'}
+              {t('heroCardTelematicsText')}
             </p>
           </div>
         </div>

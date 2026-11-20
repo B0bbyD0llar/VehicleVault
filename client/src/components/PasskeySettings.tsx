@@ -45,7 +45,7 @@ export const PasskeySettings: React.FC = () => {
     try {
       await action();
     } catch (err: any) {
-      setError(passkeyErrorMessage(err, lang));
+      setError(passkeyErrorMessage(err, t));
     } finally {
       setBusy(false);
     }

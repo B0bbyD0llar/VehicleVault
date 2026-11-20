@@ -6,7 +6,7 @@ import { ConvertGuestModal } from './ConvertGuestModal.js';
 
 export const GuestTrialBanner: React.FC = () => {
   const { user } = useAuth();
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [modalOpen, setModalOpen] = useState(false);
 
   const isGuest = Boolean(user?.isGuest || user?.email?.endsWith('@proef.local'));
@@ -23,12 +23,10 @@ export const GuestTrialBanner: React.FC = () => {
             </span>
             <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 shrink-0">
               <Sparkles className="w-3 h-3 mr-1" />
-              {lang === 'nl' ? 'Proefsessie' : 'Trial Session'}
+              {t('trialSession')}
             </span>
             <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300">
-              {lang === 'nl'
-                ? 'Je verkent VehicleVault als gast in een afgeschermde garage. Sla je account op om je data te behouden.'
-                : 'Exploring VehicleVault as guest in a private garage. Save your account to keep your data.'}
+              {t('trialSessionHint')}
             </span>
           </div>
 
@@ -38,7 +36,7 @@ export const GuestTrialBanner: React.FC = () => {
             className="shrink-0 inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs transition hover:scale-[1.02]"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>{lang === 'nl' ? 'Account Bewaren' : 'Save Account'}</span>
+            <span>{t('keepAccount')}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

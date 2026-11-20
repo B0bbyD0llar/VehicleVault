@@ -1,6 +1,7 @@
 import { startAuthentication, startRegistration, browserSupportsWebAuthn } from '@simplewebauthn/browser';
 import { apiFetch } from '../api/client.js';
 import { User } from '../types/index.js';
+import type { TranslationKey } from '../i18n/translations.js';
 
 export interface SessionResponse {
   accessToken: string;
@@ -8,15 +9,15 @@ export interface SessionResponse {
 }
 
 /** Turn a failed browser ceremony into a sentence for the person who pressed the button. */
-export function passkeyErrorMessage(err: any, lang: 'nl' | 'en' | 'de' = 'nl'): string {
+export function passkeyErrorMessage(err: any, t: (key: TranslationKey) => string): string {
   const name = err?.name || err?.cause?.name;
   if (name === 'NotAllowedError' || name === 'AbortError' || err?.code === 'ERROR_CEREMONY_ABORTED') {
-    return lang === 'nl' ? 'De passkey-prompt is geannuleerd of verlopen.' : 'The passkey prompt was cancelled or timed out.';
+    return t('passkeyCeremonyAborted');
   }
   if (err?.code === 'ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED') {
-    return lang === 'nl' ? 'Dit apparaat heeft al een passkey voor VehicleVault.' : 'This device already has a passkey for VehicleVault.';
+    return t('passkeyAlreadyRegistered');
   }
-  return err?.message || (lang === 'nl' ? 'Er ging iets mis met de passkey.' : 'Something went wrong with the passkey.');
+  return err?.message || t('passkeyErrorGeneric');
 }
 
 export function passkeysSupported(): boolean {

@@ -3,7 +3,7 @@ import { Fuel, FileText, Radio, Wrench, Zap } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext.js';
 
 export const AnimatedCockpitVisual: React.FC = () => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [speed, setSpeed] = useState(104);
 
   // Gentle realistic speed fluctuation to bring the cockpit to life
@@ -167,10 +167,10 @@ export const AnimatedCockpitVisual: React.FC = () => {
           </div>
           <div className="text-left">
             <div className="text-[10px] font-mono text-slate-400 font-semibold uppercase tracking-wider">
-              {lang === 'nl' ? 'Tankbeurt & Verbruik' : 'Fuel & Consumption'}
+              {t('cockpitFuelLabel')}
             </div>
             <div className="text-xs font-mono font-bold text-amber-300">
-              {lang === 'nl' ? '1:18,5 km/l • € 1,89/L' : '1:18.5 km/l • €1.89/L'}
+              {t('cockpitFuelValue')}
             </div>
           </div>
         </div>
@@ -182,10 +182,10 @@ export const AnimatedCockpitVisual: React.FC = () => {
           </div>
           <div className="text-left">
             <div className="text-[10px] font-mono text-slate-400 font-semibold uppercase tracking-wider">
-              {lang === 'nl' ? 'Factuur & Doc OCR' : 'Invoice & Doc OCR'}
+              {t('cockpitDocsLabel')}
             </div>
             <div className="text-xs font-mono font-bold text-sky-300">
-              {lang === 'nl' ? 'Kia Factuur • Gescand ✓' : 'Kia Invoice • Scanned ✓'}
+              {t('cockpitDocsValue')}
             </div>
           </div>
         </div>
@@ -197,10 +197,10 @@ export const AnimatedCockpitVisual: React.FC = () => {
           </div>
           <div className="text-left">
             <div className="text-[10px] font-mono text-slate-400 font-semibold uppercase tracking-wider">
-              {lang === 'nl' ? 'Telematica & Kilometerstand' : 'Telematics & Odometer'}
+              {t('cockpitTelematicsLabel')}
             </div>
             <div className="text-xs font-mono font-bold text-emerald-300 flex items-center space-x-1">
-              <span>{lang === 'nl' ? '45.280 km' : '45,280 km'}</span>
+              <span>{t('cockpitOdometerValue')}</span>
               <span className="text-[10px] text-emerald-400 font-normal">● Auto Sync</span>
             </div>
           </div>
@@ -213,10 +213,10 @@ export const AnimatedCockpitVisual: React.FC = () => {
           </div>
           <div className="text-left">
             <div className="text-[10px] font-mono text-slate-400 font-semibold uppercase tracking-wider">
-              {lang === 'nl' ? 'APK & Onderhoud' : 'Inspection & Maintenance'}
+              {t('cockpitInspectionLabel')}
             </div>
             <div className="text-xs font-mono font-bold text-purple-300">
-              {lang === 'nl' ? 'APK OK • Historie Actueel' : 'Inspection OK • Up to Date'}
+              {t('cockpitInspectionValue')}
             </div>
           </div>
         </div>
