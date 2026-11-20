@@ -1,40 +1,33 @@
-# VehicleVault v3.8.0 Release Notes
+# VehicleVault v3.9.0 Release Notes
 
-We are proud to announce **VehicleVault v3.8.0**! This minor release introduces a **print-ready PDF Sales Dossier export (including all vehicle photos)**, major **Showcase & Home Assistant Telematics UX upgrades**, a **modular i18n architecture** contributed by @B0bbyD0llar, and **comprehensive security hardening**.
+We are proud to announce **VehicleVault v3.9.0**! This minor release delivers a comprehensive **Security Hardening** pass across authentication, multi-user authorization, file handling, SSRF protection, and PWA caching, alongside **modular i18n refactoring** contributed by [@B0bbyD0llar](https://github.com/B0bbyD0llar) and **Showcase PDF & UI refinements**.
 
 ---
 
 ## ✨ What's New
 
-### 📄 1. Complete Showcase PDF Dossier Export (incl. All Photos)
-- **Print-Ready Sales Brochure (`GET /api/vehicles/:id/showcase/export-pdf` & `/api/public/showcase/:slug/export-pdf`):** Generate a complete, multi-page A4 PDF sales dossier containing vehicle specs, highlights, options & accessories, maintenance history, tire tread status, transparency notes, seller contact details, and a dedicated **Full Photo Gallery** (2 large photos per page with category labels and captions).
-- **Universal Image Support:** Automatically converts JPEG, PNG, and WebP photos via `sharp` with EXIF orientation correction.
-- **Direct Download Buttons:** Available both inside the **Showcase Manager** (`Link & Delen` tab) and on the **Public Showcase Page** header.
+### 🛡️ 1. Comprehensive Security Hardening
+- **Authentication, 2FA, OIDC & Session Lifecycle:**
+  - Rejected pre-MFA 2FA temporary tokens (`purpose: '2fa_login'`) in `verifyAccessToken`, and added database-backed `token_version` + role verification so logout, password changes, password resets, and role changes immediately invalidate active JWTs.
+  - Required TOTP second-factor confirmation to disable 2FA or regenerate backup/recovery codes, and blocked `vkv_` API keys from managing 2FA.
+  - Added OIDC `id_token` JWS signature (JWKS), `iss`, `aud`, `exp`, and `nonce` verification, restricted email matching to `email_verified === true`, and enforced 2FA on OIDC logins.
+  - Validated password-reset origins (`PUBLIC_URL` / safe host regex) and invalidated prior unused reset tokens on new requests or completion.
+  - Replaced SQL `LIKE` prefix matching in reverse-proxy auth with exact prefix matching (`SUBSTR`/`INSTR`) to prevent wildcard matching.
+- **Authorization & Tenant Isolation:**
+  - Enforced `getVehicleAccess` across all `MaintenanceController` mutating endpoints, `FuelController.rescanReceipt`, `CalendarService.generateIcs` (when `vehicleId` is specified), and HTTP MCP tools (`get_vehicle_summary`, `log_fuel_entry`, `log_service_entry`, `check_maintenance_alerts`).
+  - Removed `driver` role cross-tenant bypasses in `DocumentController`, `FuelController`, and `VignetteController`, blocked `viewer` writes in `FuelController.create`, and required `requireAdmin` on `POST /api/notifications/check`.
+- **Files, SSRF, Client & Deployment:**
+  - Sanitized `receipt_path` and `invoice_path` with schema checks and `path.basename()` in `PdfService.generateDossier` and `MaintenanceController.attachInvoiceToRecord`.
+  - Hardened `TelematicsService.validateSafeExternalUrl` against loopback, IPv4-mapped IPv6 (including hex notation), DNS rebinding, and `redirect: 'error'`.
+  - Added ZIP entry count (200), uncompressed size (25 MB), and row/column caps to `TripImportService.readXlsx`.
+  - Escaped `contact_email` and serialized `license_plate` safely in `ShowcaseZipService`.
+  - Excluded private `/uploads/{receipts,invoices,documents}/` paths from the Service Worker cache and cleared Cache Storage on logout.
+  - Restricted default `CORS_ORIGIN=*` to same-origin, scoped `trust proxy` to `TRUST_PROXY_HEADERS`, and removed hardcoded fallback `JWT_SECRET` placeholders from `docker-compose.yml`.
 
-### 🚘 2. Showcase, Vehicle Modal & Home Assistant Telematics UX
-- **1-Click HA Sync & Audit Logbook:** Trigger Home Assistant odometer syncs directly from the dashboard and inspect a full sync audit logbook.
-- **Wide Tabbed Vehicle Edit Modal:** Redesigned vehicle management modal with a spacious multi-tab layout and dedicated **Transmission** selector (`Automaat` / `Handgeschakeld` / `Semi-automaat`), hybrid powertrain detection, and clear odometer sync asterisk explanation.
-- **Redesigned Options & Accessories Manager:** Tabbed category layout with zero text truncation and quick-add suggestion chips.
-- **Dutch Date Formatting:** RDW `YYYYMMDD` registration dates now display cleanly in Dutch `DD-MM-YYYY` format on public sales pages.
-- **Fuel Export/Import Relocated:** Moved fuel CSV/Fuelio export & import controls into Settings for a cleaner daily fuel log view.
+### 🌐 2. Modular i18n Refactoring (#12, #17, #18, #19, #20 by @B0bbyD0llar)
+- Migrated all remaining inline `lang === 'nl'` strings in **Fuel**, **Importer**, **ReceiptScannerModal**, **Auth / Login / Register / Password Reset**, and **Settings (General / AI / Backup)** into `client/src/i18n/locales/{nl,en,de}/`.
+- Upgraded the login page language switcher to dynamically list all available locales using `Intl.DisplayNames`.
 
-### 🌍 3. Modular i18n Architecture (#10 by @B0bbyD0llar)
-- Split `client/src/i18n/translations.ts` into clean per-locale, per-area files under `client/src/i18n/locales/{nl,en,de}/`.
-- Added strict TypeScript checking so missing translation keys fail the build, and updated fallback order to `lang` → `en` → `nl`.
-
-### 🛡️ 4. Security Hardening (`GHSA-8pqw-qmg6-35wg` & Full Application Audit)
-- **Upload Validation & Isolation:** Strict magic-byte verification for uploaded images/PDFs and `sandbox; default-src 'none'` CSP headers on static uploads.
-- **Privileged Settings Protection:** Enforced `requireAdmin` + controller role checks on security, AI, and module settings endpoints.
-- **Multi-Tenancy IDOR Fixes:** Enforced `getVehicleAccess()` across recurring expenses, trips/exports, and tire sets.
-- **Guest Account & SSRF Protections:** Restricted guest users from enumerating shareable users, creating permanent API keys, registering passkeys, enabling 2FA, transferring ownership, or configuring telematics; added SSRF URL validation blocking cloud metadata endpoints.
-
----
-
-## 🐳 Upgrading to v3.8.0
-
-Ensure your `docker-compose.yml` points to `ghcr.io/teecodedev/vehiclevault:3.8.0` or `:latest`:
-
-```bash
-docker compose pull
-docker compose up -d
-```
+### 📄 3. Showcase PDF & Navigation Improvements
+- Refined the Showcase PDF export layout with a compact header banner, warranty spotlight banner, structured maintenance history table, clean hairline spec dividers, and a scannable QR code linking to the live showcase page.
+- Fixed RDW import detection (`herkomst`), preserved multi-paragraph showcase descriptions, and added the missing Tires tab to the mobile bottom navigation bar.
