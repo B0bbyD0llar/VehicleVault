@@ -1,4 +1,6 @@
 import crypto from 'node:crypto';
+import dns from 'node:dns/promises';
+import net from 'node:net';
 import { db } from '../db/database.js';
 import { logger } from '../utils/logger.js';
 import { MaintenanceService } from './maintenanceService.js';
@@ -6,6 +8,31 @@ import { MaintenanceService } from './maintenanceService.js';
 import { HaSensorItem, fetchHaSensorsList } from './telematicsSensorHelper.js';
 import { TelematicsLogService } from './telematicsLogService.js';
 export { HaSensorItem } from './telematicsSensorHelper.js';
+
+function isBlockedIpAddress(rawIp: string): boolean {
+  let ip = rawIp.trim().toLowerCase().replace(/^\[|\]$/g, '');
+  if (ip.startsWith('::ffff:')) {
+    const rest = ip.slice(7);
+    if (rest.includes(':')) {
+      const [hi, lo] = rest.split(':').map((h) => parseInt(h, 16));
+      if (!Number.isNaN(hi) && !Number.isNaN(lo)) {
+        ip = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
+      }
+    } else {
+      ip = rest;
+    }
+  }
+  if (ip === '::1' || ip === '::' || ip.startsWith('fe80:') || ip.startsWith('fd00:ec2:')) {
+    return true;
+  }
+  if (net.isIPv4(ip)) {
+    const parts = ip.split('.').map(Number);
+    if (parts[0] === 127 || parts[0] === 0) return true; // loopback / unspecified
+    if (parts[0] === 169 && parts[1] === 254) return true; // link-local / cloud metadata
+    if (parts[0] === 100 && parts[1] === 100 && parts[2] === 100 && parts[3] === 200) return true; // Alibaba metadata
+  }
+  return false;
+}
 
 export function validateSafeExternalUrl(rawUrl: string): string {
   let parsed: URL;
@@ -19,19 +46,35 @@ export function validateSafeExternalUrl(rawUrl: string): string {
     throw new Error('Alleen HTTP en HTTPS protocollen zijn toegestaan');
   }
 
-  const hostname = parsed.hostname.toLowerCase();
+  const hostname = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
   if (
-    hostname === '169.254.169.254' ||
-    hostname.startsWith('169.254.') ||
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
     hostname === 'metadata.google.internal' ||
     hostname.endsWith('.metadata.google.internal') ||
     hostname === 'instance-data' ||
-    hostname === '100.100.100.200'
+    isBlockedIpAddress(hostname)
   ) {
-    throw new Error('Toegang tot cloud metadata endpoints is om veiligheidsredenen geblokkeerd');
+    throw new Error('Toegang tot loopback of cloud metadata endpoints is om veiligheidsredenen geblokkeerd');
   }
 
   return rawUrl.trim().replace(/\/+$/, '');
+}
+
+export async function validateSafeExternalUrlWithDns(rawUrl: string): Promise<string> {
+  const cleanUrl = validateSafeExternalUrl(rawUrl);
+  const { hostname } = new URL(cleanUrl);
+  if (!net.isIP(hostname.replace(/^\[|\]$/g, ''))) {
+    try {
+      const records = await dns.lookup(hostname, { all: true });
+      if (records.some((r) => isBlockedIpAddress(r.address))) {
+        throw new Error('Toegang tot loopback of cloud metadata endpoints is om veiligheidsredenen geblokkeerd');
+      }
+    } catch (err: any) {
+      if (err?.message?.includes('geblokkeerd')) throw err;
+    }
+  }
+  return cleanUrl;
 }
 
 export class TelematicsService {
@@ -100,12 +143,13 @@ export class TelematicsService {
     }
 
     try {
-      const cleanBase = validateSafeExternalUrl(baseUrl);
+      const cleanBase = await validateSafeExternalUrlWithDns(baseUrl);
       const res = await fetch(`${cleanBase}/api/`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        redirect: 'error',
         signal: AbortSignal.timeout(8000),
       });
 

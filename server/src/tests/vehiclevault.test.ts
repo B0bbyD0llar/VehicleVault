@@ -1797,7 +1797,7 @@ Date,Odometer,Fuel_amount,Price,Total_cost,Notes
 
       try {
         await MaintenanceController.attachInvoiceToRecord(
-          { params: { id: recId }, file: { filename: fakeFilename, path: fakeInvoicePath } } as any,
+          { params: { id: recId }, user: { userId: 'test-admin', role: 'admin' }, file: { filename: fakeFilename, path: fakeInvoicePath } } as any,
           mockRes
         );
 

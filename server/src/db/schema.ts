@@ -45,6 +45,9 @@ export function initializeDatabase(): void {
   if (!columnExists('users', 'is_guest')) {
     db.exec('ALTER TABLE users ADD COLUMN is_guest INTEGER NOT NULL DEFAULT 0;');
   }
+  if (!columnExists('users', 'token_version')) {
+    db.exec('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0;');
+  }
 
   // 2. Refresh tokens
   db.exec(`

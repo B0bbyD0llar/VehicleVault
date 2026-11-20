@@ -23,7 +23,7 @@ router.delete('/mail/microsoft', requireAuth, requireAdmin, NotificationControll
 router.post('/mail/google/start', requireAuth, requireAdmin, NotificationController.googleStart);
 router.get('/mail/google/callback', NotificationController.googleCallback);
 router.delete('/mail/google', requireAuth, requireAdmin, NotificationController.googleRemove);
-router.post('/check', requireAuth, NotificationController.checkAlerts);
+router.post('/check', requireAuth, requireAdmin, NotificationController.checkAlerts);
 
 // Web Push: every signed-in user manages their own devices; the VAPID private key never leaves the server.
 router.get('/push/public-key', requireAuth, NotificationController.getPushPublicKey);

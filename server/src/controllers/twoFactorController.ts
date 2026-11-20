@@ -21,6 +21,10 @@ export class TwoFactorController {
       res.status(401).json({ error: 'Niet ingelogd' });
       return;
     }
+    if (req.user?.isApiKey) {
+      res.status(403).json({ error: 'API-sleutels kunnen geen tweefactorauthenticatie beheren.' });
+      return;
+    }
 
     const user = db.get<any>(
       'SELECT two_factor_enabled, two_factor_backup_codes FROM users WHERE id = ?',
@@ -52,8 +56,19 @@ export class TwoFactorController {
       res.status(401).json({ error: 'Niet ingelogd' });
       return;
     }
+    if (req.user?.isApiKey) {
+      res.status(403).json({ error: 'API-sleutels kunnen geen tweefactorauthenticatie beheren.' });
+      return;
+    }
+    if (req.user?.isApiKey) {
+      res.status(403).json({ error: 'API-sleutels kunnen geen tweefactorauthenticatie beheren.' });
+      return;
+    }
 
-    const user = db.get<{ email: string; is_guest: number }>('SELECT email, is_guest FROM users WHERE id = ?', [userId]);
+    const user = db.get<{ email: string; is_guest: number; two_factor_enabled: number; two_factor_secret: string | null; password_hash: string }>(
+      'SELECT email, is_guest, two_factor_enabled, two_factor_secret, password_hash FROM users WHERE id = ?',
+      [userId]
+    );
     if (!user) {
       res.status(404).json({ error: 'Gebruiker niet gevonden' });
       return;
@@ -61,6 +76,13 @@ export class TwoFactorController {
     if (user.is_guest === 1 || user.email.endsWith('@proef.local') || req.user?.role === 'guest') {
       res.status(403).json({ error: 'Proefaccounts kunnen geen tweeledige verificatie instellen.' });
       return;
+    }
+    if (user.two_factor_enabled === 1) {
+      const { currentCode } = req.body || {};
+      if (!currentCode || !user.two_factor_secret || !verifyTotpCode(user.two_factor_secret, String(currentCode))) {
+        res.status(403).json({ error: 'Voer een geldige huidige 2FA-code in om 2FA opnieuw in te stellen.' });
+        return;
+      }
     }
 
     const secret = generateTotpSecret();
@@ -99,6 +121,10 @@ export class TwoFactorController {
 
     if (!userId) {
       res.status(401).json({ error: 'Niet ingelogd' });
+      return;
+    }
+    if (req.user?.isApiKey) {
+      res.status(403).json({ error: 'API-sleutels kunnen geen tweefactorauthenticatie beheren.' });
       return;
     }
 
@@ -169,10 +195,14 @@ export class TwoFactorController {
    */
   public static async disable(req: Request, res: Response): Promise<void> {
     const userId = req.user?.userId;
-    const { password, code } = req.body;
+    const { code } = req.body;
 
     if (!userId) {
       res.status(401).json({ error: 'Niet ingelogd' });
+      return;
+    }
+    if (req.user?.isApiKey) {
+      res.status(403).json({ error: 'API-sleutels kunnen geen tweefactorauthenticatie beheren.' });
       return;
     }
 
@@ -182,16 +212,13 @@ export class TwoFactorController {
       return;
     }
 
-    let isAuthorized = false;
-    if (password && (await comparePassword(password, user.password_hash))) {
-      isAuthorized = true;
-    } else if (code && user.two_factor_secret && verifyTotpCode(user.two_factor_secret, code)) {
-      isAuthorized = true;
-    }
+    const isAuthorized = Boolean(
+      code && user.two_factor_secret && verifyTotpCode(user.two_factor_secret, String(code))
+    );
 
     if (!isAuthorized) {
       res.status(400).json({
-        error: 'Bevestiging mislukt. Voer je huidige wachtwoord of een geldige 2FA-code in.',
+        error: 'Bevestiging mislukt. Voer een geldige 2FA-code in.',
       });
       return;
     }
@@ -217,10 +244,14 @@ export class TwoFactorController {
    */
   public static async regenerateBackupCodes(req: Request, res: Response): Promise<void> {
     const userId = req.user?.userId;
-    const { password, code } = req.body;
+    const { code } = req.body;
 
     if (!userId) {
       res.status(401).json({ error: 'Niet ingelogd' });
+      return;
+    }
+    if (req.user?.isApiKey) {
+      res.status(403).json({ error: 'API-sleutels kunnen geen tweefactorauthenticatie beheren.' });
       return;
     }
 
@@ -230,16 +261,13 @@ export class TwoFactorController {
       return;
     }
 
-    let isAuthorized = false;
-    if (password && (await comparePassword(password, user.password_hash))) {
-      isAuthorized = true;
-    } else if (code && user.two_factor_secret && verifyTotpCode(user.two_factor_secret, code)) {
-      isAuthorized = true;
-    }
+    const isAuthorized = Boolean(
+      code && user.two_factor_secret && verifyTotpCode(user.two_factor_secret, String(code))
+    );
 
     if (!isAuthorized) {
       res.status(400).json({
-        error: 'Bevestiging mislukt. Voer je huidige wachtwoord of een geldige 2FA-code in.',
+        error: 'Bevestiging mislukt. Voer een geldige 2FA-code in.',
       });
       return;
     }

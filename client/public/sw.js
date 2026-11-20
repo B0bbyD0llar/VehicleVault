@@ -120,8 +120,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Everything else (icons, uploaded photos and documents, ...): fresh when online, cached when offline.
+  // Never cache private authenticated uploads in shared Cache Storage.
+  if (
+    url.pathname.startsWith('/uploads/receipts/') ||
+    url.pathname.startsWith('/uploads/invoices/') ||
+    url.pathname.startsWith('/uploads/documents/')
+  ) {
+    return;
+  }
+
+  // Everything else (icons, public vehicle photos, ...): fresh when online, cached when offline.
   event.respondWith(networkFirst(request));
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    event.waitUntil(
+      caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+    );
+  }
 });
 
 // Web Push: the server sends a JSON payload ({ title, body, tag, url }) through the browser's push service.

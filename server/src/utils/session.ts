@@ -31,7 +31,13 @@ export function startSession(
   user: SessionUser,
   options: { trackLogin?: boolean } = {}
 ): { accessToken: string; user: SessionUser } {
-  const accessToken = generateAccessToken({ userId: user.id, email: user.email, role: user.role });
+  const row = db.get<{ token_version?: number }>('SELECT token_version FROM users WHERE id = ?', [user.id]);
+  const accessToken = generateAccessToken({
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+    tokenVersion: row?.token_version ?? 0,
+  });
   const { token: refreshToken, hash: refreshHash, expiresAt } = generateRefreshToken();
   const now = new Date().toISOString();
 

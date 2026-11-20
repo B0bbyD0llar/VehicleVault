@@ -36,11 +36,22 @@ const serviceRecordSchema = z.object({
   garage_address: z.string().optional().nullable(),
   line_items: z.union([z.string(), z.array(z.any())]).optional().nullable(),
   notes: z.string().optional().nullable(),
-  invoice_path: z.string().optional().nullable(),
+  invoice_path: z.string().refine((v) => !v || (!v.includes('..') && !v.includes('/') && !v.includes('\\')), 'Ongeldig factuurpad').optional().nullable(),
   exclude_from_tco: z.union([z.boolean(), z.number()]).optional(),
 });
 
 export class MaintenanceController {
+  private static assertVehicleEditAccess(vehicleId: string, req: Request, res: Response): boolean {
+    const access = getVehicleAccess(vehicleId, req.user?.userId);
+    if ((!access.hasAccess || access.role === 'viewer') && req.user?.role !== 'admin') {
+      res.status(access.hasAccess ? 403 : 404).json({
+        error: access.hasAccess ? 'Geen bewerkrechten voor dit voertuig' : 'Vehicle not found',
+      });
+      return false;
+    }
+    return true;
+  }
+
   public static async listCategories(_req: Request, res: Response): Promise<void> {
     const categories = db.query('SELECT * FROM service_categories ORDER BY is_preset DESC, name ASC');
     res.json({ categories });
@@ -98,6 +109,13 @@ export class MaintenanceController {
 
   public static async updateInterval(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
+    const existing = db.get<{ vehicle_id: string }>('SELECT vehicle_id FROM maintenance_intervals WHERE id = ?', [id]);
+    if (!existing) {
+      res.status(404).json({ error: 'Interval not found' });
+      return;
+    }
+    if (!MaintenanceController.assertVehicleEditAccess(existing.vehicle_id, req, res)) return;
+
     const parse = intervalSchema.partial().safeParse(req.body);
     if (!parse.success) {
       res.status(400).json({ error: parse.error.issues[0].message });
@@ -121,6 +139,13 @@ export class MaintenanceController {
 
   public static async deleteInterval(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
+    const existing = db.get<{ vehicle_id: string }>('SELECT vehicle_id FROM maintenance_intervals WHERE id = ?', [id]);
+    if (!existing) {
+      res.status(404).json({ error: 'Interval not found' });
+      return;
+    }
+    if (!MaintenanceController.assertVehicleEditAccess(existing.vehicle_id, req, res)) return;
+
     db.run('DELETE FROM maintenance_intervals WHERE id = ?', [id]);
     res.json({ success: true, message: 'Interval deleted' });
   }
@@ -272,6 +297,8 @@ export class MaintenanceController {
     }
 
     const data = parse.data;
+    if (!MaintenanceController.assertVehicleEditAccess(data.vehicle_id, req, res)) return;
+
     const id = crypto.randomUUID();
     const partsCost = data.parts_cost || 0;
     const laborCost = data.labor_cost || 0;
@@ -358,6 +385,7 @@ export class MaintenanceController {
       res.status(404).json({ error: 'Service record not found' });
       return;
     }
+    if (!MaintenanceController.assertVehicleEditAccess(existing.vehicle_id, req, res)) return;
 
     const parse = serviceRecordSchema.partial().safeParse(req.body);
     if (!parse.success) {
@@ -487,6 +515,13 @@ export class MaintenanceController {
 
   public static async deleteRecord(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
+    const existing = db.get<{ vehicle_id: string }>('SELECT vehicle_id FROM service_records WHERE id = ?', [id]);
+    if (!existing) {
+      res.status(404).json({ error: 'Service record not found' });
+      return;
+    }
+    if (!MaintenanceController.assertVehicleEditAccess(existing.vehicle_id, req, res)) return;
+
     db.run('DELETE FROM service_records WHERE id = ?', [id]);
     res.json({ success: true, message: 'Service record deleted' });
   }
@@ -558,10 +593,15 @@ export class MaintenanceController {
       res.status(404).json({ error: 'Service record not found' });
       return;
     }
+    if (!MaintenanceController.assertVehicleEditAccess(record.vehicle_id, req, res)) {
+      fs.unlink(req.file.path, () => {});
+      return;
+    }
 
     // Clean up previous invoice file if exists
     if (record.invoice_path) {
-      const oldPath = path.join(DATA_PATHS.invoices, record.invoice_path);
+      const safeOld = path.basename(record.invoice_path);
+      const oldPath = path.join(DATA_PATHS.invoices, safeOld);
       if (fs.existsSync(oldPath)) {
         fs.unlink(oldPath, () => {});
       }

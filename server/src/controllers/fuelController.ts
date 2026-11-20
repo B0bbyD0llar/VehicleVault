@@ -26,7 +26,7 @@ const fuelSchema = z.object({
   missed_previous: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).default(false),
   is_towing: z.union([z.boolean(), z.number()]).transform((v) => Boolean(v)).default(false),
   notes: z.string().optional().nullable(),
-  receipt_path: z.string().optional().nullable(),
+  receipt_path: z.string().refine((v) => !v || (!v.includes('..') && !v.includes('/') && !v.includes('\\')), 'Ongeldig bonpad').optional().nullable(),
   station_name: z.string().optional().nullable(),
   station_address: z.string().optional().nullable(),
   latitude: z.union([z.number(), z.string().transform((v) => parseFloat(v))]).optional().nullable(),
@@ -66,6 +66,10 @@ export class FuelController {
     const access = getVehicleAccess(data.vehicle_id, req.user?.userId);
     if (!access.hasAccess && req.user?.role !== 'admin') {
       res.status(404).json({ error: 'Vehicle not found' });
+      return;
+    }
+    if (access.hasAccess && access.role === 'viewer' && req.user?.role !== 'admin') {
+      res.status(403).json({ error: 'Geen bewerkrechten voor dit voertuig' });
       return;
     }
     const vehicle = access.vehicle;
@@ -147,8 +151,7 @@ export class FuelController {
     const access = getVehicleAccess(entry.vehicle_id, req.user?.userId);
     const canModify =
       (access.hasAccess && access.role !== 'viewer') ||
-      req.user?.role === 'admin' ||
-      req.user?.role === 'driver';
+      req.user?.role === 'admin';
 
     if (!canModify) {
       res.status(access.hasAccess ? 403 : 404).json({
@@ -175,8 +178,7 @@ export class FuelController {
     const access = getVehicleAccess(existing.vehicle_id, req.user?.userId);
     const canModify =
       (access.hasAccess && access.role !== 'viewer') ||
-      req.user?.role === 'admin' ||
-      req.user?.role === 'driver';
+      req.user?.role === 'admin';
 
     if (!canModify) {
       res.status(access.hasAccess ? 403 : 404).json({
@@ -294,13 +296,15 @@ export class FuelController {
       const { receiptPath: bodyReceiptPath } = req.body || {};
 
       let receiptFileName = bodyReceiptPath;
-      if (!receiptFileName && id) {
+      let targetVehicleId: string | null = null;
+      if (id) {
         const entry = db.get<any>('SELECT receipt_path, vehicle_id FROM fuel_entries WHERE id = ?', [id]);
         if (!entry) {
           res.status(404).json({ error: 'Tankbeurt niet gevonden' });
           return;
         }
-        receiptFileName = entry.receipt_path;
+        targetVehicleId = entry.vehicle_id;
+        if (!receiptFileName) receiptFileName = entry.receipt_path;
       }
 
       if (!receiptFileName || typeof receiptFileName !== 'string') {
@@ -313,6 +317,21 @@ export class FuelController {
 
       if (!fs.existsSync(fullPath)) {
         res.status(404).json({ error: 'Het tankbonbestand kon niet worden gevonden op de server' });
+        return;
+      }
+
+      if (!targetVehicleId) {
+        const byPath = db.get<{ vehicle_id: string }>('SELECT vehicle_id FROM fuel_entries WHERE receipt_path = ?', [safeFileName]);
+        targetVehicleId = byPath?.vehicle_id || null;
+      }
+      if (targetVehicleId) {
+        const access = getVehicleAccess(targetVehicleId, req.user?.userId);
+        if (!access.hasAccess && req.user?.role !== 'admin') {
+          res.status(404).json({ error: 'Tankbeurt niet gevonden' });
+          return;
+        }
+      } else if (req.user?.role !== 'admin') {
+        res.status(403).json({ error: 'Geen toegang tot dit bonbestand' });
         return;
       }
 

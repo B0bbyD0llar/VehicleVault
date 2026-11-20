@@ -7,6 +7,8 @@ export interface TokenPayload {
   userId: string;
   email: string;
   role: string;
+  tokenVersion?: number;
+  purpose?: string;
 }
 
 export function getJwtSecret(): string {
@@ -23,14 +25,21 @@ export async function comparePassword(password: string, hash: string): Promise<b
 }
 
 export function generateAccessToken(payload: TokenPayload, expiresIn?: string): string {
-  return jwt.sign(payload, getJwtSecret(), {
+  return jwt.sign({ ...payload, purpose: 'access' }, getJwtSecret(), {
     expiresIn: (expiresIn || env.JWT_EXPIRES_IN || '30d') as any,
   });
 }
 
 export function verifyAccessToken(token: string): TokenPayload | null {
   try {
-    return jwt.verify(token, getJwtSecret()) as TokenPayload;
+    const decoded = jwt.verify(token, getJwtSecret()) as TokenPayload;
+    if (!decoded || !decoded.userId || !decoded.role) {
+      return null;
+    }
+    if (decoded.purpose && decoded.purpose !== 'access') {
+      return null;
+    }
+    return decoded;
   } catch {
     return null;
   }

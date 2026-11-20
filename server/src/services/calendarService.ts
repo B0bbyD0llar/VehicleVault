@@ -43,7 +43,8 @@ export class CalendarService {
     if (vehicleId) {
       sql += ' AND id = ?';
       params.push(vehicleId);
-    } else if (userId) {
+    }
+    if (userId) {
       sql += ' AND (user_id = ? OR id IN (SELECT vehicle_id FROM vehicle_shares WHERE user_id = ?))';
       params.push(userId, userId);
     }

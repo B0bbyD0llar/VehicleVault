@@ -14,7 +14,7 @@ export class DocumentController {
     const category = req.query.category as string;
 
     const access = getVehicleAccess(vehicleId, req.user?.userId);
-    if (!access.hasAccess && req.user?.role !== 'admin' && req.user?.role !== 'driver') {
+    if (!access.hasAccess && req.user?.role !== 'admin') {
       res.status(404).json({ error: 'Vehicle not found' });
       return;
     }
@@ -53,8 +53,7 @@ export class DocumentController {
     const access = getVehicleAccess(vehicleId, req.user?.userId);
     const canUpload =
       (access.hasAccess && access.role !== 'viewer') ||
-      req.user?.role === 'admin' ||
-      req.user?.role === 'driver';
+      req.user?.role === 'admin';
 
     if (!canUpload) {
       // Remove uploaded file if vehicle doesn't exist or user lacks permission
@@ -133,8 +132,7 @@ export class DocumentController {
     const access = getVehicleAccess(doc.vehicle_id, req.user?.userId);
     const canEdit =
       (access.hasAccess && access.role !== 'viewer') ||
-      req.user?.role === 'admin' ||
-      req.user?.role === 'driver';
+      req.user?.role === 'admin';
 
     if (!canEdit) {
       res.status(access.hasAccess ? 403 : 404).json({
@@ -174,8 +172,7 @@ export class DocumentController {
     const access = getVehicleAccess(doc.vehicle_id, req.user?.userId);
     const canDelete =
       (access.hasAccess && access.role !== 'viewer') ||
-      req.user?.role === 'admin' ||
-      req.user?.role === 'driver';
+      req.user?.role === 'admin';
 
     if (!canDelete) {
       res.status(access.hasAccess ? 403 : 404).json({

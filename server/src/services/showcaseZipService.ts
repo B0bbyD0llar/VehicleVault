@@ -365,7 +365,7 @@ export class ShowcaseZipService {
           ` : ''}
 
           ${showcase.contact_email ? `
-          <a href="mailto:${showcase.contact_email}?subject=Interesse%20in%20${encodeURIComponent(showcase.title)}%20(${encodeURIComponent(RdwService.formatPlate(v.license_plate) || '')})" class="btn-cta btn-email">
+          <a href="mailto:${this.escapeHtml(showcase.contact_email)}?subject=Interesse%20in%20${encodeURIComponent(showcase.title)}%20(${encodeURIComponent(RdwService.formatPlate(v.license_plate) || '')})" class="btn-cta btn-email">
             ✉️ E-mail Sturen
           </a>
           ` : ''}
@@ -570,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const copyBtn = document.getElementById('btn-copy-kenteken');
   if (copyBtn) {
     copyBtn.addEventListener('click', () => {
-      const plate = "${RdwService.formatPlate(showcase.vehicle.license_plate)}";
+      const plate = ${JSON.stringify(RdwService.formatPlate(showcase.vehicle.license_plate) || '')};
       if (plate) {
         navigator.clipboard.writeText(plate).then(() => {
           const original = copyBtn.innerText;

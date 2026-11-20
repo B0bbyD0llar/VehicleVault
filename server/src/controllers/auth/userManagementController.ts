@@ -178,7 +178,8 @@ export class UserManagementController {
       }
 
       const now = new Date().toISOString();
-      db.run('UPDATE users SET role = ?, updated_at = ? WHERE id = ?', [role, now, id]);
+      db.run('UPDATE users SET role = ?, token_version = token_version + 1, updated_at = ? WHERE id = ?', [role, now, id]);
+      db.run('DELETE FROM refresh_tokens WHERE user_id = ?', [id]);
 
       res.json({
         success: true,

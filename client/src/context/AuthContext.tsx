@@ -190,6 +190,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // ignore
     }
     setAuthToken(null);
+    if (typeof window !== 'undefined') {
+      try {
+        navigator.serviceWorker?.controller?.postMessage({ type: 'CLEAR_CACHE' });
+        if ('caches' in window) {
+          caches.keys().then((keys) => keys.forEach((k) => caches.delete(k))).catch(() => {});
+        }
+      } catch {
+        // ignore
+      }
+    }
     if (!authDisabled) {
       setUser(null);
     }

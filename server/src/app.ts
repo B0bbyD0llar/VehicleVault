@@ -38,8 +38,8 @@ import { auth as betterAuthInstance } from './auth/betterAuth.js';
 export function createApp(): express.Application {
   const app = express();
 
-  // Trust reverse proxies and Docker gateway hops for accurate IP detection
-  app.set('trust proxy', 1);
+  // Trust reverse proxy hop only when proxy auth headers are explicitly enabled
+  app.set('trust proxy', env.TRUST_PROXY_HEADERS ? 1 : false);
 
   // Security headers configured for self-hosted LAN / HTTP / HTTPS setups
   app.use(
@@ -51,9 +51,16 @@ export function createApp(): express.Application {
     })
   );
 
+  const corsOrigin =
+    env.CORS_ORIGIN === '*'
+      ? false
+      : env.CORS_ORIGIN.includes(',')
+        ? env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
+        : env.CORS_ORIGIN;
+
   app.use(
     cors({
-      origin: env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN,
+      origin: corsOrigin,
       credentials: true,
     })
   );

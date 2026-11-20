@@ -155,10 +155,19 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     return;
   }
 
+  const dbUser = db.get<{ id: string; email: string; role: string; token_version?: number }>(
+    'SELECT id, email, role, token_version FROM users WHERE id = ?',
+    [payload.userId]
+  );
+  if (!dbUser || (payload.tokenVersion !== undefined && payload.tokenVersion !== (dbUser.token_version ?? 0))) {
+    res.status(401).json({ error: 'Unauthorized: Invalid or revoked access token' });
+    return;
+  }
+
   req.user = {
-    userId: payload.userId,
-    email: payload.email,
-    role: payload.role,
+    userId: dbUser.id,
+    email: dbUser.email,
+    role: dbUser.role,
     isApiKey: false,
   };
 

@@ -2,9 +2,25 @@ import crypto from 'node:crypto';
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { db } from '../../db/database.js';
+import { env } from '../../config/env.js';
 import { EmailService } from '../../services/emailService.js';
 import { hashPassword } from '../../utils/token.js';
 import { logger } from '../../utils/logger.js';
+
+function resolveSafeResetOrigin(req: Request): string {
+  if (process.env.PUBLIC_URL) {
+    try {
+      return new URL(process.env.PUBLIC_URL).origin;
+    } catch {}
+  }
+  const hostHeader = ((req.headers['x-forwarded-host'] as string) || req.headers.host || '').split(',')[0].trim();
+  const protoHeader = ((req.headers['x-forwarded-proto'] as string) || (req.secure ? 'https' : 'http')).split(',')[0].trim();
+  const proto = protoHeader === 'https' ? 'https' : 'http';
+  if (/^[a-zA-Z0-9.-]+(:\d{1,5})?$/.test(hostHeader)) {
+    return `${proto}://${hostHeader}`;
+  }
+  return `http://localhost:${env.PORT}`;
+}
 
 export class AuthPasswordResetController {
   public static async forgotPassword(req: Request, res: Response): Promise<void> {
@@ -30,15 +46,14 @@ export class AuthPasswordResetController {
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
 
+      db.run('UPDATE password_resets SET used_at = ? WHERE user_id = ? AND used_at IS NULL', [now.toISOString(), user.id]);
       db.run(
         `INSERT INTO password_resets (id, user_id, token_hash, expires_at, created_at)
          VALUES (?, ?, ?, ?, ?)`,
         [id, user.id, tokenHash, expiresAt, now.toISOString()]
       );
 
-      const hostHeader = (req.headers['x-forwarded-host'] as string) || req.headers.host || 'localhost:3084';
-      const proto = (req.headers['x-forwarded-proto'] as string) || (req.secure ? 'https' : 'http');
-      const origin = req.headers.origin || `${proto}://${hostHeader}`;
+      const origin = resolveSafeResetOrigin(req);
       const resetLink = `${origin}/reset-password?token=${rawToken}`;
 
       const smtpConfigured = EmailService.isConfigured();
@@ -144,8 +159,8 @@ export class AuthPasswordResetController {
       }
 
       const newHash = await hashPassword(newPassword);
-      db.run('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?', [newHash, now, reset.user_id]);
-      db.run('UPDATE password_resets SET used_at = ? WHERE id = ?', [now, reset.id]);
+      db.run('UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = ? WHERE id = ?', [newHash, now, reset.user_id]);
+      db.run('UPDATE password_resets SET used_at = ? WHERE user_id = ? AND used_at IS NULL', [now, reset.user_id]);
       db.run('DELETE FROM refresh_tokens WHERE user_id = ?', [reset.user_id]);
 
       res.json({ success: true, message: 'Wachtwoord succesvol opnieuw ingesteld. Log nu in.' });
@@ -170,15 +185,15 @@ export class AuthPasswordResetController {
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
 
+      db.run('UPDATE password_resets SET used_at = ? WHERE user_id = ? AND used_at IS NULL', [now.toISOString(), targetUser.id]);
       db.run(
         `INSERT INTO password_resets (id, user_id, token_hash, expires_at, created_at)
          VALUES (?, ?, ?, ?, ?)`,
         [resetId, targetUser.id, tokenHash, expiresAt, now.toISOString()]
       );
 
-      const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-      const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:3000';
-      const resetLink = `${proto}://${host}/reset-password?token=${rawToken}`;
+      const origin = resolveSafeResetOrigin(req);
+      const resetLink = `${origin}/reset-password?token=${rawToken}`;
 
       res.json({
         success: true,

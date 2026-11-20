@@ -124,7 +124,7 @@ export class PdfService {
     if (includeReceipts) {
       for (const s of services) {
         if (s.invoice_path) {
-          const full = path.join(DATA_PATHS.invoices, s.invoice_path);
+          const full = path.join(DATA_PATHS.invoices, path.basename(s.invoice_path));
           const ext = path.extname(full).toLowerCase();
           if (fs.existsSync(full) && (ext === '.jpg' || ext === '.jpeg' || ext === '.png' || ext === '.webp')) {
             try {
@@ -136,7 +136,7 @@ export class PdfService {
       }
       for (const f of fuels) {
         if (f.receipt_path) {
-          const full = path.join(DATA_PATHS.receipts, f.receipt_path);
+          const full = path.join(DATA_PATHS.receipts, path.basename(f.receipt_path));
           const ext = path.extname(full).toLowerCase();
           if (fs.existsSync(full) && (ext === '.jpg' || ext === '.jpeg' || ext === '.png' || ext === '.webp')) {
             try {
@@ -413,7 +413,7 @@ export class PdfService {
 
         // 2. Maintenance invoices — each invoice as a dedicated separate attachment!
         for (const rec of serviceReceipts) {
-          const filePath = path.join(DATA_PATHS.invoices, rec.invoice_path);
+          const filePath = path.join(DATA_PATHS.invoices, path.basename(rec.invoice_path));
           const ext = path.extname(filePath).toLowerCase();
           const imgBuf = preparedImageBuffers.get(filePath);
 
@@ -458,7 +458,7 @@ export class PdfService {
 
         // Also queue any PDF fuel receipts
         for (const rec of pdfFuelReceipts) {
-          const filePath = path.join(DATA_PATHS.receipts, rec.receipt_path);
+          const filePath = path.join(DATA_PATHS.receipts, path.basename(rec.receipt_path));
           pdfAttachmentsToAppend.push({
             filePath,
             headerTitle: `BIJLAGE TANKBON  -  ${formatNlDate(rec.date)}  |  ${Number(rec.liters || 0).toFixed(2)} L`,

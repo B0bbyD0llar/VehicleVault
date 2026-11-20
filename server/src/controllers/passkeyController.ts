@@ -12,6 +12,8 @@ import { db } from '../db/database.js';
 import { isAuthDisabled } from '../middleware/auth.js';
 import { PasskeyService, MAX_PASSKEYS_PER_USER, type PasskeyRow } from '../services/passkeyService.js';
 import { classifyPasskeyOrigin, getRelyingParty, requestOrigin } from '../utils/passkeyHost.js';
+import { verifyTotpCode } from '../utils/totp.js';
+import { generate2FaTempToken } from '../utils/token.js';
 import { startSession } from '../utils/session.js';
 
 const RP_NAME = 'VehicleVault';
@@ -228,6 +230,17 @@ export class PasskeyController {
   public static async regenerateRecoveryCodes(req: Request, res: Response): Promise<void> {
     const userId = sessionUserId(req, res);
     if (!userId) return;
+    const user = db.get<{ two_factor_enabled?: number; two_factor_secret?: string | null }>(
+      'SELECT two_factor_enabled, two_factor_secret FROM users WHERE id = ?',
+      [userId]
+    );
+    if (user?.two_factor_enabled === 1) {
+      const totpCode = typeof req.body?.code === 'string' ? req.body.code : '';
+      if (!totpCode || !user.two_factor_secret || !verifyTotpCode(user.two_factor_secret, totpCode)) {
+        res.status(403).json({ error: 'Voer een geldige 2FA-code in om herstelcodes opnieuw te genereren.' });
+        return;
+      }
+    }
     if (PasskeyService.listForUser(userId).length === 0) {
       res.status(400).json({ error: 'Voeg eerst een passkey toe om herstelcodes te kunnen maken' });
       return;
@@ -325,10 +338,20 @@ export class PasskeyController {
       // The code is consumed first; whether the account still exists is checked afterwards.
       const userId = PasskeyService.redeemRecoveryCode(parse.data.code);
       const user = userId
-        ? db.get<{ id: string; email: string; role: string }>('SELECT id, email, role FROM users WHERE id = ?', [userId])
+        ? db.get<{ id: string; email: string; role: string; two_factor_enabled?: number }>('SELECT id, email, role, two_factor_enabled FROM users WHERE id = ?', [userId])
         : undefined;
       if (!user) {
         res.status(401).json({ error: RECOVERY_FAILED });
+        return;
+      }
+
+      if (user.two_factor_enabled === 1) {
+        const tempToken = generate2FaTempToken({ userId: user.id, email: user.email });
+        res.json({
+          requires2fa: true,
+          tempToken,
+          recoveryCodesRemaining: PasskeyService.countRecoveryCodes(user.id),
+        });
         return;
       }
 

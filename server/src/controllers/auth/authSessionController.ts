@@ -7,6 +7,7 @@ import {
   hashPassword,
   comparePassword,
   generateAccessToken,
+  verifyAccessToken,
   hashToken,
   generate2FaTempToken,
 } from '../../utils/token.js';
@@ -105,7 +106,7 @@ export class AuthSessionController {
 
       const tokenHash = hashToken(refreshToken);
       const tokenRecord = db.get<any>(
-        `SELECT r.*, u.email, u.role 
+        `SELECT r.*, u.email, u.role, u.token_version
          FROM refresh_tokens r
          JOIN users u ON u.id = r.user_id
          WHERE r.token_hash = ? AND r.expires_at > ?`,
@@ -121,6 +122,7 @@ export class AuthSessionController {
         userId: tokenRecord.user_id,
         email: tokenRecord.email,
         role: tokenRecord.role,
+        tokenVersion: tokenRecord.token_version ?? 0,
       });
 
       const now = new Date().toISOString();
@@ -141,7 +143,16 @@ export class AuthSessionController {
       const refreshToken = req.cookies?.refresh_token;
       if (refreshToken) {
         const tokenHash = hashToken(refreshToken);
+        const tokenRow = db.get<{ user_id: string }>('SELECT user_id FROM refresh_tokens WHERE token_hash = ?', [tokenHash]);
+        if (tokenRow?.user_id) {
+          db.run('UPDATE users SET token_version = token_version + 1 WHERE id = ?', [tokenRow.user_id]);
+        }
         db.run('DELETE FROM refresh_tokens WHERE token_hash = ?', [tokenHash]);
+      } else if (req.cookies?.vv_token) {
+        const payload = verifyAccessToken(req.cookies.vv_token);
+        if (payload?.userId) {
+          db.run('UPDATE users SET token_version = token_version + 1 WHERE id = ?', [payload.userId]);
+        }
       }
       clearSessionCookies(res);
       res.json({ success: true, message: 'Logged out successfully' });
@@ -283,7 +294,7 @@ export class AuthSessionController {
 
       const newHash = await hashPassword(newPassword);
       const now = new Date().toISOString();
-      db.run('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?', [newHash, now, userId]);
+      db.run('UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = ? WHERE id = ?', [newHash, now, userId]);
 
       db.run('DELETE FROM refresh_tokens WHERE user_id = ?', [userId]);
 

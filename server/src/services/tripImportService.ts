@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import AdmZip from 'adm-zip';
 import { db } from '../db/database.js';
 import { TripService, TripPurpose } from './tripService.js';
 
@@ -176,6 +177,24 @@ export class TripImportService {
   }
 
   public static async readXlsx(buffer: Buffer): Promise<Cell[][]> {
+    try {
+      const zip = new AdmZip(buffer);
+      const entries = zip.getEntries();
+      if (entries.length > 200) {
+        throw new TripImportError('Het Excel-bestand bevat te veel interne onderdelen.');
+      }
+      let totalUncompressed = 0;
+      for (const entry of entries) {
+        totalUncompressed += entry.header.size || 0;
+        if (totalUncompressed > 25 * 1024 * 1024) {
+          throw new TripImportError('Het uitgepakte Excel-bestand overschrijdt de maximale grootte van 25 MB.');
+        }
+      }
+    } catch (err) {
+      if (err instanceof TripImportError) throw err;
+      throw new TripImportError('Het Excel-bestand kon niet worden gelezen.');
+    }
+
     const workbook = new ExcelJS.Workbook();
     try {
       await workbook.xlsx.load(buffer as any);
@@ -186,9 +205,12 @@ export class TripImportService {
     const sheet = workbook.worksheets.find((s) => s.actualRowCount > 0);
     if (!sheet) return [];
     const rows: Cell[][] = [];
+    const maxRows = 10000;
     sheet.eachRow({ includeEmpty: false }, (row) => {
+      if (rows.length >= maxRows) return;
       const cells: Cell[] = [];
-      for (let c = 1; c <= row.cellCount; c++) {
+      const maxCols = Math.min(row.cellCount, 50);
+      for (let c = 1; c <= maxCols; c++) {
         let v: any = row.getCell(c).value;
         if (v && typeof v === 'object' && !(v instanceof Date)) {
           if ('result' in v) v = v.result; // formula

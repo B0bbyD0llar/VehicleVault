@@ -206,7 +206,17 @@ export class VehicleController {
   public static exportIcs(req: Request, res: Response): void {
     try {
       const { id } = req.params;
-      const icsData = CalendarService.generateIcs(id || undefined, req.user?.userId);
+      if (id) {
+        const access = getVehicleAccess(id, req.user?.userId);
+        if (!access.hasAccess && req.user?.role !== 'admin') {
+          res.status(404).json({ error: 'Vehicle not found' });
+          return;
+        }
+      }
+      const icsData = CalendarService.generateIcs(
+        id || undefined,
+        req.user?.role === 'admin' ? undefined : req.user?.userId
+      );
       res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="vehiclevault-${id || 'fleet'}.ics"`);
       res.send(icsData);

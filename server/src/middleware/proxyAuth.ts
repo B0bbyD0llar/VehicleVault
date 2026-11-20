@@ -130,11 +130,11 @@ export function getProxyUser(req: Request): AuthenticatedUser | null {
     );
   }
 
-  // 3. Match username prefix (e.g. rob -> rob@romanas.nl)
+  // 3. Match username prefix (e.g. rob -> rob@romanas.nl) without LIKE wildcard matching
   if (!user && !cleanIdentity.includes('@')) {
     user = db.get<{ id: string; email: string; role: string }>(
-      "SELECT id, email, role FROM users WHERE LOWER(email) LIKE ? ORDER BY CASE WHEN role = 'admin' THEN 0 ELSE 1 END LIMIT 1",
-      [`${cleanIdentity}@%`]
+      "SELECT id, email, role FROM users WHERE INSTR(email, '@') > 1 AND LOWER(SUBSTR(email, 1, INSTR(email, '@') - 1)) = ? ORDER BY CASE WHEN role = 'admin' THEN 0 ELSE 1 END LIMIT 1",
+      [cleanIdentity]
     );
   }
 
@@ -142,8 +142,8 @@ export function getProxyUser(req: Request): AuthenticatedUser | null {
   if (!user && proxyEmail && proxyUsername && proxyUsername !== proxyEmail) {
     const cleanUser = proxyUsername.trim().toLowerCase();
     user = db.get<{ id: string; email: string; role: string }>(
-      "SELECT id, email, role FROM users WHERE LOWER(email) = ? OR LOWER(email) LIKE ? ORDER BY CASE WHEN role = 'admin' THEN 0 ELSE 1 END LIMIT 1",
-      [cleanUser, `${cleanUser}@%`]
+      "SELECT id, email, role FROM users WHERE LOWER(email) = ? OR (INSTR(email, '@') > 1 AND LOWER(SUBSTR(email, 1, INSTR(email, '@') - 1)) = ?) ORDER BY CASE WHEN role = 'admin' THEN 0 ELSE 1 END LIMIT 1",
+      [cleanUser, cleanUser]
     );
   }
 

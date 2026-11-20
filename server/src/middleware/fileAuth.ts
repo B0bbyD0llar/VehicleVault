@@ -39,11 +39,17 @@ function resolveFileRequestUser(req: Request): ResolvedUser | null {
   if (token) {
     const payload = verifyAccessToken(token);
     if (payload) {
-      return {
-        id: payload.userId,
-        email: payload.email,
-        role: payload.role,
-      };
+      const dbUser = db.get<{ id: string; email: string; role: string; token_version?: number }>(
+        'SELECT id, email, role, token_version FROM users WHERE id = ?',
+        [payload.userId]
+      );
+      if (dbUser && (payload.tokenVersion === undefined || payload.tokenVersion === (dbUser.token_version ?? 0))) {
+        return {
+          id: dbUser.id,
+          email: dbUser.email,
+          role: dbUser.role,
+        };
+      }
     }
   }
 

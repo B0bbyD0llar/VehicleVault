@@ -294,42 +294,80 @@ export class OidcController {
         }
       }
 
-      // If id_token exists, we can also extract claims
+      // Verify id_token claims and signature when present
       if (tokenData.id_token) {
-        try {
-          const parts = tokenData.id_token.split('.');
-          if (parts.length === 3) {
-            const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
-            profile = { ...payload, ...profile };
+        const parts = String(tokenData.id_token).split('.');
+        if (parts.length !== 3) {
+          res.redirect('/login?error=oidc_invalid_id_token');
+          return;
+        }
+        const header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
+        const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+
+        // Verify signature via JWKS if discovery provides jwks_uri
+        if (disc.jwks_uri) {
+          const jwksRes = await fetch(disc.jwks_uri, { signal: AbortSignal.timeout(8000) });
+          if (!jwksRes.ok) {
+            res.redirect('/login?error=oidc_jwks_fetch_failed');
+            return;
           }
-        } catch {}
+          const jwks = (await jwksRes.json()) as { keys?: any[] };
+          const jwk = (jwks.keys || []).find((k) => (!header.kid || k.kid === header.kid));
+          if (!jwk) {
+            res.redirect('/login?error=oidc_jwk_not_found');
+            return;
+          }
+          const pubKey = crypto.createPublicKey({ key: jwk, format: 'jwk' });
+          const signingInput = Buffer.from(`${parts[0]}.${parts[1]}`);
+          const sig = Buffer.from(parts[2], 'base64url');
+          const alg = header.alg === 'ES256' ? 'sha256' : 'RSA-SHA256';
+          const ok = header.alg === 'ES256'
+            ? crypto.verify('sha256', signingInput, { key: pubKey, dsaEncoding: 'ieee-p1363' }, sig)
+            : crypto.verify(alg, signingInput, pubKey, sig);
+          if (!ok) {
+            res.redirect('/login?error=oidc_invalid_signature');
+            return;
+          }
+        }
+
+        const nowSec = Math.floor(Date.now() / 1000);
+        if (disc.issuer && payload.iss !== disc.issuer) {
+          res.redirect('/login?error=oidc_invalid_issuer');
+          return;
+        }
+        const audOk = payload.aud === cfg.clientId || (Array.isArray(payload.aud) && payload.aud.includes(cfg.clientId));
+        if (!audOk || typeof payload.exp !== 'number' || payload.exp < nowSec - 30) {
+          res.redirect('/login?error=oidc_invalid_claims');
+          return;
+        }
+        if (stateData.nonce && payload.nonce !== stateData.nonce) {
+          res.redirect('/login?error=oidc_invalid_nonce');
+          return;
+        }
+        profile = { ...payload, ...profile };
       }
 
-      const email = (
-        profile.email ||
-        profile.preferred_username ||
-        profile.upn ||
-        profile.sub ||
-        ''
-      )
-        .toString()
-        .trim()
-        .toLowerCase();
-
+      const verifiedEmail =
+        typeof profile.email === 'string' && profile.email_verified === true
+          ? profile.email.trim().toLowerCase()
+          : '';
+      const rawEmail = typeof profile.email === 'string' ? profile.email.trim().toLowerCase() : '';
       const sub = (profile.sub || '').toString().trim();
 
-      if (!email && !sub) {
+      if (!sub && !verifiedEmail) {
         res.redirect('/login?error=oidc_no_identity_returned');
         return;
       }
 
-      const userEmail = email.includes('@') ? email : `${email || sub}@sso.local`;
+      const userEmail = (verifiedEmail || rawEmail || `${sub}@sso.local`);
 
-      // Match user in database
-      let user = db.get<any>(
-        'SELECT * FROM users WHERE oidc_id = ? OR email = ?',
-        [sub || userEmail, userEmail]
-      );
+      // Match user by exact oidc_id first; only match by email if email_verified === true
+      let user = sub
+        ? db.get<any>('SELECT * FROM users WHERE oidc_id = ?', [sub])
+        : null;
+      if (!user && verifiedEmail) {
+        user = db.get<any>('SELECT * FROM users WHERE LOWER(email) = ?', [verifiedEmail]);
+      }
 
       const now = new Date().toISOString();
 
@@ -354,6 +392,12 @@ export class OidcController {
           now,
           user.id,
         ]);
+      }
+
+      if (user.two_factor_enabled === 1) {
+        res.clearCookie('vv_oidc_state');
+        res.redirect('/login?error=oidc_2fa_required');
+        return;
       }
 
       // Start session and clear state cookie

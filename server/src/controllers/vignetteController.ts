@@ -48,7 +48,7 @@ export class VignetteController {
       }
 
       const access = getVehicleAccess(vehicleId, req.user?.userId);
-      if (!access.hasAccess && req.user?.role !== 'admin' && req.user?.role !== 'driver') {
+      if (!access.hasAccess && req.user?.role !== 'admin') {
         res.status(404).json({ error: 'Vehicle not found' });
         return;
       }
@@ -103,8 +103,7 @@ export class VignetteController {
       const access = getVehicleAccess(vehicleId, req.user?.userId);
       const canManage =
         (access.hasAccess && access.role !== 'viewer') ||
-        req.user?.role === 'admin' ||
-        req.user?.role === 'driver';
+        req.user?.role === 'admin';
 
       if (!canManage) {
         res.status(403).json({ error: 'Permission denied to manage vignettes' });
@@ -164,8 +163,7 @@ export class VignetteController {
       const access = getVehicleAccess(existing.vehicle_id, req.user?.userId);
       const canManage =
         (access.hasAccess && access.role !== 'viewer') ||
-        req.user?.role === 'admin' ||
-        req.user?.role === 'driver';
+        req.user?.role === 'admin';
 
       if (!canManage) {
         res.status(403).json({ error: 'Permission denied' });
@@ -237,8 +235,7 @@ export class VignetteController {
       const access = getVehicleAccess(existing.vehicle_id, req.user?.userId);
       const canManage =
         (access.hasAccess && access.role !== 'viewer') ||
-        req.user?.role === 'admin' ||
-        req.user?.role === 'driver';
+        req.user?.role === 'admin';
 
       if (!canManage) {
         res.status(403).json({ error: 'Permission denied' });

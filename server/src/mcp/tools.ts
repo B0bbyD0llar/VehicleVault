@@ -2,6 +2,18 @@ import crypto from 'node:crypto';
 import { db } from '../db/database.js';
 import { MaintenanceService } from '../services/maintenanceService.js';
 import { TcoService } from '../services/tcoService.js';
+import { getVehicleAccess } from '../utils/vehicleAccess.js';
+
+function assertMcpVehicleAccess(vehicleId: string, userId?: string, requireWrite = false): void {
+  if (!userId) return;
+  const access = getVehicleAccess(vehicleId, userId);
+  if (!access.hasAccess) {
+    throw new Error(`Unauthorized: no access to vehicle ${vehicleId}`);
+  }
+  if (requireWrite && access.role === 'viewer') {
+    throw new Error(`Forbidden: viewer role cannot modify vehicle ${vehicleId}`);
+  }
+}
 
 export const MCP_TOOL_DEFINITIONS = [
   {
@@ -109,6 +121,7 @@ export async function executeMcpTool(name: string, args: any, userId?: string): 
 
     case 'get_vehicle_summary': {
       const { vehicle_id, include_purchase_price = false } = args;
+      assertMcpVehicleAccess(vehicle_id, userId, false);
       const vehicle = db.get('SELECT * FROM vehicles WHERE id = ?', [vehicle_id]);
       if (!vehicle) {
         throw new Error(`Vehicle not found for ID ${vehicle_id}`);
@@ -146,6 +159,7 @@ export async function executeMcpTool(name: string, args: any, userId?: string): 
 
     case 'log_fuel_entry': {
       const { vehicle_id, odometer, liters, price_per_liter, is_full_tank = true, missed_previous = false, date, notes } = args;
+      assertMcpVehicleAccess(vehicle_id, userId, true);
       const entryId = crypto.randomUUID();
       const entryDate = date || new Date().toISOString().split('T')[0];
       const totalCost = Math.round(liters * price_per_liter * 100) / 100;
@@ -165,6 +179,7 @@ export async function executeMcpTool(name: string, args: any, userId?: string): 
 
     case 'log_service_entry': {
       const { vehicle_id, service_item, odometer, cost, date, performing_party = 'self', notes } = args;
+      assertMcpVehicleAccess(vehicle_id, userId, true);
       const entryId = crypto.randomUUID();
       const serviceDate = date || new Date().toISOString().split('T')[0];
 
@@ -203,6 +218,7 @@ export async function executeMcpTool(name: string, args: any, userId?: string): 
       let alerts: any[] = [];
 
       if (vehicle_id) {
+        assertMcpVehicleAccess(vehicle_id, userId, false);
         const items = MaintenanceService.getVehicleMaintenanceStatus(vehicle_id);
         alerts = items
           .filter((i) => i.status === 'warning' || i.status === 'overdue')
@@ -216,7 +232,12 @@ export async function executeMcpTool(name: string, args: any, userId?: string): 
             triggerReason: i.triggerReason,
           }));
       } else {
-        const vehicles = db.query<any>("SELECT id, name, license_plate FROM vehicles WHERE status = 'active'");
+        const vehicles = userId
+          ? db.query<any>(
+              "SELECT DISTINCT v.id, v.name, v.license_plate FROM vehicles v LEFT JOIN vehicle_shares vs ON vs.vehicle_id = v.id WHERE v.status = 'active' AND (v.user_id = ? OR vs.user_id = ?)",
+              [userId, userId]
+            )
+          : db.query<any>("SELECT id, name, license_plate FROM vehicles WHERE status = 'active'");
         for (const v of vehicles) {
           const items = MaintenanceService.getVehicleMaintenanceStatus(v.id);
           for (const item of items) {
