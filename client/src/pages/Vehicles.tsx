@@ -6,6 +6,7 @@ import { apiFetch } from '../api/client.js';
 import { useLanguage } from '../context/LanguageContext.js';
 import { useAuth } from '../context/AuthContext.js';
 import { ShowcaseManagerModal } from '../components/ShowcaseManagerModal.js';
+import { SellVehicleModal } from '../components/vehicles/SellVehicleModal.js';
 import { VehicleCard } from '../components/vehicles/VehicleCard.js';
 import { VehicleModal } from '../components/vehicles/VehicleModal.js';
 import { VehicleShareModal } from '../components/vehicles/VehicleShareModal.js';
@@ -21,11 +22,12 @@ export const Vehicles: React.FC = () => {
   const { vehicles, refreshVehicles } = useOutletContext<ContextType>();
   const { user } = useAuth();
   const { t } = useLanguage();
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'archived'>('active');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'sold' | 'archived'>('active');
   const [fleetView, setFleetView] = useState(false);
   const [fleetVehicles, setFleetVehicles] = useState<Vehicle[]>([]);
   const [showcaseVehicle, setShowcaseVehicle] = useState<Vehicle | null>(null);
   const [isShowcaseModalOpen, setIsShowcaseModalOpen] = useState(false);
+  const [sellingVehicle, setSellingVehicle] = useState<Vehicle | null>(null);
 
   const form = useVehicleForm(refreshVehicles);
   const share = useVehicleShare();
@@ -66,6 +68,15 @@ export const Vehicles: React.FC = () => {
       refreshVehicles();
       if (fleetView) fetchFleet();
     } catch {}
+  };
+
+  const handleConfirmSell = async (v: Vehicle, soldDate: string, soldPrice: number | null) => {
+    await apiFetch(`/api/vehicles/${v.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'sold', sold_date: soldDate, sold_price: soldPrice }),
+    });
+    refreshVehicles();
+    if (fleetView) fetchFleet();
   };
 
   const currentList = fleetView ? fleetVehicles : vehicles;
@@ -113,6 +124,16 @@ export const Vehicles: React.FC = () => {
               }`}
             >
               {t('active')} ({currentList.filter((v) => v.status === 'active').length})
+            </button>
+            <button
+              onClick={() => setFilterStatus('sold')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                filterStatus === 'sold'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {t('soldStatus')} ({currentList.filter((v) => v.status === 'sold').length})
             </button>
             <button
               onClick={() => setFilterStatus('archived')}
@@ -172,6 +193,7 @@ export const Vehicles: React.FC = () => {
               onEdit={form.openEditModal}
               onDelete={handleDelete}
               onToggleArchive={handleToggleArchive}
+              onSell={setSellingVehicle}
               onOpenShare={share.openShareModal}
               onOpenShowcase={(veh: Vehicle) => {
                 setShowcaseVehicle(veh);
@@ -279,6 +301,12 @@ export const Vehicles: React.FC = () => {
           onVehicleUpdated={refreshVehicles}
         />
       )}
+
+      <SellVehicleModal
+        vehicle={sellingVehicle}
+        onClose={() => setSellingVehicle(null)}
+        onConfirm={handleConfirmSell}
+      />
     </div>
   );
 };

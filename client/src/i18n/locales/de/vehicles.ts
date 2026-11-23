@@ -131,4 +131,15 @@ export const vehicles: Record<keyof typeof nl, string> = {
   lastSyncLabel: 'Letzte Synchronisierung:',
   notYetSynced: 'Noch nicht synchronisiert',
   syncLog: 'Sync-Protokoll',
+
+  // Sold / archive
+  soldStatus: 'Verkauft',
+  markAsSold: 'Als verkauft markieren',
+  sellVehicleTitle: 'Fahrzeug als verkauft markieren',
+  sellVehicleHint: 'Alle Daten und der Verlauf bleiben erhalten, das Fahrzeug wird jedoch nicht mehr in den aktiven Fuhrparkkosten berücksichtigt.',
+  soldDateLabel: 'Verkaufsdatum',
+  soldPriceLabel: 'Verkaufspreis (€)',
+  confirmSold: 'Verkauf speichern',
+  soldSummary: 'Verkauft am {date} für € {price}',
+  soldSummaryNoPrice: 'Verkauft am {date}',
 };

@@ -23,7 +23,9 @@ export interface Vehicle {
   initial_odometer: number;
   current_odometer?: number;
   notes?: string | null;
-  status: 'active' | 'archived';
+  status: 'active' | 'archived' | 'sold';
+  sold_date?: string | null;
+  sold_price?: number | null;
   rdw_data?: string | null;
   apk_expiration_date?: string | null;
   apk_status?: ApkStatus;

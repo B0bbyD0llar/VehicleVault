@@ -129,4 +129,15 @@ export const vehicles = {
   lastSyncLabel: 'Laatste sync:',
   notYetSynced: 'Nog niet gesynchroniseerd',
   syncLog: 'Sync Log',
+
+  // Sold / archive
+  soldStatus: 'Verkocht',
+  markAsSold: 'Markeer als verkocht',
+  sellVehicleTitle: 'Voertuig markeren als verkocht',
+  sellVehicleHint: 'Alle gegevens en historie blijven bewaard, maar het voertuig telt niet meer mee in de actieve garagekosten.',
+  soldDateLabel: 'Verkoopdatum',
+  soldPriceLabel: 'Verkoopprijs (€)',
+  confirmSold: 'Verkoop opslaan',
+  soldSummary: 'Verkocht op {date} voor € {price}',
+  soldSummaryNoPrice: 'Verkocht op {date}',
 };

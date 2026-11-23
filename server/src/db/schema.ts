@@ -109,6 +109,8 @@ export function initializeDatabase(): void {
       telematics_last_status TEXT,
       telematics_last_odometer REAL,
       transmission TEXT DEFAULT 'automatic',
+      sold_date TEXT,
+      sold_price REAL,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -143,6 +145,12 @@ export function initializeDatabase(): void {
   }
   if (!columnExists('vehicles', 'tire_tread_notifications_enabled')) {
     db.exec("ALTER TABLE vehicles ADD COLUMN tire_tread_notifications_enabled INTEGER NOT NULL DEFAULT 1;");
+  }
+  if (!columnExists('vehicles', 'sold_date')) {
+    db.exec('ALTER TABLE vehicles ADD COLUMN sold_date TEXT;');
+  }
+  if (!columnExists('vehicles', 'sold_price')) {
+    db.exec('ALTER TABLE vehicles ADD COLUMN sold_price REAL;');
   }
   if (!columnExists('vehicles', 'telematics_enabled')) {
     db.exec("ALTER TABLE vehicles ADD COLUMN telematics_enabled INTEGER NOT NULL DEFAULT 0;");

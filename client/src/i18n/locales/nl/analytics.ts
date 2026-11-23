@@ -138,4 +138,11 @@ export const analytics = {
   rangeKm: 'Actieradius (km)',
   tankRangeEmpty: 'Minimaal 2 tankbeurten vereist om actieradius per tank te berekenen.',
   costPer100KmEmpty: 'Geen kosten per 100km gegevens beschikbaar.',
+
+  // Fleet category filters
+  categoryAll: 'Alle categorieën',
+  categoryCars: 'Auto\'s',
+  categoryMotorcycles: 'Motoren',
+  categoryVans: 'Bedrijfswagens',
+  categoryTrailers: 'Aanhangers',
 };

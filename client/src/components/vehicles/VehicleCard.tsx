@@ -10,6 +10,7 @@ import {
   BellOff,
   Radio,
   History,
+  BadgeEuro,
 } from 'lucide-react';
 import { Vehicle, VehicleType } from '../../types/index.js';
 import { StatusBadge } from '../StatusBadge.js';
@@ -24,6 +25,7 @@ interface VehicleCardProps {
   onEdit: (v: Vehicle) => void;
   onDelete: (id: string) => void;
   onToggleArchive: (v: Vehicle) => void;
+  onSell?: (v: Vehicle) => void;
   onOpenShare: (v: Vehicle) => void;
   onOpenShowcase: (v: Vehicle) => void;
 }
@@ -33,6 +35,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   onEdit,
   onDelete,
   onToggleArchive,
+  onSell,
   onOpenShare,
   onOpenShowcase,
 }) => {
@@ -118,6 +121,23 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
           </div>
           <StatusBadge status={v.status} />
         </div>
+
+        {v.status === 'sold' && v.sold_date && (
+          <div className="mb-3 px-3 py-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/50 text-[11px] font-semibold text-sky-800 dark:text-sky-200 flex items-center space-x-1.5">
+            <BadgeEuro className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+            <span>
+              {v.sold_price !== undefined && v.sold_price !== null
+                ? t('soldSummary', {
+                    date: formatDisplayDate(v.sold_date, lang),
+                    price: Number(v.sold_price).toLocaleString(lang === 'nl' ? 'nl-NL' : lang === 'de' ? 'de-DE' : 'en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }),
+                  })
+                : t('soldSummaryNoPrice', { date: formatDisplayDate(v.sold_date, lang) })}
+            </span>
+          </div>
+        )}
 
         <div className="flex items-start justify-between gap-2 mb-1">
           <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">{v.name}</h3>
@@ -232,6 +252,15 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
               title={t('shareVehicle')}
             >
               <Users className="w-4 h-4" />
+            </button>
+          )}
+          {v.is_owner !== false && v.status === 'active' && onSell && (
+            <button
+              onClick={() => onSell(v)}
+              className="p-1.5 text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+              title={t('markAsSold')}
+            >
+              <BadgeEuro className="w-4 h-4" />
             </button>
           )}
           {v.is_owner !== false && (

@@ -2,7 +2,7 @@ import React from 'react';
 import { useLanguage } from '../context/LanguageContext.js';
 
 interface StatusBadgeProps {
-  status: 'good' | 'warning' | 'overdue' | 'active' | 'archived';
+  status: 'good' | 'warning' | 'overdue' | 'active' | 'archived' | 'sold';
   label?: string;
   size?: 'sm' | 'md';
 }
@@ -30,6 +30,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label, size = 
     case 'overdue':
       colorClasses = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/50';
       defaultLabel = defaultLabel || (lang === 'nl' ? 'Verlopen' : 'Overdue');
+      break;
+    case 'sold':
+      colorClasses = 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/50';
+      defaultLabel = defaultLabel || (lang === 'nl' ? 'Verkocht' : lang === 'de' ? 'Verkauft' : 'Sold');
       break;
     case 'archived':
       colorClasses = 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50';

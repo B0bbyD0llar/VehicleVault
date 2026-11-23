@@ -131,4 +131,15 @@ export const vehicles: Record<keyof typeof nl, string> = {
   lastSyncLabel: 'Last sync:',
   notYetSynced: 'Not yet synced',
   syncLog: 'Sync Log',
+
+  // Sold / archive
+  soldStatus: 'Sold',
+  markAsSold: 'Mark as sold',
+  sellVehicleTitle: 'Mark vehicle as sold',
+  sellVehicleHint: 'All records and history are preserved, but the vehicle is excluded from active garage totals.',
+  soldDateLabel: 'Sale date',
+  soldPriceLabel: 'Sale price (€)',
+  confirmSold: 'Save sale',
+  soldSummary: 'Sold on {date} for € {price}',
+  soldSummaryNoPrice: 'Sold on {date}',
 };

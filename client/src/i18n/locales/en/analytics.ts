@@ -140,4 +140,11 @@ export const analytics: Record<keyof typeof nl, string> = {
   rangeKm: 'Range (km)',
   tankRangeEmpty: 'Need at least 2 fill-ups to calculate tank range.',
   costPer100KmEmpty: 'No cost per 100km data available.',
+
+  // Fleet category filters
+  categoryAll: 'All categories',
+  categoryCars: 'Cars',
+  categoryMotorcycles: 'Motorcycles',
+  categoryVans: 'Vans',
+  categoryTrailers: 'Trailers',
 };

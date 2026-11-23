@@ -41,18 +41,19 @@ export async function executeVehicleCreate(userId: string | undefined, data: any
     `INSERT INTO vehicles (
       id, user_id, name, type, license_plate, vin, year, make, model,
       fuel_type, purchase_date, purchase_price, initial_odometer,
-      notes, status, rdw_data, apk_expiration_date, plate_country, image_path,
+      notes, status, sold_date, sold_price, rdw_data, apk_expiration_date, plate_country, image_path,
       notifications_enabled, maintenance_notifications_enabled, apk_notifications_enabled,
       tire_swap_notifications_enabled, tire_tread_notifications_enabled,
       telematics_enabled, telematics_provider, telematics_ha_entity_id, transmission,
       created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id, userId, data.name, data.type,
       data.license_plate ? (plateCountry === 'NL' ? RdwService.normalizePlate(data.license_plate) : data.license_plate.trim().toUpperCase()) : null,
       data.vin || null, data.year || null, data.make || null, data.model || null,
       data.fuel_type || null, data.purchase_date || null, data.purchase_price, data.initial_odometer,
-      data.notes || null, data.status, rdwData ? JSON.stringify(rdwData) : null, apkDate || null,
+      data.notes || null, data.status, data.sold_date || null, data.sold_price ?? null,
+      rdwData ? JSON.stringify(rdwData) : null, apkDate || null,
       plateCountry, data.image_path || null, notificationsEnabled, maintenanceNotificationsEnabled,
       apkNotificationsEnabled, tireSwapNotificationsEnabled, tireTreadNotificationsEnabled,
       telematicsEnabled, telematicsProvider, telematicsHaEntityId, transmission, now, now,
@@ -81,6 +82,12 @@ export function executeVehicleUpdate(id: string, existing: any, data: any): void
   const initial_odometer = data.initial_odometer !== undefined ? data.initial_odometer : existing.initial_odometer;
   const notes = data.notes !== undefined ? data.notes : existing.notes;
   const status = data.status !== undefined ? data.status : existing.status;
+  const sold_date = status === 'active'
+    ? null
+    : (data.sold_date !== undefined ? (data.sold_date || null) : (existing.sold_date ?? null));
+  const sold_price = status === 'active'
+    ? null
+    : (data.sold_price !== undefined ? (data.sold_price ?? null) : (existing.sold_price ?? null));
   const apk_expiration_date = data.apk_expiration_date !== undefined ? data.apk_expiration_date : existing.apk_expiration_date;
   const image_path = data.image_path !== undefined ? data.image_path : existing.image_path;
   const notifications_enabled = data.notifications_enabled !== undefined ? (data.notifications_enabled ? 1 : 0) : (existing.notifications_enabled ?? 1);
@@ -97,7 +104,7 @@ export function executeVehicleUpdate(id: string, existing: any, data: any): void
     `UPDATE vehicles SET
       name = ?, type = ?, license_plate = ?, vin = ?, year = ?, make = ?, model = ?,
       fuel_type = ?, purchase_date = ?, purchase_price = ?, initial_odometer = ?,
-      notes = ?, status = ?, apk_expiration_date = ?, plate_country = ?, image_path = ?,
+      notes = ?, status = ?, sold_date = ?, sold_price = ?, apk_expiration_date = ?, plate_country = ?, image_path = ?,
       notifications_enabled = ?, maintenance_notifications_enabled = ?, apk_notifications_enabled = ?,
       tire_swap_notifications_enabled = ?, tire_tread_notifications_enabled = ?,
       telematics_enabled = ?, telematics_provider = ?, telematics_ha_entity_id = ?,
@@ -105,7 +112,7 @@ export function executeVehicleUpdate(id: string, existing: any, data: any): void
      WHERE id = ?`,
     [
       name, type, license_plate, vin, year, make, model, fuel_type, purchase_date,
-      purchase_price, initial_odometer, notes, status, apk_expiration_date,
+      purchase_price, initial_odometer, notes, status, sold_date, sold_price, apk_expiration_date,
       plate_country, image_path, notifications_enabled, maintenance_notifications_enabled,
       apk_notifications_enabled, tire_swap_notifications_enabled, tire_tread_notifications_enabled,
       telematics_enabled, telematics_provider, telematics_ha_entity_id,

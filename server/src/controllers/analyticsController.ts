@@ -40,18 +40,23 @@ export class AnalyticsController {
       const userId = req.user?.userId;
       const role = req.user?.role;
 
-      let vehicles: any[] = [];
+      let allActiveVehicles: any[] = [];
       if (role === 'admin') {
-        vehicles = db.query("SELECT * FROM vehicles WHERE status = 'active'");
+        allActiveVehicles = db.query("SELECT * FROM vehicles WHERE status = 'active'");
       } else {
-        vehicles = db.query(`
+        allActiveVehicles = db.query(`
           SELECT v.* FROM vehicles v
           LEFT JOIN vehicle_shares vs ON vs.vehicle_id = v.id AND vs.user_id = ?
           WHERE v.status = 'active' AND (v.user_id = ? OR vs.id IS NOT NULL)
         `, [userId, userId]);
       }
 
-      const { startDate, endDate, includeFixedExpenses, includePurchasePrice } = req.query;
+      const { startDate, endDate, includeFixedExpenses, includePurchasePrice, vehicleType } = req.query;
+      const availableTypes = Array.from(new Set(allActiveVehicles.map((v) => v.type).filter(Boolean)));
+      const vehicles =
+        vehicleType && vehicleType !== 'all'
+          ? allActiveVehicles.filter((v) => v.type === String(vehicleType))
+          : allActiveVehicles;
 
       const fleetSummaries: any[] = [];
       let fleetTotalCost = 0;
@@ -124,6 +129,7 @@ export class AnalyticsController {
         fleetTotalDistanceKm,
         fleetCostPerKm,
         vehicleCount: vehicles.length,
+        availableTypes,
         vehicles: fleetSummaries,
         monthlyBreakdown,
       });

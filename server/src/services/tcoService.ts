@@ -174,8 +174,12 @@ export class TcoService {
     ].sort();
 
     const nowMonth = new Date().toISOString().substring(0, 7);
+    const soldMonth = vehicle.sold_date ? String(vehicle.sold_date).substring(0, 7) : null;
     let windowStartMonth = startDate ? startDate.substring(0, 7) : (ownershipStart ? ownershipStart.substring(0, 7) : (activeDates.length > 0 ? activeDates[0].substring(0, 7) : (recurringExpenses.length > 0 ? recurringExpenses.map((e: any) => e.start_date.substring(0, 7)).sort()[0] : nowMonth)));
     let windowEndMonth = endDate ? endDate.substring(0, 7) : (activeDates.length > 0 && activeDates[activeDates.length - 1].substring(0, 7) > nowMonth ? activeDates[activeDates.length - 1].substring(0, 7) : nowMonth);
+    if (soldMonth && windowEndMonth > soldMonth) {
+      windowEndMonth = soldMonth;
+    }
 
     if (windowStartMonth > windowEndMonth) {
       windowStartMonth = windowEndMonth;

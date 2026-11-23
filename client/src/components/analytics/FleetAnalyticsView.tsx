@@ -17,12 +17,16 @@ interface FleetAnalyticsViewProps {
   fleetData: any;
   fleetLoading: boolean;
   exportCsv: () => void;
+  vehicleType?: string;
+  onVehicleTypeChange?: (type: string) => void;
 }
 
 export const FleetAnalyticsView: React.FC<FleetAnalyticsViewProps> = ({
   fleetData,
   fleetLoading,
   exportCsv,
+  vehicleType = 'all',
+  onVehicleTypeChange,
 }) => {
   const { t } = useLanguage();
 
@@ -34,8 +38,36 @@ export const FleetAnalyticsView: React.FC<FleetAnalyticsViewProps> = ({
     );
   }
 
+  const availableTypes: string[] = fleetData?.availableTypes || [];
+  const categoryOptions = [
+    { id: 'all', label: t('categoryAll') },
+    { id: 'car', label: t('categoryCars') },
+    { id: 'motorcycle', label: t('categoryMotorcycles') },
+    { id: 'van', label: t('categoryVans') },
+    { id: 'trailer', label: t('categoryTrailers') },
+  ].filter((opt) => opt.id === 'all' || availableTypes.includes(opt.id) || vehicleType === opt.id);
+
   return (
     <div className="space-y-6">
+      {onVehicleTypeChange && categoryOptions.length > 1 && (
+        <div className="flex items-center gap-1.5 flex-wrap bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-1.5 rounded-xl w-fit shadow-xs">
+          {categoryOptions.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => onVehicleTypeChange(opt.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                vehicleType === opt.id
+                  ? 'bg-accent-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Fleet KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 rounded-xl shadow-xs transition-colors">

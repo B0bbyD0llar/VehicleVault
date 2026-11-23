@@ -140,4 +140,11 @@ export const analytics: Record<keyof typeof nl, string> = {
   rangeKm: 'Reichweite (km)',
   tankRangeEmpty: 'Für die Reichweite pro Tank sind mindestens 2 Tankvorgänge nötig.',
   costPer100KmEmpty: 'Keine Daten zu Kosten pro 100 km verfügbar.',
+
+  // Fleet category filters
+  categoryAll: 'Alle Kategorien',
+  categoryCars: 'Autos',
+  categoryMotorcycles: 'Motorräder',
+  categoryVans: 'Transporter',
+  categoryTrailers: 'Anhänger',
 };
