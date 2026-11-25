@@ -174,4 +174,52 @@ describe('Vehicle Sold Archiving & Fleet Category Filtering', () => {
     assert.equal(motoMock.getBody().fleetTotalCost, 30);
     assert.equal(motoMock.getBody().vehicles[0].id, motoId);
   });
+
+  it('automatically takes public showcase offline when sold unless keep_showcase_open is true', async () => {
+    const userId = crypto.randomUUID();
+    const vehicleId = crypto.randomUUID();
+    const showcaseId = crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    db.run(
+      'INSERT INTO users (id, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [userId, `scsold_${crypto.randomUUID().slice(0, 8)}@test.local`, 'hash', 'user', now, now]
+    );
+    db.run(
+      'INSERT INTO vehicles (id, user_id, name, type, status, license_plate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [vehicleId, userId, 'Showcase Car', 'car', 'active', 'SC-99-XX', now, now]
+    );
+    db.run(
+      'INSERT INTO vehicle_showcases (id, vehicle_id, public_slug, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [showcaseId, vehicleId, `slug-${crypto.randomUUID().slice(0, 8)}`, 1, now, now]
+    );
+
+    // 1. Mark as sold with keep_showcase_open: true -> stays active
+    const keepMock = createMockRes();
+    await VehicleController.update(
+      {
+        params: { id: vehicleId },
+        user: { userId, role: 'user' },
+        body: { status: 'sold', sold_date: '2026-11-25', keep_showcase_open: true },
+      } as any,
+      keepMock.res
+    );
+    assert.equal(keepMock.getStatus(), 200);
+    const afterKeep = db.get<any>('SELECT is_active FROM vehicle_showcases WHERE id = ?', [showcaseId]);
+    assert.equal(afterKeep.is_active, 1);
+
+    // 2. Mark as sold without keep_showcase_open -> automatically taken offline (is_active = 0)
+    const offlineMock = createMockRes();
+    await VehicleController.update(
+      {
+        params: { id: vehicleId },
+        user: { userId, role: 'user' },
+        body: { status: 'sold', sold_date: '2026-11-25' },
+      } as any,
+      offlineMock.res
+    );
+    assert.equal(offlineMock.getStatus(), 200);
+    const afterOffline = db.get<any>('SELECT is_active FROM vehicle_showcases WHERE id = ?', [showcaseId]);
+    assert.equal(afterOffline.is_active, 0);
+  });
 });

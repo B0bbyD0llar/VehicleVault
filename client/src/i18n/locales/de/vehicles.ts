@@ -142,4 +142,5 @@ export const vehicles: Record<keyof typeof nl, string> = {
   confirmSold: 'Verkauf speichern',
   soldSummary: 'Verkauft am {date} für € {price}',
   soldSummaryNoPrice: 'Verkauft am {date}',
+  keepShowcaseOpenLabel: 'Verkaufsseite online lassen (sonst wird sie automatisch deaktiviert)',
 };

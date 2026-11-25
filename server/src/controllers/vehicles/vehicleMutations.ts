@@ -119,5 +119,10 @@ export function executeVehicleUpdate(id: string, existing: any, data: any): void
       transmission, now, id,
     ]
   );
+
+  // Automatically take public sales showcase offline when marked as sold unless explicitly kept open
+  if (status === 'sold' && !data.keep_showcase_open) {
+    db.run('UPDATE vehicle_showcases SET is_active = 0, updated_at = ? WHERE vehicle_id = ?', [now, id]);
+  }
 }
 

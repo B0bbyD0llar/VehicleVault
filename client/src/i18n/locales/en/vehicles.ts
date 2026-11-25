@@ -142,4 +142,5 @@ export const vehicles: Record<keyof typeof nl, string> = {
   confirmSold: 'Save sale',
   soldSummary: 'Sold on {date} for € {price}',
   soldSummaryNoPrice: 'Sold on {date}',
+  keepShowcaseOpenLabel: 'Keep public sales page online (otherwise taken offline automatically)',
 };

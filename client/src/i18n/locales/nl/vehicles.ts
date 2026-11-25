@@ -140,4 +140,5 @@ export const vehicles = {
   confirmSold: 'Verkoop opslaan',
   soldSummary: 'Verkocht op {date} voor € {price}',
   soldSummaryNoPrice: 'Verkocht op {date}',
+  keepShowcaseOpenLabel: 'Verkooppagina online houden (anders wordt deze automatisch offline gehaald)',
 };

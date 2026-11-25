@@ -46,8 +46,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     setFailedImages((prev) => ({ ...prev, [key]: true }));
   };
 
+  const activeVehicles = vehicles.filter((v) => v.status === 'active');
   const activeVehicle =
-    vehicles.find((v) => v.id === selectedVehicleId) || vehicles[0] || null;
+    activeVehicles.find((v) => v.id === selectedVehicleId) || activeVehicles[0] || null;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -88,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Main Header Area: Starts cleanly at the sidebar boundary */}
       <div className="flex-1 h-full flex items-center justify-between px-2 sm:px-3 md:px-5 min-w-0">
         {/* Prominent Vehicle Selector */}
-        {vehicles.length > 0 && activeVehicle ? (
+        {activeVehicles.length > 0 && activeVehicle ? (
           <div className="flex items-center space-x-1.5 sm:space-x-2.5 min-w-0">
             <div className="relative" ref={dropdownRef}>
               <button
@@ -134,11 +135,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="absolute left-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                   <div className="p-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     <span>{lang === 'nl' ? 'Mijn Garage' : 'My Garage'}</span>
-                    <span className="text-accent-500 font-mono">{vehicles.length} {lang === 'nl' ? 'voertuigen' : 'vehicles'}</span>
+                    <span className="text-accent-500 font-mono">{activeVehicles.length} {lang === 'nl' ? 'voertuigen' : 'vehicles'}</span>
                   </div>
 
                   <div className="max-h-72 overflow-y-auto p-1.5 space-y-1">
-                    {vehicles.map((v) => {
+                    {activeVehicles.map((v) => {
                       const isSelected = v.id === activeVehicle.id;
                       const hasImage = v.image_path && !failedImages[v.id];
 

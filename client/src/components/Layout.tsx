@@ -37,7 +37,7 @@ export const Layout: React.FC = () => {
       setVehicles(data.vehicles);
       if (data.vehicles.length > 0) {
         const stored = localStorage.getItem('vv_active_vehicle');
-        const exists = data.vehicles.find((v) => v.id === stored);
+        const exists = data.vehicles.find((v) => v.id === stored && v.status === 'active');
         const firstActive = data.vehicles.find((v) => v.status === 'active') || data.vehicles[0];
         const activeId = exists ? exists.id : firstActive.id;
         setSelectedVehicleId(activeId);

@@ -70,10 +70,20 @@ export const Vehicles: React.FC = () => {
     } catch {}
   };
 
-  const handleConfirmSell = async (v: Vehicle, soldDate: string, soldPrice: number | null) => {
+  const handleConfirmSell = async (
+    v: Vehicle,
+    soldDate: string,
+    soldPrice: number | null,
+    keepShowcaseOpen: boolean
+  ) => {
     await apiFetch(`/api/vehicles/${v.id}`, {
       method: 'PUT',
-      body: JSON.stringify({ status: 'sold', sold_date: soldDate, sold_price: soldPrice }),
+      body: JSON.stringify({
+        status: 'sold',
+        sold_date: soldDate,
+        sold_price: soldPrice,
+        keep_showcase_open: keepShowcaseOpen,
+      }),
     });
     refreshVehicles();
     if (fleetView) fetchFleet();

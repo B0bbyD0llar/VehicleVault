@@ -6,7 +6,12 @@ import { useLanguage } from '../../context/LanguageContext.js';
 interface SellVehicleModalProps {
   vehicle: Vehicle | null;
   onClose: () => void;
-  onConfirm: (vehicle: Vehicle, soldDate: string, soldPrice: number | null) => Promise<void>;
+  onConfirm: (
+    vehicle: Vehicle,
+    soldDate: string,
+    soldPrice: number | null,
+    keepShowcaseOpen: boolean
+  ) => Promise<void>;
 }
 
 export const SellVehicleModal: React.FC<SellVehicleModalProps> = ({
@@ -17,12 +22,14 @@ export const SellVehicleModal: React.FC<SellVehicleModalProps> = ({
   const { t } = useLanguage();
   const [soldDate, setSoldDate] = useState('');
   const [soldPrice, setSoldPrice] = useState('');
+  const [keepShowcaseOpen, setKeepShowcaseOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (vehicle) {
       setSoldDate(vehicle.sold_date || new Date().toISOString().split('T')[0]);
       setSoldPrice(vehicle.sold_price !== undefined && vehicle.sold_price !== null ? String(vehicle.sold_price) : '');
+      setKeepShowcaseOpen(false);
     }
   }, [vehicle]);
 
@@ -33,7 +40,12 @@ export const SellVehicleModal: React.FC<SellVehicleModalProps> = ({
     setSaving(true);
     try {
       const parsedPrice = soldPrice.trim() !== '' ? Number(soldPrice) : null;
-      await onConfirm(vehicle, soldDate, parsedPrice !== null && !Number.isNaN(parsedPrice) ? parsedPrice : null);
+      await onConfirm(
+        vehicle,
+        soldDate,
+        parsedPrice !== null && !Number.isNaN(parsedPrice) ? parsedPrice : null,
+        keepShowcaseOpen
+      );
       onClose();
     } finally {
       setSaving(false);
@@ -89,6 +101,20 @@ export const SellVehicleModal: React.FC<SellVehicleModalProps> = ({
               className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
             />
           </div>
+
+          {vehicle.is_showcase_active && (
+            <label className="flex items-start space-x-2.5 p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={keepShowcaseOpen}
+                onChange={(e) => setKeepShowcaseOpen(e.target.checked)}
+                className="mt-0.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              />
+              <span className="text-slate-700 dark:text-slate-200 leading-snug">
+                {t('keepShowcaseOpenLabel')}
+              </span>
+            </label>
+          )}
 
           <div className="flex justify-end space-x-2 pt-2">
             <button

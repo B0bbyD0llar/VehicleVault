@@ -19,6 +19,7 @@ export const vehicleSchema = z.object({
   status: z.enum(['active', 'archived', 'sold']).default('active'),
   sold_date: z.string().optional().nullable(),
   sold_price: z.number().nonnegative().optional().nullable(),
+  keep_showcase_open: z.boolean().optional(),
   apk_expiration_date: z.string().optional().nullable(),
   plate_country: z.enum(['NL', 'BE', 'DE', 'EU', 'OTHER']).default('NL'),
   image_path: z.string().optional().nullable(),
