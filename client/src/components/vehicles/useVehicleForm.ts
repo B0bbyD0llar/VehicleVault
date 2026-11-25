@@ -122,7 +122,7 @@ export function useVehicleForm(refreshVehicles: () => void) {
     setRdwSuccess(false);
 
     try {
-      const data = await apiFetch<{ rdw: any }>(`/api/vehicles/rdw/${licensePlate}`);
+      const data = await apiFetch<{ rdw: any }>(`/api/vehicles/rdw/${encodeURIComponent(licensePlate.trim())}`);
       if (data && data.rdw) {
         if (data.rdw.merk) setMake(data.rdw.merk);
         if (data.rdw.handelsbenaming) setModel(data.rdw.handelsbenaming);

@@ -62,10 +62,11 @@ export class RdwService {
           'Accept': 'application/json',
           'User-Agent': 'VehicleVault-Tracker/1.0',
         },
+        signal: AbortSignal.timeout(8000),
       });
 
       if (!response.ok) {
-        return null;
+        throw new Error(`RDW API fout (HTTP ${response.status})`);
       }
 
       const data = (await response.json()) as any[];
@@ -151,9 +152,10 @@ export class RdwService {
         brandstof_omschrijving: detectedFuel,
         raw: { ...item, ...rawFuelData },
       };
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching RDW data:', err);
-      return null;
+      const reason = err?.name === 'TimeoutError' ? 'Timeout bij verbinden met RDW Open Data' : (err?.message || 'Onbekende netwerkfout');
+      throw new Error(`RDW-opvraging mislukt: ${reason}`);
     }
   }
 
@@ -195,7 +197,12 @@ export class RdwService {
 
     for (const v of vehicles) {
       if (!v.license_plate) continue;
-      const rdw = await this.fetchVehicleByPlate(v.license_plate);
+      let rdw: RdwVehicleData | null = null;
+      try {
+        rdw = await this.fetchVehicleByPlate(v.license_plate);
+      } catch {
+        continue;
+      }
       if (rdw && rdw.vervaldatum_apk) {
         db.run(
           `UPDATE vehicles 
