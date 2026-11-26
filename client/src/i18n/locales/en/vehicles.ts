@@ -143,4 +143,13 @@ export const vehicles: Record<keyof typeof nl, string> = {
   soldSummary: 'Sold on {date} for € {price}',
   soldSummaryNoPrice: 'Sold on {date}',
   keepShowcaseOpenLabel: 'Keep public sales page online (otherwise taken offline automatically)',
+
+  // Inspection terms (utils/inspectionTerms.ts); {term} is the country-specific name (APK, TÜV, MOT, ...)
+  inspShortBe: 'Inspection',
+  inspTermBe: 'Inspection',
+  inspDateLabel: '{term} Expiry Date',
+  inspBadgeValid: 'Valid',
+  inspBadgeDueSoon: 'Due Soon',
+  inspBadgeOverdue: 'Overdue!',
+  inspSyncLabel: 'Sync {term}',
 };
