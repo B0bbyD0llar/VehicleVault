@@ -346,7 +346,7 @@ Om verrassingen achteraf te voorkomen zijn we volledig transparant over de optis
     if (!showcase) return null;
 
     const vehicle = db.get<any>('SELECT * FROM vehicles WHERE id = ?', [showcase.vehicle_id]);
-    if (!vehicle) return null;
+    if (!vehicle || vehicle.status === 'archived') return null;
 
     let rdw: any = {};
     if (vehicle.rdw_data) {

@@ -26,7 +26,7 @@ export const VehicleNotificationsList: React.FC = () => {
     try {
       setLoading(true);
       const res = await apiFetch<{ vehicles: Vehicle[] }>('/api/vehicles');
-      setVehicles(res.vehicles || []);
+      setVehicles((res.vehicles || []).filter((v) => v.status === 'active'));
     } catch (err) {
       console.error('Failed to load vehicles for notifications:', err);
     } finally {

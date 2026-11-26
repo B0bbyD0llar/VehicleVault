@@ -38,10 +38,17 @@ export const Layout: React.FC = () => {
       if (data.vehicles.length > 0) {
         const stored = localStorage.getItem('vv_active_vehicle');
         const exists = data.vehicles.find((v) => v.id === stored && v.status === 'active');
-        const firstActive = data.vehicles.find((v) => v.status === 'active') || data.vehicles[0];
-        const activeId = exists ? exists.id : firstActive.id;
+        const firstActive = data.vehicles.find((v) => v.status === 'active') || null;
+        const activeId = exists ? exists.id : firstActive ? firstActive.id : null;
         setSelectedVehicleId(activeId);
-        localStorage.setItem('vv_active_vehicle', activeId);
+        if (activeId) {
+          localStorage.setItem('vv_active_vehicle', activeId);
+        } else {
+          localStorage.removeItem('vv_active_vehicle');
+        }
+      } else {
+        setSelectedVehicleId(null);
+        localStorage.removeItem('vv_active_vehicle');
       }
     } catch {
       // ignore

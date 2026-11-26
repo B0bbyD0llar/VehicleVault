@@ -16,6 +16,7 @@ export class NotificationTireAlerts {
       const isAutumn = currentMonth === 10 || currentMonth === 11;
 
       for (const v of vehicles) {
+        if (v.status !== 'active') continue;
         const vehicleNotifEnabled = v.notifications_enabled === undefined || v.notifications_enabled === null || Number(v.notifications_enabled) !== 0;
         if (!vehicleNotifEnabled) continue;
 
