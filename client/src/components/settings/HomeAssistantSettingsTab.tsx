@@ -13,18 +13,12 @@ import {
 import { apiFetch } from '../../api/client.js';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { ApiKeyItem } from '../../types/index.js';
+import { fillSlots } from '../../utils/fillSlots.js';
 import { HomeAssistantTelematicsCard } from './HomeAssistantTelematicsCard.js';
 
 interface HomeAssistantSettingsTabProps {
   onNavigateToUsers: () => void;
 }
-
-/** Replaces `{name}` placeholders in a translated string with React nodes (e.g. <code> or <strong>). */
-const fillSlots = (text: string, slots: Record<string, React.ReactNode>) =>
-  text.split(/(\{\w+\})/).map((part, i) => {
-    const name = part.match(/^\{(\w+)\}$/)?.[1];
-    return <React.Fragment key={i}>{name && name in slots ? slots[name] : part}</React.Fragment>;
-  });
 
 export const HomeAssistantSettingsTab: React.FC<HomeAssistantSettingsTabProps> = ({
   onNavigateToUsers,

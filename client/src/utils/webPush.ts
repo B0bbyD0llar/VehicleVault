@@ -89,9 +89,9 @@ export async function removeDevice(endpoint: string): Promise<void> {
   await apiFetch('/api/notifications/push/unsubscribe', { method: 'POST', body: JSON.stringify({ endpoint }) });
 }
 
-/** Short, human label for a stored user agent. */
-export function describeDevice(userAgent: string | null): string {
-  if (!userAgent) return 'Onbekend apparaat';
+/** Browser and OS names for a stored user agent; empty strings when unknown. The caller builds the label. */
+export function describeDevice(userAgent: string | null): { browser: string; os: string } {
+  if (!userAgent) return { browser: '', os: '' };
   const os = /iPhone|iPad|iPod/.test(userAgent)
     ? 'iOS'
     : /Android/.test(userAgent)
@@ -112,5 +112,5 @@ export function describeDevice(userAgent: string | null): string {
         : /Safari\//.test(userAgent)
           ? 'Safari'
           : '';
-  return [browser, os].filter(Boolean).join(' op ') || 'Onbekend apparaat';
+  return { browser, os };
 }

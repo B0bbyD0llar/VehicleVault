@@ -66,6 +66,8 @@ export const common: Record<keyof typeof nl, string> = {
   addressPlaceholder: 'Street, number and city',
   examplePlaceholder: 'e.g. {value}',
   pageOf: 'Page {current} of {total}',
+  somethingWentWrong: 'Something went wrong.',
+  optional: 'optional',
 
   // Profile page
   profileSystemSettings: 'System Settings',
