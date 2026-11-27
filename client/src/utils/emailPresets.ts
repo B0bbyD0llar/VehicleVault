@@ -1,3 +1,5 @@
+import type { TranslationKey } from '../i18n/translations.js';
+
 export interface EmailPreset {
   id: 'gmail' | 'microsoft365' | 'outlook';
   label: string;
@@ -5,8 +7,8 @@ export interface EmailPreset {
   port: number;
   /** true = implicit TLS (port 465); false = STARTTLS on 587. */
   secure: boolean;
-  nl: string;
-  en: string;
+  /** Setup hint shown under the presets once this one is picked. */
+  hintKey: TranslationKey;
 }
 
 export const EMAIL_PRESETS: EmailPreset[] = [
@@ -16,8 +18,7 @@ export const EMAIL_PRESETS: EmailPreset[] = [
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
-    nl: 'Gebruik je volledige Gmail-adres als gebruiker en een app-wachtwoord (Google-account → Beveiliging → Verificatie in 2 stappen → App-wachtwoorden). Je gewone wachtwoord werkt niet.',
-    en: 'Use your full Gmail address as user and an app password (Google Account → Security → 2-Step Verification → App passwords). Your normal password will not work.',
+    hintKey: 'mailPresetGmailHint',
   },
   {
     id: 'microsoft365',
@@ -25,8 +26,7 @@ export const EMAIL_PRESETS: EmailPreset[] = [
     host: 'smtp.office365.com',
     port: 587,
     secure: false,
-    nl: 'Gebruik het volledige e-mailadres van de mailbox als gebruiker. De beheerder moet "Geverifieerde SMTP-client" (SMTP AUTH) voor die mailbox hebben ingeschakeld, en de afzender moet het adres van die mailbox zijn. Is SMTP AUTH bij jullie uitgeschakeld, kies dan hierboven "Microsoft Graph".',
-    en: 'Use the full mailbox address as user. An admin must have enabled "Authenticated SMTP" (SMTP AUTH) for that mailbox, and the sender must be that mailbox address. If SMTP AUTH is disabled in your tenant, choose "Microsoft Graph" above.',
+    hintKey: 'mailPresetMicrosoft365Hint',
   },
   {
     id: 'outlook',
@@ -34,8 +34,7 @@ export const EMAIL_PRESETS: EmailPreset[] = [
     host: 'smtp-mail.outlook.com',
     port: 587,
     secure: false,
-    nl: 'Gebruik je volledige Outlook.com/Hotmail-adres als gebruiker. Met tweestapsverificatie heb je een app-wachtwoord nodig (Microsoft-account → Beveiliging → App-wachtwoorden).',
-    en: 'Use your full Outlook.com/Hotmail address as user. With two-step verification you need an app password (Microsoft account → Security → App passwords).',
+    hintKey: 'mailPresetOutlookHint',
   },
 ];
 

@@ -19,8 +19,7 @@ interface PushStatus {
 
 /** Per-device Web Push: every person enables it on their own phone / computer; the provider choice is global. */
 export const WebPushSettings: React.FC = () => {
-  const { lang } = useLanguage();
-  const nl = lang === 'nl';
+  const { lang, t } = useLanguage();
 
   const [status, setStatus] = useState<PushStatus | null>(null);
   const [thisEndpoint, setThisEndpoint] = useState<string | null>(null);
@@ -56,14 +55,9 @@ export const WebPushSettings: React.FC = () => {
       await action();
     } catch (err: any) {
       if (err?.code === 'permission-denied') {
-        setFeedback({
-          ok: false,
-          text: nl
-            ? 'Meldingen zijn geblokkeerd voor deze site. Sta ze toe in de instellingen van je browser of telefoon en probeer opnieuw.'
-            : 'Notifications are blocked for this site. Allow them in your browser or phone settings and try again.',
-        });
+        setFeedback({ ok: false, text: t('webPushBlocked') });
       } else {
-        setFeedback({ ok: false, text: err?.message || (nl ? 'Er ging iets mis.' : 'Something went wrong.') });
+        setFeedback({ ok: false, text: err?.message || t('somethingWentWrong') });
       }
     } finally {
       if (typeof Notification !== 'undefined') setPermission(Notification.permission);
@@ -75,16 +69,13 @@ export const WebPushSettings: React.FC = () => {
   const handleEnable = () =>
     run(async () => {
       await enablePush();
-      setFeedback({
-        ok: true,
-        text: nl ? 'Meldingen staan aan op dit apparaat.' : 'Notifications are on for this device.',
-      });
+      setFeedback({ ok: true, text: t('webPushEnabled') });
     });
 
   const handleDisable = () =>
     run(async () => {
       await disablePush();
-      setFeedback({ ok: true, text: nl ? 'Meldingen staan uit op dit apparaat.' : 'Notifications are off for this device.' });
+      setFeedback({ ok: true, text: t('webPushDisabled') });
     });
 
   const handleTest = () =>
@@ -94,7 +85,7 @@ export const WebPushSettings: React.FC = () => {
     });
 
   const handleRemove = (device: PushDevice) => {
-    if (!confirm(nl ? 'Dit apparaat geen meldingen meer sturen?' : 'Stop sending notifications to this device?')) return;
+    if (!confirm(t('webPushConfirmRemove'))) return;
     run(async () => {
       await removeDevice(device.endpoint);
       // Removing the current browser's registration also drops its local subscription.
@@ -102,33 +93,26 @@ export const WebPushSettings: React.FC = () => {
     });
   };
 
-  const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(nl ? 'nl-NL' : 'en-GB') : null);
+  const formatDate = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleDateString(lang === 'en' ? 'en-GB' : lang) : '';
+
+  const deviceLabel = (userAgent: string | null) => {
+    const { browser, os } = describeDevice(userAgent);
+    if (browser && os) return t('webPushDeviceLabel', { browser, os });
+    return browser || os || t('webPushUnknownDevice');
+  };
 
   const unsupportedText = (() => {
-    if (unsupported === 'insecure') {
-      return nl
-        ? 'Web Push werkt alleen via HTTPS (of localhost). Open VehicleVault via een https-adres, bijvoorbeeld achter je reverse proxy.'
-        : 'Web Push only works over HTTPS (or localhost). Open VehicleVault through an https address, for example behind your reverse proxy.';
-    }
-    if (unsupported === 'ios-not-installed') {
-      return nl
-        ? 'Op iPhone en iPad (iOS/iPadOS 16.4 of nieuwer) werken meldingen alleen voor de geïnstalleerde app: tik op Deel → "Zet op beginscherm", open VehicleVault vanaf het beginscherm en kom hier terug.'
-        : 'On iPhone and iPad (iOS/iPadOS 16.4 or newer) notifications only work for the installed app: tap Share → "Add to Home Screen", open VehicleVault from the home screen and come back here.';
-    }
-    return nl ? 'Deze browser ondersteunt geen Web Push.' : 'This browser does not support Web Push.';
+    if (unsupported === 'insecure') return t('webPushInsecure');
+    if (unsupported === 'ios-not-installed') return t('webPushIosNotInstalled');
+    return t('webPushUnsupported');
   })();
 
   return (
     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200/80 dark:border-slate-800/80 space-y-4 text-xs">
       <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-lg text-sky-800 dark:text-sky-300">
-        <span className="font-bold block">
-          {nl ? '💡 Rechtstreeks naar de app, zonder extra dienst' : '💡 Straight to the app, no extra service'}
-        </span>
-        <span className="text-[11px] block mt-0.5 leading-relaxed">
-          {nl
-            ? 'Meldingen komen via de push-dienst van je eigen browser (Google, Apple, Mozilla of Microsoft) binnen als de app is geïnstalleerd of de browser open staat. Elke persoon schakelt dit zelf in op zijn of haar apparaat; de APK-, onderhouds- en documentmeldingen gaan naar alle ingeschakelde apparaten.'
-            : "Notifications arrive through your own browser's push service (Google, Apple, Mozilla or Microsoft), also when the app is installed but closed. Everyone turns this on for their own device; APK, maintenance and document alerts go to all enabled devices."}
-        </span>
+        <span className="font-bold block">{t('webPushInfoTitle')}</span>
+        <span className="text-[11px] block mt-0.5 leading-relaxed">{t('webPushInfoText')}</span>
       </div>
 
       {unsupported ? (
@@ -147,7 +131,7 @@ export const WebPushSettings: React.FC = () => {
                 className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
               >
                 {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BellOff className="w-3.5 h-3.5" />}
-                <span>{nl ? 'Uitschakelen op dit apparaat' : 'Turn off on this device'}</span>
+                <span>{t('webPushTurnOff')}</span>
               </button>
             ) : (
               <button
@@ -157,7 +141,7 @@ export const WebPushSettings: React.FC = () => {
                 className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold disabled:opacity-50"
               >
                 {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BellRing className="w-3.5 h-3.5" />}
-                <span>{nl ? 'Inschakelen op dit apparaat' : 'Turn on for this device'}</span>
+                <span>{t('webPushTurnOn')}</span>
               </button>
             )}
 
@@ -169,17 +153,13 @@ export const WebPushSettings: React.FC = () => {
                 className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-lg border border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-50 dark:hover:bg-purple-950/40 disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{nl ? 'Stuur test naar mijn apparaten' : 'Send test to my devices'}</span>
+                <span>{t('webPushSendTest')}</span>
               </button>
             )}
           </div>
 
           {permission === 'denied' && !thisDeviceEnabled && (
-            <p className="text-amber-700 dark:text-amber-400 leading-relaxed">
-              {nl
-                ? 'Meldingen zijn voor deze site geblokkeerd. Sta ze toe in de site-instellingen van je browser (of Instellingen → Meldingen op je telefoon) en laad de pagina opnieuw.'
-                : 'Notifications are blocked for this site. Allow them in your browser site settings (or Settings → Notifications on your phone) and reload the page.'}
-            </p>
+            <p className="text-amber-700 dark:text-amber-400 leading-relaxed">{t('webPushBlockedReload')}</p>
           )}
         </div>
       )}
@@ -199,11 +179,11 @@ export const WebPushSettings: React.FC = () => {
 
       <div>
         <div className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-          {nl ? 'Mijn apparaten' : 'My devices'}
+          {t('webPushMyDevices')}
           {status && (
             <span className="font-normal text-slate-500 dark:text-slate-400">
               {' · '}
-              {nl ? `${status.totalDevices} in totaal op deze server` : `${status.totalDevices} in total on this server`}
+              {t('webPushTotalDevices', { count: status.totalDevices })}
             </span>
           )}
         </div>
@@ -218,16 +198,16 @@ export const WebPushSettings: React.FC = () => {
                   <Smartphone className="w-4 h-4 text-slate-400 flex-shrink-0" />
                   <div className="min-w-0">
                     <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">
-                      {describeDevice(d.userAgent)}
+                      {deviceLabel(d.userAgent)}
                       {d.endpoint === thisEndpoint && (
                         <span className="ml-1.5 text-[10px] font-bold uppercase text-purple-600 dark:text-purple-400">
-                          {nl ? 'dit apparaat' : 'this device'}
+                          {t('webPushThisDevice')}
                         </span>
                       )}
                     </div>
                     <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                      {nl ? 'Ingeschakeld op' : 'Enabled on'} {formatDate(d.createdAt)}
-                      {d.lastUsedAt ? ` · ${nl ? 'laatste melding' : 'last alert'} ${formatDate(d.lastUsedAt)}` : ''}
+                      {t('webPushEnabledOn', { date: formatDate(d.createdAt) })}
+                      {d.lastUsedAt ? ` · ${t('webPushLastAlert', { date: formatDate(d.lastUsedAt) })}` : ''}
                     </div>
                   </div>
                 </div>
@@ -235,7 +215,7 @@ export const WebPushSettings: React.FC = () => {
                   type="button"
                   onClick={() => handleRemove(d)}
                   disabled={busy}
-                  aria-label={nl ? 'Apparaat verwijderen' : 'Remove device'}
+                  aria-label={t('webPushRemoveDevice')}
                   className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -245,7 +225,7 @@ export const WebPushSettings: React.FC = () => {
           </ul>
         ) : (
           <p className="text-slate-500 dark:text-slate-400">
-            {nl ? 'Nog geen apparaten ingeschakeld voor jouw account.' : 'No devices enabled for your account yet.'}
+            {t('webPushNoDevices')}
           </p>
         )}
       </div>

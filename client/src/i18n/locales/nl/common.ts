@@ -64,6 +64,8 @@ export const common = {
   addressPlaceholder: 'Straat, huisnummer en woonplaats',
   examplePlaceholder: 'bijv. {value}',
   pageOf: 'Pagina {current} van {total}',
+  somethingWentWrong: 'Er ging iets mis.',
+  optional: 'optioneel',
 
   // Profile page
   profileSystemSettings: 'Systeeminstellingen',
