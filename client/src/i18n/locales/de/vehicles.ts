@@ -152,4 +152,14 @@ export const vehicles: Record<keyof typeof nl, string> = {
   inspBadgeDueSoon: 'Bald fällig',
   inspBadgeOverdue: 'Abgelaufen!',
   inspSyncLabel: '{term} synchronisieren',
+
+  // RDW recall & extended specifications
+  openRecallBadge: 'Offener Rückruf',
+  openRecallTooltip: 'Laut RDW liegt für dieses Fahrzeug ein offener Rückruf vor',
+  rdwSpecsToggle: 'RDW-Spezifikationen',
+  rdwColor: 'Farbe',
+  rdwCurbWeight: 'Leer- / Fahrgewicht',
+  rdwTowingWeight: 'Anhängelast (gebremst / ungebremst)',
+  rdwCatalogPrice: 'Listenpreis',
+  rdwCategory: 'Fahrzeugklasse',
 };

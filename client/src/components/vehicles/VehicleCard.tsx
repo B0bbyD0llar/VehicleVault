@@ -11,6 +11,8 @@ import {
   Radio,
   History,
   BadgeEuro,
+  AlertTriangle,
+  ChevronDown,
 } from 'lucide-react';
 import { Vehicle, VehicleType } from '../../types/index.js';
 import { StatusBadge } from '../StatusBadge.js';
@@ -41,6 +43,29 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
 }) => {
   const { t, lang } = useLanguage();
   const [isLogOpen, setIsLogOpen] = useState(false);
+  const [showRdwSpecs, setShowRdwSpecs] = useState(false);
+
+  const parsedRdw = (() => {
+    if (!v.rdw_data) return null;
+    try {
+      const parsed = typeof v.rdw_data === 'string' ? JSON.parse(v.rdw_data) : v.rdw_data;
+      return parsed?.raw && typeof parsed.raw === 'object' ? { ...parsed, ...parsed.raw } : parsed;
+    } catch {
+      return null;
+    }
+  })();
+
+  const hasOpenRecall =
+    String(parsedRdw?.openstaande_terugroepactie_indicator || '').trim().toLowerCase() === 'ja';
+  const hasExtendedRdwSpecs = Boolean(
+    parsedRdw &&
+      (parsedRdw.eerste_kleur ||
+        parsedRdw.massa_ledig_voertuig ||
+        parsedRdw.massa_rijklaar ||
+        parsedRdw.maximum_trekken_massa_geremd ||
+        parsedRdw.catalogusprijs ||
+        parsedRdw.europese_voertuigcategorie)
+  );
 
   const getVehicleTypeName = (vType: VehicleType) => {
     switch (vType) {
@@ -110,6 +135,15 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
               <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/40" title={t('telematicsActive')}>
                 <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />
                 <span>{t('telematics')}</span>
+              </span>
+            )}
+            {hasOpenRecall && (
+              <span
+                className="inline-flex items-center space-x-1 text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-800/50"
+                title={t('openRecallTooltip')}
+              >
+                <AlertTriangle className="w-3 h-3 text-rose-500" />
+                <span>{t('openRecallBadge')}</span>
               </span>
             )}
             {v.notifications_enabled !== false && v.maintenance_notifications_enabled === false && (
@@ -196,6 +230,61 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
               <span className="font-semibold text-slate-800 dark:text-slate-200">
                 € {v.purchase_price.toLocaleString()}
               </span>
+            </div>
+          )}
+          {hasExtendedRdwSpecs && parsedRdw && (
+            <div className="border-t border-slate-200 dark:border-slate-800/80 pt-1.5">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowRdwSpecs((prev) => !prev);
+                }}
+                className="w-full flex items-center justify-between text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline"
+              >
+                <span>{t('rdwSpecsToggle')}</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showRdwSpecs ? 'rotate-180' : ''}`} />
+              </button>
+              {showRdwSpecs && (
+                <div className="mt-1.5 space-y-1 text-[11px]">
+                  {parsedRdw.eerste_kleur && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">{t('rdwColor')}</span>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">{parsedRdw.eerste_kleur}</span>
+                    </div>
+                  )}
+                  {(parsedRdw.massa_ledig_voertuig || parsedRdw.massa_rijklaar) && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">{t('rdwCurbWeight')}</span>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">
+                        {parsedRdw.massa_ledig_voertuig || '—'} / {parsedRdw.massa_rijklaar || '—'} kg
+                      </span>
+                    </div>
+                  )}
+                  {(parsedRdw.maximum_trekken_massa_geremd || parsedRdw.maximum_massa_trekken_ongeremd) && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">{t('rdwTowingWeight')}</span>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">
+                        {parsedRdw.maximum_trekken_massa_geremd || '—'} / {parsedRdw.maximum_massa_trekken_ongeremd || '—'} kg
+                      </span>
+                    </div>
+                  )}
+                  {parsedRdw.catalogusprijs && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">{t('rdwCatalogPrice')}</span>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">
+                        € {Number(parsedRdw.catalogusprijs).toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                  {parsedRdw.europese_voertuigcategorie && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">{t('rdwCategory')}</span>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">{parsedRdw.europese_voertuigcategorie}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
           {v.telematics_enabled && (

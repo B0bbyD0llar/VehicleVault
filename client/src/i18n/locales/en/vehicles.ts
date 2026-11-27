@@ -152,4 +152,14 @@ export const vehicles: Record<keyof typeof nl, string> = {
   inspBadgeDueSoon: 'Due Soon',
   inspBadgeOverdue: 'Overdue!',
   inspSyncLabel: 'Sync {term}',
+
+  // RDW recall & extended specifications
+  openRecallBadge: 'Open recall',
+  openRecallTooltip: 'An open manufacturer recall is registered with the RDW for this vehicle',
+  rdwSpecsToggle: 'RDW specifications',
+  rdwColor: 'Color',
+  rdwCurbWeight: 'Curb / Running weight',
+  rdwTowingWeight: 'Towing (braked / unbraked)',
+  rdwCatalogPrice: 'Catalog price',
+  rdwCategory: 'Category',
 };

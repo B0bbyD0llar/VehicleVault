@@ -11,10 +11,40 @@ export interface RdwVehicleData {
   datum_tenaamstelling?: string;
   vervaldatum_apk?: string;
   brandstof_omschrijving?: string;
+  eerste_kleur?: string;
+  massa_ledig_voertuig?: string;
+  maximum_trekken_massa_geremd?: string;
+  maximum_massa_trekken_ongeremd?: string;
+  catalogusprijs?: string;
+  europese_voertuigcategorie?: string;
+  openstaande_terugroepactie_indicator?: string;
   raw?: any;
 }
 
 export class RdwService {
+  /**
+   * Parses stored rdw_data (string or object) and returns the underlying RDW record fields.
+   */
+  public static parseRdwData(rdwData: unknown): Record<string, any> | null {
+    if (!rdwData) return null;
+    try {
+      const parsed = typeof rdwData === 'string' ? JSON.parse(rdwData) : rdwData;
+      if (!parsed || typeof parsed !== 'object') return null;
+      return (parsed as any).raw && typeof (parsed as any).raw === 'object'
+        ? { ...(parsed as any), ...(parsed as any).raw }
+        : (parsed as Record<string, any>);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Returns true if the RDW record reports an open manufacturer recall.
+   */
+  public static hasOpenRecall(rdwData: unknown): boolean {
+    const parsed = this.parseRdwData(rdwData);
+    return String(parsed?.openstaande_terugroepactie_indicator || '').trim().toLowerCase() === 'ja';
+  }
   /**
    * Cleans license plate string (removes dashes, spaces, uppercased).
    */
@@ -150,6 +180,13 @@ export class RdwService {
         datum_tenaamstelling: formatRdwDate(item.datum_tenaamstelling),
         vervaldatum_apk: apkFormatted,
         brandstof_omschrijving: detectedFuel,
+        eerste_kleur: item.eerste_kleur,
+        massa_ledig_voertuig: item.massa_ledig_voertuig,
+        maximum_trekken_massa_geremd: item.maximum_trekken_massa_geremd,
+        maximum_massa_trekken_ongeremd: item.maximum_massa_trekken_ongeremd,
+        catalogusprijs: item.catalogusprijs,
+        europese_voertuigcategorie: item.europese_voertuigcategorie,
+        openstaande_terugroepactie_indicator: item.openstaande_terugroepactie_indicator,
         raw: { ...item, ...rawFuelData },
       };
     } catch (err: any) {

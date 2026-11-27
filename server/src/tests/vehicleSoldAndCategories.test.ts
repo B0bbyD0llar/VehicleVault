@@ -6,6 +6,7 @@ import { initializeDatabase } from '../db/schema.js';
 import { VehicleController } from '../controllers/vehicleController.js';
 import { AnalyticsController } from '../controllers/analyticsController.js';
 import { TcoService } from '../services/tcoService.js';
+import { RdwService } from '../services/rdwService.js';
 
 function createMockRes() {
   let statusCode = 200;
@@ -221,5 +222,28 @@ describe('Vehicle Sold Archiving & Fleet Category Filtering', () => {
     assert.equal(offlineMock.getStatus(), 200);
     const afterOffline = db.get<any>('SELECT is_active FROM vehicle_showcases WHERE id = ?', [showcaseId]);
     assert.equal(afterOffline.is_active, 0);
+  });
+
+  it('detects open RDW recalls and parses extended RDW specifications', () => {
+    const withRecall = JSON.stringify({
+      merk: 'FORD',
+      raw: {
+        eerste_kleur: 'WIT',
+        massa_ledig_voertuig: '1744',
+        openstaande_terugroepactie_indicator: 'Ja',
+      },
+    });
+    const withoutRecall = JSON.stringify({
+      openstaande_terugroepactie_indicator: 'Nee',
+      catalogusprijs: '40445',
+    });
+
+    assert.equal(RdwService.hasOpenRecall(withRecall), true);
+    assert.equal(RdwService.hasOpenRecall(withoutRecall), false);
+    assert.equal(RdwService.hasOpenRecall(null), false);
+
+    const parsed = RdwService.parseRdwData(withRecall);
+    assert.equal(parsed?.eerste_kleur, 'WIT');
+    assert.equal(parsed?.massa_ledig_voertuig, '1744');
   });
 });

@@ -117,6 +117,37 @@ export class NotificationAlerts {
           }
         }
       }
+
+      // 2b. Open RDW Recall Check (30-day cooldown while open)
+      const recallCacheKey = `notif_recall_${v.id}`;
+      if (RdwService.hasOpenRecall(v.rdw_data)) {
+        const lastRecallSent = db.get<{ updated_at: string }>(
+          'SELECT updated_at FROM system_settings WHERE key = ?',
+          [recallCacheKey]
+        );
+        const now = new Date();
+        let shouldSendRecall = true;
+        if (lastRecallSent?.updated_at) {
+          const daysSince = (now.getTime() - new Date(lastRecallSent.updated_at).getTime()) / (1000 * 60 * 60 * 24);
+          if (daysSince < 30) {
+            shouldSendRecall = false;
+          }
+        }
+        if (shouldSendRecall) {
+          const title = `⚠️ Openstaande Terugroepactie: ${v.name} (${v.license_plate || 'Onbekend'})`;
+          const msg = `Volgens het RDW staat er een terugroepactie open voor ${v.name}. Controleer dit bij je dealer of via ovi.rdw.nl.`;
+          await NotificationService.send(title, msg, 'urgent', ['warning', 'car']);
+          db.run('INSERT OR REPLACE INTO system_settings (key, value, updated_at) VALUES (?, ?, ?)', [
+            recallCacheKey,
+            'sent',
+            now.toISOString(),
+          ]);
+          count++;
+          details.push(`Terugroepactie alert verzonden voor ${v.name}`);
+        }
+      } else {
+        db.run('DELETE FROM system_settings WHERE key = ?', [recallCacheKey]);
+      }
     }
 
     // 3. Expiring Documents Check (milestone-based)

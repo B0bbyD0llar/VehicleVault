@@ -150,4 +150,14 @@ export const vehicles = {
   inspBadgeDueSoon: 'Binnenkort',
   inspBadgeOverdue: 'Verlopen!',
   inspSyncLabel: '{term} Synchroniseren',
+
+  // RDW recall & extended specifications
+  openRecallBadge: 'Terugroepactie open',
+  openRecallTooltip: 'Volgens het RDW staat er een terugroepactie open voor dit voertuig',
+  rdwSpecsToggle: 'RDW-specificaties',
+  rdwColor: 'Kleur',
+  rdwCurbWeight: 'Leeg / Rijklaar',
+  rdwTowingWeight: 'Trekgewicht (geremd / ongeremd)',
+  rdwCatalogPrice: 'Catalogusprijs',
+  rdwCategory: 'Categorie',
 };
